@@ -5,6 +5,8 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> <!--THIS IS A MAGIC SCRIPT -->
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
 	<style>
 		body{
 			font-family: sans-serif;
@@ -71,8 +73,8 @@
 	<script>
 		$(document).ready(function(){
 			$('#left').hide();
-			$('#top').click(function(){$('#left').slideToggle();});
-			$('#up_arrow').click(function(){$('#left').slideToggle();});
+			$('#top').on('tap',function(){$('#left').slideToggle(); return false;});
+			$('#up_arrow').on('tap',function(){$('#left').slideToggle(); return false;});
 
 		});
 	</script>
