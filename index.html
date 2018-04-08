@@ -24,10 +24,25 @@
 			right:0;
 			text-align: left;
 			background-color: #333333;
+			width: 320px;
 		}
-		
-		a{
-			margin-right: 0px;
+		#left{
+			position: absolute;
+			top:40px;
+			right:0;
+			text-align: left;
+			background-color: #333333;
+			width: 320px;
+			height: 500px;
+		}
+
+		#up_arrow{
+			position: absolute;
+			bottom: 0;
+		}
+
+		#me {
+			width: 320px;
 		}
 	</style>
 </head>
@@ -37,15 +52,28 @@
 
 	</div>
 	<div id='top'>
-		<h1 style='font-size: 18pt;'> Andrew J. Adams
+		<h1 style='font-size: 18pt;' id='name'> Andrew J. Adams
 			<a href="https://twitter.com/AndyJamesAdams"><img id='twitter' src='https://cdn1.iconfinder.com/data/icons/logotypes/32/square-twitter-256.png' height='25px' width='25px'/></a>
 			<a href="https://www.facebook.com/andrew.j.adams.1048"><img id='twitter' src='http://icons.iconarchive.com/icons/sicons/flat-shadow-social/256/facebook-icon.png' height='25px' width='25px'/></a>
 		</h1>
 	</div>
+	<div id='left'>
+		<img id='me' src='https://scontent-ort2-2.xx.fbcdn.net/v/t1.0-9/27021_403813565660_2125887_n.jpg?_nc_cat=0&_nc_eui2=v1%3AAeFLWVv0UFs-O4L9-w5_-RRceBriBAUcfIWYbWTWJpoVaNWh72hD99ysJNcbvY5nqh0wgQJeRPnTBZ1UDcK3f3vsWPWRAPKiK4enrQRppKFb3w&oh=f08ebbddd6d24ef3b59c44efa191a574&oe=5B340705'/>
+		<p style='margin: 20px; color: #DDDDDD;'>
+			Andrew is a full time software engineer and systems technician.
+			His skills include front end web development, applications programming, database administration, and systems automation. His personal hobbies include art, reading, games, and many other creative outlets. 
+			<br/><br/>
+			He currently resides in Eau Claire Wisconsin with his wife, two sons, and two cats. 
+		</p>
+		<img id='up_arrow' src='https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-arrow-up-b-256.png' width='25px' height='25px'/>
+	</div>
 	<!--SCRIPTING-->
 	<script>
 		$(document).ready(function(){
-			
+			$('#left').hide();
+			$('#top').click(function(){$('#left').slideToggle();});
+			$('#up_arrow').click(function(){$('#left').slideToggle();});
+
 		});
 	</script>
 </body>
