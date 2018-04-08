@@ -1,0 +1,447 @@
+
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+        <title>BLOK&#39;D</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+        <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet" /><script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <style type="text/css">#grid td{
+            width:50px; height: 50px; background-color: #fffac8; border-width: 2px; border-style: solid; border-color: #bbb473; border-radius: 8px; font-family: helvetica, sans-serif; font-size: 18pt;
+        }
+        #Panel {
+            margin: 0 auto; text-align:center;
+        }
+        </style>
+    </head>
+    <!--User visible shtuff-->
+    <body style="background-color: #fffac8; color: #000000;">
+        <div id="Panel" style="margin-top: -30px;">
+            <table cellspacing="6" style=" margin-left: auto; margin-right: auto; text-align: center;">
+                <tbody>
+                    <tr>
+                        <th><img src="http://cdn.onlinewebfonts.com/svg/img_89742.png" style="width:20px; height: 20px; margin-top: 29px;" /></th>
+                        <th>
+                            <h1 style="font-family: helvetica, sans-serif; margin-bottom: -5px;">BLOK&#39;D</h1>
+                        </th>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <table id="swatch" style="margin-left: auto; margin-right: auto; ">
+            </table>
+            
+            <p id="score" style="font-family: helvetica, sans-serif; color: #000000; font-size: 16pt;"><b>Make lines of 3 to clear the grid</b></p>
+            
+            <table cellspacing="6" id="grid" style="margin-left: auto; margin-right: auto;">
+            </table>
+            &nbsp;
+            
+            <div id="restart">
+                <h2 id="status" style="font-family: helvetica, sans-serif; color: #000000;">GAME OVER</h2>
+            </div>
+            
+            <table cellspacing="6" id="nav" style="width:180px; height:30px; background-color: #fffac8; margin-left: auto; margin-right: auto; border-color: #00FF00;">
+                <tbody>
+                    <tr>
+                        <td id="nextBlock" style="width:120px; height:30px; background-color: #fffac8;border-radius: 8px; border-color: #bbb473; font-family: helvetica, sans-serif; font-size: 16pt;"></td>
+                        <td id="skipBTN" style="width: 60px; height: 30px; background-color: #fffac8;border-style:solid; border-radius: 8px; border-color: #000000; box-shadow: 0px 3px 0px #000000; font-family: helvetica, sans-serif;">SKIP -5pts</td>
+                    </tr>
+                </tbody>
+            </table>
+            <img id="colorAssist" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Ic_remove_red_eye_48px.svg/1000px-Ic_remove_red_eye_48px.svg.png" style="width:30px; height: 30px; margin-top: 5px;" /> &nbsp;&nbsp;&nbsp; <img id="restartBTN" src="https://d30y9cdsu7xlg0.cloudfront.net/png/5045-200.png" style="width: 30px; height:30px;" />
+            <h3 style="font-family: helvetica, sans-serif;">HOW TO PLAY:</h3>
+            
+            <p id="instructions" style="font-family: helvetica, sans-serif; font-size: 14pt;">Click on empty spaces to make rows or columns of 3.<br />
+            Matches get you points.<br />
+            Spend 5 points to skip a color.<br />
+            Empty the grid and don&#39;t get BLOK&#39;D!</p>
+        </div>
+        
+        <p></p>
+        
+        <p></p>
+        
+        <p></p>
+        
+        <div style="margin-left: auto; margin-right: auto; text-align: center;">
+            <p id="LD40" style="font-size: 12pt;">Made for <a href="https://ldjam.com/">Ludum Dare 40</a> game jam in under 72hrs</p>
+            
+            <p id="schtuff" style="font-size: 12pt;"><a href="https://twitter.com/AndyJamesAdams">@andyjamesadams</a> 12/2017 Ver. 0.2.2</p>
+        </div>
+        <script>
+            $(document).ready(function(){
+                              var highest = 0;
+                              var score = 0;
+                              var gridSize = 5;
+                              var num = -1;
+                              var winner = false;
+                              var colorAssist = false;
+                              var colorArray = [
+                                                "rgb(0,0,0)", "rgb(230,25,75)", "rgb(60,180,75)", "rgb(255,225,25)", "rgb(0,130,200)", "rgb(245,130,49)"
+                                                ];
+                              var dropArray = [
+                                               "#000000", "#c4082f", "#2da137", "#eed412", "#0054a3", "#c24112", "#640c83", "#31c2c2", "#c216b1", "#a0c218", "#773a05", "#400000", "#505050", "#505000", "#CCCCCC"
+                                               ];
+                              $('#restart').hide();
+                              //Display the swatch
+                              GenerateGrid();
+                              UpdateSwatch();
+                              //Generate a random color on some of the blocks
+                              for(var i = 0; i < 18; i++){
+                              var randX = Math.floor(Math.random()*gridSize);
+                              var randY = Math.floor(Math.random()*gridSize);
+                              var rblok = $('td#'+randX+"."+randY);
+                              var randNum = GetRandomNumber();
+                              rblok.css("background-color", colorArray[randNum]);
+                              rblok.attr("name", randNum);
+                              rblok.css("border-width", "0");
+                              rblok.css('width',"54");
+                              rblok.css('height',"54");
+                              rblok.css("box-shadow", "0px 3px 0px "+dropArray[randNum]);
+                              if(colorAssist){
+                              rblok.html(randNum);
+                              if(randNum == 0){
+                              rblok.css('color','#ffffff');
+                              } else {
+                              rblok.css('color','#000000');
+                              }
+                              }
+                              }
+                              CheckGrid();
+                              //Let's pick a starting placement color
+                              num = GetRandomNumber();
+                              //assign it to the "nextBlock" div
+                              $('#nextBlock').css("background-color", colorArray[num]);
+                              $('#nextBlock').attr('name',num);
+                              $('#nextBlock').css("box-shadow", "0px 3px 0px "+dropArray[num]);
+                              
+                              if(!winner){
+                              $('td')
+                              .mouseover(function(){ //Hover over open blok
+                                         if($(this).attr("name") == "open"){
+                                         $(this).css("background-color", colorArray[num]);
+                                         }
+                                         })
+                              .mouseout(function(){ //Reset open space after mouse leaves
+                                        if($(this).attr('name') == "open"){
+                                        $(this).stop();
+                                        $(this).css("background-color", "#fffac8");
+                                        $(this).css("border-width", "2");
+                                        }
+                                        }).click(function(){ //Player clicked - place the brick and get a new one.
+                                                 if($(this).attr('name') == 'open'){
+                                                 $(this).css("background-color", colorArray[num]);
+                                                 $(this).attr("name",num);
+                                                 $(this).css("border-width", "0");
+                                                 $(this).css("box-shadow", "0px 3px 0px "+dropArray[num]);
+                                                 $(this).css('width',"54");
+                                                 $(this).css('height',"54");
+                                                 if(colorAssist){
+                                                 $(this).html(""+num);
+                                                 if(num == 0){
+                                                 $(this).css("color", '#ffffff');
+                                                 } else {
+                                                 $(this).css("color", '#000000');
+                                                 }
+                                                 }
+                                                 CheckGrid();
+                                                 num = GetRandomNumber();
+                                                 $('#nextBlock').css("background-color", colorArray[num]);
+                                                 $('#nextBlock').attr('name',num);
+                                                 $('#nextBlock').css("box-shadow", "0px 3px 0px "+dropArray[num]);
+                                                 if(colorAssist){
+                                                 $('#nextBlock').html(num);
+                                                 if(num == 0){
+                                                 $('#nextBlock').css('color','#ffffff');
+                                                 } else {
+                                                 $('#nextBlock').css('color','#000000');
+                                                 }
+                                                 }
+                                                 } else {
+                                                 $(this).effect("bounce","fast");
+                                                 }
+                                                 });
+                              }
+                              
+                              $('#skipBTN').click(function(){ //User chooses to skip this color.
+                                                  if(score > 4){ //Do we have points to spend?
+                                                  num = GetRandomNumber();
+                                                  AddScore(-5); //Take the toll and get a new color
+                                                  $('#nextBlock').css("background-color", colorArray[num]);
+                                                  $('#nextBlock').css("box-shadow", "0px 3px 0px "+dropArray[num]);
+                                                  if(colorAssist){
+                                                  $('#nextBlock').html(num);
+                                                  if(num == 0){
+                                                  $('#nextBlock').css('color','#ffffff');
+                                                  } else {
+                                                  $('#nextBlock').css('color','#000000');
+                                                  }
+                                                  }
+                                                  }
+                                                  });
+                              
+                              $('#colorAssist').click(function(){
+                                                      if(!colorAssist){
+                                                      colorAssist = true;
+                                                      ApplyColorAssist();
+                                                      } else {
+                                                      colorAssist = false;
+                                                      RemoveColorAssist();
+                                                      }
+                                                      });
+                              
+                              $('#restartBTN').click(function(){
+                                                     location.reload(); //Page reload
+                                                     });
+                              
+                              function ApplyColorAssist(){
+                              for(var c = 0; c < gridSize; c++){
+                              for(var i = 0; i < gridSize; i++){
+                              var t = $('td#'+i+"."+c);
+                              if(t.attr('name') != 'open'){
+                              var n = parseInt(t.attr('name'));
+                              t.html(n);
+                              if(n == 0){
+                              t.css('color', '#ffffff');
+                              } else {
+                              t.css('color', '#000000');
+                              }
+                              }
+                              }
+                              }
+                              var num = parseInt($('#nextBlock').attr('name'));
+                              $('#nextBlock').html(num);
+                              if(num == 0){
+                              $('#nextBlock').css('color','#ffffff');
+                              } else {
+                              $('#nextBlock').css('color','#000000');
+                              }
+                              }
+                              
+                              function RemoveColorAssist(){
+                              for(var c = 0; c < gridSize; c++){
+                              for(var i = 0; i < gridSize; i++){
+                              var t = $('td#'+i+"."+c);
+                              t.html('');
+                              t.css('color','#000000');
+                              }
+                              }
+                              $('#nextBlock').html('');
+                              $('#nextBlock').css('color','#000000');
+                              }
+                              
+                              function GetRandomNumber(){
+                              return Math.floor(Math.random() * colorArray.length);
+                              }
+                              
+                              function CheckGrid(){ //Scans the grid to find matches of 3 or more.
+                              //Horizontal
+                              var matches = [];
+                              for(var c = 0; c < gridSize; c++){
+                              for(var i = 0; i < gridSize-2; i++){
+                              $('td#'+i+'.'+c).each(function(){
+                                                    if($(this).attr("name") != "open" ){
+                                                    var group = ['td#'+i+'.'+c];
+                                                    var blok = $(this);
+                                                    var count = 1;
+                                                    var startIndex = i;
+                                                    var cls = blok.attr("class");
+                                                    for(var x = 1; x < gridSize-i; x++){
+                                                    if($('td#'+(i+x)+'.'+c).attr('name') != "open" && $('td#'+(i+x)+'.'+c).css('background-color') == blok.css('background-color')){
+                                                    group.push('td#'+(i+x)+'.'+c);
+                                                    count++;	
+                                                    } else {
+                                                    break;
+                                                    }	
+                                                    }
+                                                    if(count > 2){
+                                                    for(var g = 0; g < group.length;g++){
+                                                    if(!matches.includes(group[g])){
+                                                    matches.push(group[g]);
+                                                    }
+                                                    }
+                                                    }
+                                                    }
+                                                    });
+                              }
+                              }
+                              //Vertical
+                              for(var c = 0; c < gridSize-2; c++){
+                              for(var i = 0; i < gridSize; i++){
+                              $('td#'+i+'.'+c).each(function(){
+                                                    if($(this).attr("name") != "open" ){
+                                                    var bunch = ['td#'+i+'.'+c];
+                                                    var blok = $(this);
+                                                    var count = 1;
+                                                    var startIndex = i;
+                                                    var cls = blok.attr("class");
+                                                    for(var x = 1; x < gridSize-c; x++){
+                                                    if($('td#'+i+'.'+(c+x)).attr('name') != "open" && $('td#'+i+'.'+(c+x)).css('background-color') == blok.css('background-color')){
+                                                    bunch.push('td#'+i+'.'+(c+x));
+                                                    count++;	
+                                                    } else {
+                                                    break;
+                                                    }	
+                                                    }
+                                                    if(count > 2){
+                                                    for(var b = 0; b < bunch.length; b++){
+                                                    if(!matches.includes(bunch[b])){
+                                                    matches.push(bunch[b]);
+                                                    }
+                                                    }
+                                                    }
+                                                    
+                                                    }
+                                                    });
+                              }
+                              }
+                              
+                              if(matches.length > 2){
+                              for(var m = 0; m < matches.length; m++){
+                              var t = $('' + matches[m]);
+                              t.css("background-color","#fffac8");
+                              t.attr("name","open");
+                              t.css("border-width", "2");
+                              t.css("box-shadow", "");
+                              t.css('width', '50');
+                              t.css('height', '50');
+                              t.html('');
+                              t.css('color',"#000000");
+                              }
+                              AddScore(matches.length);
+                              }
+                              
+                              //Now let's check the grid if there are no open bloks --- you lose
+                              if(CheckForJam()){
+                              $('#nav').hide();	
+                              $('#restart').show();		
+                              $('#status').html("GAME OVER");//<br/>Highest Score: " + highest + "pts");
+                              }
+                              
+                              //Now let's check if you actually won the game (aka no set bloks)
+                              if(CheckForWin()){
+                              winner = true;
+                              $('#nav').hide();
+                              $('#status').html("WINNER!");//<br/>Highest Score:" + highest + "pts");
+                              $('#restart').show();
+                              setInterval(function(){
+                                          //This is a repeating function that causes the grid to light up like a disco floor. 
+                                          for(var c = 0; c < gridSize; c++){
+                                          for(var i = 0; i < gridSize; i++){
+                                          var rand = Math.floor(Math.random()*colorArray.length);
+                                          $('td#'+i+"."+c).css("background-color",colorArray[rand]);
+                                          }
+                                          }
+                                          }, 500);
+                              }
+                              }
+                              
+                              function GenerateGrid(){ //Generates the starting grid of table cells
+                              var gridSTR = "";
+                              for(var c = 0; c < gridSize; c++){
+                              gridSTR +="<tr>";
+                              for(var i = 0; i < gridSize; i++){
+                              gridSTR += '<td id="'+i+'" name="open" class="'+c+'"></td>';
+                              }
+                              gridSTR += "</tr>";
+                              }
+                              $('#grid').html(gridSTR);
+                              }
+                              
+                              function CheckForWin(){ //Did you win the game?
+                              for(var c = 0; c < gridSize; c++){
+                              for(var i = 0; i < gridSize; i++){
+                              if($('td#'+i+"."+c).attr("name") != "open"){
+                              return false;
+                              }
+                              }
+                              }	
+                              return true;
+                              }
+                              
+                              function CheckForJam(){ //Are all bloks taken? Too bad...
+                              for(var c = 0; c < gridSize; c++){
+                              for(var i = 0; i < gridSize; i++){
+                              if($('td#'+i+"."+c).attr("name") == "open"){
+                              return false;
+                              }
+                              }
+                              }	
+                              return true;
+                              }
+                              
+                              function AddScore(s){ //Adds
+                              score += s;
+                              if(score >= 70 && !colorArray.includes("rgb(255,255,255)")){
+                              colorArray.push("rgb(255,255,255)");
+                              } else if(score >= 55 && !colorArray.includes("rgb(128,128,0)")){
+                              colorArray.push("rgb(128,128,0)");
+                              } else if(score >= 49 && !colorArray.includes("rgb(128,128,128)")){
+                              colorArray.push("rgb(128,128,128)");
+                              } else if(score >= 41 && !colorArray.includes("rgb(128,0,0)")){
+                              colorArray.push("rgb(128,0,0)");
+                              } else if(score >= 33 && !colorArray.includes("rgb(170,110,40)")){
+                              colorArray.push("rgb(170,110,40)");
+                              } else if(score >= 27 && !colorArray.includes("rgb(210,245,60)")){
+                              colorArray.push("rgb(210,245,60)");
+                              } else if(score >= 20 && !colorArray.includes("rgb(240,50,230)")){
+                              colorArray.push("rgb(240,50,230)");
+                              } else if(score >= 14 && !colorArray.includes("rgb(70,240,240)")){
+                              colorArray.push("rgb(70,240,240)");
+                              } else if(score >= 9 && !colorArray.includes("rgb(145,30,180)")){
+                              colorArray.push("rgb(145,30,180)");
+                              }
+                              
+                              if(score > highest){
+                              highest = score;
+                              }
+                              $('#score').html("<b>"+score+" pts</b>");
+                              UpdateSwatch();
+                              }
+                              
+                              function UpdateSwatch(){
+                              var swatchTML = "";
+                              for(var a = 0; a < colorArray.length; a++){
+                              swatchTML += '<th style="width:10px;height:10px;background-color:'+colorArray[a]+'; border-style: solid; border-width:2px; border-radius: 4px; border-color:'+colorArray[a]+';"></th>';
+                              }
+                              $('#swatch').html(swatchTML);
+                              }
+                              });
+            </script>
+        
+        <p></p>
+        
+        <p></p>
+        
+        <p></p>
+    </body>
+    <!--End of line
+     VersionNOTES:
+     0.1.0 - First release
+     
+     0.1.1 - Updated to use Jquery UI for bounce animations and audio tags
+     
+     0.1.2 - Removed audio and used border radius to round block edges
+     
+     0.1.3 - Added skip option for negative points
+     
+     0.1.4 - Added drop shadow on bloks and lowered contrast on empty spaces. Favicon and title icon added
+     
+     0.1.5 - Added win scenario w/ empty board
+     
+     0.1.6 - Added updating tile swatch for player reference / increased scale of next color blok
+     
+     0.1.7 - Changed font styling to helvetica, sans-serif. Other optimizations to UI
+     
+     0.1.8 - LD Sumbission version. Added "small print" at bottom of screen
+     
+     0.1.9 - Microsoft edge compatiblity and xbox one browser support added. 
+     
+     0.2.0 - Added color blind assistance w/ numbers and toggle switch.
+     
+     0.2.1 - Added cross match support . Two intersecting lines of 3 will clear both (rare but useful). 
+     This also adds more possible unique combinations for power-ups later on. Ex: T, L, +, Super T, Cross, Upside down cross, Super +, etc.
+     
+     0.2.2 - Final LD Submission
+     
+     --></html>
