@@ -48,9 +48,9 @@
 
 		#right{
 			position: absolute;
-			right: 0;
+			left: 0;
 			top: 60px;
-			width: 400px;
+			width: 28%;
 		}
 
 		.category{
@@ -58,15 +58,32 @@
 			height: 60px;
 			margin-bottom: 20px;
 		}
+
+		.banner{
+			width: 100%;
+			height: 40px;
+			margin-bottom: 0;
+			font-size: 28pt;
+
+		}
+
+		#content_frame{
+			position: absolute;
+			right: 0;
+			top: 60px;
+			width: 70%;
+			height: 90%;
+			border: hidden;
+		}
 	</style>
 </head>
 <body>
 	<!-- CONTENT AREA -->
 	<div id='right'>
-		<div id='0' class='category' style='background-color: #1844C3;'></div>
-		<div id='0' class='category' style='background-color: #3FDD88;'></div>
-		<div id='0' class='category' style='background-color: #D71847;'></div>
-		<div id='0' class='category' style='background-color: #CCCCCC;'></div>
+		<div id='blokd' class='banner row0' style='background-color: #DCDCDC;' >BLOK'D</div>
+	</div>
+	<div id='frame'>
+		<iframe id='content_frame' src=""  ></iframe>
 	</div>
 	<div id='top'>
 		<h1 style='font-size: 18pt;' id='name'> Andrew J. Adams
@@ -89,10 +106,10 @@
 	<!--SCRIPTING-->
 	<script>
 		$(document).ready(function(){
-			$('#left').hide();
+			$('#left').hide(); $('#blokd_iframe').hide();
 			$('#drop').on('click',function(){$('#left').slideToggle(); return false;});
 			$('#up_arrow').on('click',function(){$('#left').slideToggle(); return false;});
-
+			$('#blokd').on('click', function(){$('#content_frame').attr('src','./blokd.html'); return false;});
 		});
 	</script>
 </body>
