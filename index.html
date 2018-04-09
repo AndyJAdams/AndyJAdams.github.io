@@ -109,7 +109,14 @@
 			$('#left').hide(); $('#blokd_iframe').hide();
 			$('#drop').on('click',function(){$('#left').slideToggle(); return false;});
 			$('#up_arrow').on('click',function(){$('#left').slideToggle(); return false;});
-			$('#blokd').on('click', function(){$('#content_frame').attr('src','./blokd.html'); return false;});
+			$('#blokd').on('click', function(){
+				var cf = $('#content_frame');
+				if(cf.attr('src') == ''){
+					cf.attr('src','./blokd.html'); return false;
+				} else {
+					cf.attr('src', '');
+				}
+			});
 		});
 	</script>
 </body>
