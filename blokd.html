@@ -4,26 +4,39 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <style>
-  #grid td{border-width: 2px; border-style: solid; border-color: #545454; border-radius: 8px; font-family: helvetica, sans-serif; font-size: 18pt;
+  #grid td{
+    border-width: 2px; 
+    border-style: solid; 
+    border-color: #545454; 
+    border-radius: 8px; 
+    font-family: helvetica, sans-serif; 
+    font-size: 18pt;
   }
   #Panel {
-    margin: 0 auto; text-align:center;
+    text-align:center;
+
   }
   #debugTXT{
     bottom: 0;
     position: fixed;
   }
+  #content{
+    position: absolute;
+    left: 33%;
+    top: 0;
+  }
 </style></head>
 <!--User visible shtuff-->
 <body style="background-color: #ffffff; color: #545454;">
+<div id='content'>
 <div id="Panel" style="margin-top: -30px; position: absolute; left:12px;">
   <p id="score" style="font-family: helvetica, sans-serif;font-size: 24pt;"><b>0</b></p>
-  <table id="grid" style="margin-left: auto; margin-right: auto; margin-top: 10px;" cellspacing="6"></table><br/>
+  <table id="grid" style="margin-top: 10px;" cellspacing="6"></table><br/>
   <div id="restart">
     <h2 id="status" style="font-family: helvetica, sans-serif;">GAME OVER</h2>  
   </div>  
   
-  <table id="nav" style="width:220px; height:30px; margin-left: auto; margin-right: auto; border-color: #00FF00;" cellspacing="6"><tr>
+  <table id="nav" style="width:320px; height:30px; margin-left: auto; margin-right: auto; border-color: #00FF00;" cellspacing="6"><tr>
     <td id="future2" style="width: 20px; height:30px; background-color: #000000;border-radius: 8px; border-color: #bbb473; font-family: helvetica, sans-serif; font-size: 16pt;"></td>
     <td id="future1" style="width: 50px; height:30px; background-color: #000000;border-radius: 8px; border-color: #bbb473; font-family: helvetica, sans-serif; font-size: 16pt;"></td>
     <td id="nextBlock" style="width:120px; height:30px; background-color: #ffffff;border-radius: 8px; border-color: #bbb473; font-family: helvetica, sans-serif; font-size: 16pt;"></td>
@@ -73,6 +86,7 @@
 <audio id="error" src="http://freesound.org/data/previews/14/14817_40665-lq.mp3"></audio>
 <audio id="skip" src="http://freesound.org/data/previews/41/41633_433684-lq.mp3"></audio>
 <audio id="bgMusic" src="http://freesound.org/data/previews/325/325108_4548252-lq.mp3" loop></audio>
+</div>
 <script>
 $(document).ready(function(){
   //dropout the intro then scroll away.
@@ -292,33 +306,35 @@ $(document).ready(function(){
     }
   }
   function ApplyColor(){
-    if($(this).attr('name') == 'open'){
-        $(this).css("background-color", colorArray[num]);
-        $(this).attr("name",num);
-        $(this).css("border-width", "0");
-        $(this).css("box-shadow", "0px 3px 0px "+dropArray[num]);
-        $(this).css('width',blokSize);
-        $(this).css('height',blokSize);
-        $(this).css('timestamp',Date.now());
-        if(music){
-          blockSFX.play();
-        }
-        if(colorAssist){
-          $(this).html(""+num);
-          if(num == 0){
-            $(this).css("color", '#ffffff');
-          } else {
-            $(this).css("color", '#000000');
+    if(!winner){
+      if($(this).attr('name') == 'open'){
+          $(this).css("background-color", colorArray[num]);
+          $(this).attr("name",num);
+          $(this).css("border-width", "0");
+          $(this).css("box-shadow", "0px 3px 0px "+dropArray[num]);
+          $(this).css('width',blokSize);
+          $(this).css('height',blokSize);
+          $(this).css('timestamp',Date.now());
+          if(music){
+            blockSFX.play();
           }
-        }
-        CheckGrid(true);
-        GetNextColor();
+          if(colorAssist){
+            $(this).html(""+num);
+            if(num == 0){
+              $(this).css("color", '#ffffff');
+            } else {
+              $(this).css("color", '#000000');
+            }
+          }
+          CheckGrid(true);
+          GetNextColor();
       } else {
         $(this).effect("bounce","fast");
         if(music){
           errorSFX.play();
         }
       }
+    }
   }
 
   function RebuildGrid(){ //Rebuild the entire grid - Used during difficulty change
@@ -629,7 +645,7 @@ $(document).ready(function(){
     //Now let's check if you actually won the game (aka no set bloks)
     if(CheckForWin()){
       winner = true; 
-      $('#nav').hide();
+      //$('#nav').hide();
       $('#status').html("WINNER!<br/> Highest Score: " + highest);
       $('#restart').show();
       winflash = setInterval(function(){

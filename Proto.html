@@ -1,0 +1,52 @@
+<!DOCTYPE html><html><head>
+<title>Prototype 18</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<style>
+  body{ margin: 0; }
+</style></head>
+<!--User visible shtuff-->
+<body>
+<canvas></canvas>  
+<script>
+var canvas = document.querySelector('canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+var c = canvas.getContext('2d');
+//Rectangles
+for(var r = 0; r < 30; r++){
+  c.fillStyle = RandomColor();
+  c.fillRect(Math.random()*window.innerWidth,Math.random()*window.innerHeight,100,100);
+}
+//Lines
+for(var l = 0; l < 30; l++){
+  c.beginPath();
+  c.lineWidth = Math.random()*10;
+  c.lineCap = 'round';
+  c.moveTo(Math.random()*window.innerWidth, Math.random()*window.innerHeight);
+  c.lineTo(Math.random()*window.innerWidth, Math.random()*window.innerHeight);
+  c.strokeStyle = RandomColor();
+  c.stroke();
+}
+//Arc/Circle
+for(var a = 0; a < 30; a++){
+  c.beginPath();
+  c.lineWidth = Math.random() * 20;
+  c.arc(Math.random()*window.innerWidth, Math.random()*window.innerHeight,Math.random()*100, Math.random() * (Math.PI*2), Math.random() * (Math.PI*2),false);
+  c.strokeStyle = RandomColor();
+  c.stroke();
+}
+
+
+function RandomColor(){
+  var color = 'rgba('+Math.round(Math.random()*255)+','+Math.round(Math.random()*255)+','+Math.round(Math.random()*255)+',1)';
+  return color;
+}
+</script>
+</body>
+<!--End of line
+VersionNOTES:
+0.1.0 - 
+
+-->
+</html>
