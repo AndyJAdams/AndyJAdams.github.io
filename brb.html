@@ -1,7 +1,7 @@
 <DOCTYPE html>
 <html>
 <head>
-	<title>StreamLoader</title>
+	<title>BRB</title>
 	<link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">
 	<style>
 	body{
@@ -13,7 +13,7 @@
 	}
 
 	#OutlineBox{
-		width: 280px;
+		width: 350px;
 		height: 20px;
 		border: solid 5px #EEEEEE;
 		margin-top: 3px;
@@ -21,7 +21,7 @@
 
 	#filler{
 		background-color: #EEEEEE;
-		width: 290px;
+		width: 0px;
 		height: 20px;
 		position:absolute;
 		bottom: 5px;
@@ -37,7 +37,7 @@
 </head>
 <body>
 	<div id='content'>
-		<div id="Message" style='font-size: 16pt;'>Starting Stream</div>
+		<div id="Message" style='font-size: 16pt;'>Be Right Back...</div>
 		<div id='Timer'></div>
 		<div id='OutlineBox'></div>
 		<div id='filler'></div>
@@ -45,10 +45,11 @@
 
 	<script>
 		$(document).ready(function(){
-			$('#Timer').html('5:00');
+			var maxSeconds = 360;
+			var minutes = Math.floor(maxSeconds/60);
+			var secs = checkSecond(maxSeconds-(minutes*60));
+			$('#Timer').html(minutes+':'+secs);
 			var totalseconds = 0;
-			var maxSeconds = 300;
-			var msgArray = ['Demoting mods...', 'Loading Ban-hammer.exe', 'Refilling Dank-Tank...', 'Prepping Memes...', 'Registering Sublime', 'Init(host.bat);', 'Nerfing Gjallarhorn...', '...', 'Tweaking Chroma-key...', 'Unpacking Kappa...', 'Starting Stream', 'Hacking the Gibson...', 'Sorting bits...', 'Chat.init();','WittyMessage.exe failure!', "'porn' is not a recognized command", 'Requesting Sub Button...', '( ͡° ͜ʖ ͡°)','Baking at 350...', 'Watering the hamster', ' (╯°□°)╯︵ ┻━┻', 'Correcting Tables', 'Twerking.resume();'];
 			startTimer();
 			var timeout;
 
@@ -62,15 +63,9 @@
 					m--;
 				}
 
-				if(totalseconds == maxSeconds){
-					$('#Message').html('LOAD COMPLETE');
-				} else if(totalseconds%10 == 0){
-					$('#Message').html(msgArray[Math.floor(Math.random()*msgArray.length)]);
-				}
-
 				$('#Timer').html(m+":"+s);
 				s
-				$('#filler').css('width',totalseconds-10);
+				$('#filler').css('width',totalseconds);
 				if(totalseconds < maxSeconds){
 					timeout = setTimeout(startTimer, 1000);
 				} else {
