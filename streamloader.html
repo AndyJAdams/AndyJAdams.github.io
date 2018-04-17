@@ -11,31 +11,69 @@
 	}
 
 	#OutlineBox{
-		width: 200px;
+		width: 300px;
 		height: 20px;
 		border: solid 5px #EEEEEE;
+		margin-top: 3px;
 	}
 
 	#filler{
 		background-color: #EEEEEE;
-
+		width: 60px;
+		height: 20px;
+		position:absolute;
+		bottom: 5px;
 	}
 
 	#content{
 		position: absolute;
 		left: 40%;
+		top: 45%;
 	}
 	</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
 	<div id='content'>
 		<div id="Message">Starting Stream</div>
+		<div id='Timer'></div>
 		<div id='OutlineBox'></div>
 		<div id='filler'></div>
+		
 	</div>
 
 	<script>
+		$(document).ready(function(){
+			$('#Timer').html('5:00');
+			var totalseconds = 0;
+			startTimer();
 
+			function startTimer(){
+				if(totalseconds < 300){
+					var present = $('#Timer').html();
+					var timeArray = present.split(/[:]+/);
+					var m = timeArray[0];
+					var s = checkSecond((timeArray[1]-1));
+					totalseconds++;
+					if(s==59){m--;}
+
+					$('#Timer').html(m+":"+s);
+					s
+					$('#filler').css('width',totalseconds-10);
+					setTimeout(startTimer, 1005);
+				}
+			}
+
+			function checkSecond(sec){
+				if(sec < 10 && sec > 0){
+					sec = "0"+sec;
+				}
+				if(sec < 0){
+					sec = 59;
+				}
+				return sec;
+			}
+		});
 	</script>
 </body>
 </html>
