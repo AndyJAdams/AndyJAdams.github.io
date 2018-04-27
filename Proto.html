@@ -1,18 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=1">
 <style>
-body { height: 100vh; padding: 0; margin: 0; }
-div.content { height: 100%; }
-div.spacer { height: 1px; }
+
 </style>
 </head>
 <body>
 <div class="content">
-Content
+  <input type='text' id='in'/>
+  <input type='submit' value='go' onclick="Storage()" />
+  <p id='out'></p>
+  <input type='submit' value='pull' onclick="Recall()"/>
+  <input type='submit' value='CLEAR' onclick="DeleteAll()"/>
 </div>
-<div class="spacer"></div>
+<script>
+  function Storage(){
+
+  }
+
+  function Recall(){
+    var out = localStorage.getItem('data');
+    document.getElementById('out').innerHTML = out;
+    out = out.trim();
+    console.log(out);
+  }
+
+  function Overwrite(){
+
+  }
+
+  function DeleteAll(){
+    localStorage.clear();
+  }
+</script>
 </body>
 </html>
