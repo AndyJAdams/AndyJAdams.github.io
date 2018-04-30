@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script type="text/javascript" src="./fw/Chart.bundle.min.js"></script>
 <style>
-
+  body{
+    width:400px;
+    height:500px;
+    background-color: #DEDEDE;
+  }
 </style>
 </head>
 <body>
@@ -12,10 +17,62 @@
   <p id='out'></p>
   <input type='submit' value='pull' onclick="Recall()"/>
   <input type='submit' value='CLEAR' onclick="DeleteAll()"/>
+
+  <canvas id="myChart" width="20" height="20"></canvas>
+<script>
+  var ctx = document.getElementById("myChart").getContext('2d');
+  var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+          datasets: [{
+              label: 'RED',
+              data: [22, 19, 3, 5, 2, 3],
+              backgroundColor: '#FF000008',
+              borderColor: '#0000FF',
+              fill: false,
+              borderWidth: 1
+          },
+          {
+            label: 'Blue',
+            data: [15, 9, 13, 8],
+             backgroundColor: '#CD00FF08',
+              borderColor: '#00FF00',
+              fill: false,
+              borderWidth: 1
+          },
+          {
+            label: 'A',
+            data: [12, 7, 13, 4, -1, 10],
+             backgroundColor: '#a5a5FF08',
+              borderColor: '#FF0000',
+              fill: false,
+              borderWidth: 1
+          },
+          {
+            label: 'B',
+            data: [15, 20, 11, 4, 8,15],
+             backgroundColor: '#c243FF08',
+              borderColor: '#000000',
+              fill: false,
+              borderWidth: 1
+          }]
+      },
+      options: {
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      beginAtZero:true
+                  }
+              }]
+          }
+      }
+  });
+  </script>
 </div>
 <script>
   function Storage(){
-
+    localStorage.setItem('data', Date.now());
   }
 
   function Recall(){
