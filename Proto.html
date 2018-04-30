@@ -2,93 +2,97 @@
 <html>
 <head>
   <script type="text/javascript" src="./fw/Chart.bundle.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <style>
-  body{
-    width:400px;
-    height:500px;
-    background-color: #DEDEDE;
+  body{ margin:0; }
+  .content{
+    border: 1px solid black;
+    left: 33%;
+    width: 480px;
+    margin: auto;
+  }
+
+  .footer{
+    border: 1px solid black;
+    width: 480px;
+    height: 70px;
+    position: fixed;
+    bottom: 0;
+  }
+
+  .header{
+    border: 1px solid black;
+    width: 480px;
+    height: 80px;
+    position: fixed;
+    top: 0;
+  }
+
+  .display_area{
+    margin-top: 95px;
+    height: 100%;
+    width: 100%;
+  }
+
+  .activity{
+    height: 80px;
+    width: 90%;
+    margin: auto;
+    background-color: #3fc4b5;
+    margin-bottom: 15px;
+  }
+  #plus{
+    height: 80px;
+    width: 80px;
+    margin: auto;
+    background-color: #3fc4b5;
+    margin-bottom: 15px;
+  }
+
+  #chartArea{
+    width: 100%;
+    height: 1500px;
+  }
+
+  #add_form{
+    width: 460px;
+    height: 320px;
+    background-color: #DFDFDF;
+    border-radius: 15px;
+    margin-left: 10px;
+    text-align: center;
+    position: fixed;
+    bottom: -20px;
+  }
+
+  .tf{
+    font-size: 20pt;
+    border-radius: 5px;
+    margin-top: 20px;
   }
 </style>
+<title>UPDN</title>
 </head>
 <body>
 <div class="content">
-  <input type='text' id='in'/>
-  <input type='submit' value='go' onclick="Storage()" />
-  <p id='out'></p>
-  <input type='submit' value='pull' onclick="Recall()"/>
-  <input type='submit' value='CLEAR' onclick="DeleteAll()"/>
-
-  <canvas id="myChart" width="20" height="20"></canvas>
-<script>
-  var ctx = document.getElementById("myChart").getContext('2d');
-  var myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-          labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-          datasets: [{
-              label: 'RED',
-              data: [22, 19, 3, 5, 2, 3],
-              backgroundColor: '#FF000008',
-              borderColor: '#0000FF',
-              fill: false,
-              borderWidth: 1
-          },
-          {
-            label: 'Blue',
-            data: [15, 9, 13, 8],
-             backgroundColor: '#CD00FF08',
-              borderColor: '#00FF00',
-              fill: false,
-              borderWidth: 1
-          },
-          {
-            label: 'A',
-            data: [12, 7, 13, 4, -1, 10],
-             backgroundColor: '#a5a5FF08',
-              borderColor: '#FF0000',
-              fill: false,
-              borderWidth: 1
-          },
-          {
-            label: 'B',
-            data: [15, 20, 11, 4, 8,15],
-             backgroundColor: '#c243FF08',
-              borderColor: '#000000',
-              fill: false,
-              borderWidth: 1
-          }]
-      },
-      options: {
-          scales: {
-              yAxes: [{
-                  ticks: {
-                      beginAtZero:true
-                  }
-              }]
-          }
-      }
-  });
-  </script>
+  <div class='header'></div>
+  <div class='display_area'>
+    <div id='plus' id='name_here'>
+    </div>
+   
+    <div id='chartArea'>
+      
+    </div>
+  </div>
+  <div class='footer'></div>
+  <div id='add_form'>
+    <input type='text' placeholder="Activity Name" class='tf' id='act_name_tf'/>
+  </div>
 </div>
 <script>
-  function Storage(){
-    localStorage.setItem('data', Date.now());
-  }
-
-  function Recall(){
-    var out = localStorage.getItem('data');
-    document.getElementById('out').innerHTML = out;
-    out = out.trim();
-    console.log(out);
-  }
-
-  function Overwrite(){
-
-  }
-
-  function DeleteAll(){
-    localStorage.clear();
-  }
+  $(document).ready(function(){
+    //$('#add_form').hide();
+  });
 </script>
 </body>
 </html>
