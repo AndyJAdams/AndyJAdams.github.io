@@ -1,7 +1,16 @@
 <DOCTYPE html>
-<html><head><title>TETRA</title><script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script><script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script><style>body{ margin: 0; }</style></head><body><canvas></canvas></body>
+<html><head><title>TETRA</title><script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script><script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script><style>
+body{ margin: 0; }
+
+#fuelbar_outline{border: 2px solid #2d3436; border-radius: 10px; width: 200px; height: 19px; position: absolute; left: 40%; top:50px;}
+#fuelbar{border-radius: 8px; width: 160px; height: 20px; position: absolute; left: 40%; top:52px; background-color: #2d3436;}
+</style></head><body><canvas></canvas>
+<div id='fuelbar'></div>
+<div id='fuelbar_outline'></div>
+</body>
 <script>
 	var canvas = document.querySelector('canvas');
+	canvas
 	var timeout = false;
 	var c = canvas.getContext('2d');
 	
@@ -23,9 +32,6 @@
 		this.yspeed = (Math.random()-0.5)/7;
 		this.draw = function(){
 			c.beginPath();
-			c.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-			c.fillStyle = '#000000';
-			c.fill();
 		}
 
 		this.update = function(){
@@ -35,7 +41,11 @@
 			}
 			this.x += this.xspeed;
 			this.y += this.yspeed;
+			
 			this.draw();
+			c.arc(this.x, this.y, this.radius, Math.PI * 2, false);
+			c.fillStyle = '#2d3436';
+			c.fill();
 		}
 
 		this.reset = function(){
@@ -46,77 +56,133 @@
 		}
 	}
 
-	function Sun(x,y){
-		this.x = x;
-		this.y = y;
-		this.draw = function(){
-			c.beginPath();
-			c.arc(this.x, this.y, 40, Math.PI*2, false);
-			c.fillStyle='#FFFFFF';
-			c.strokeStyle='#000000';
-			c.lineWidth = 5;
-			c.stroke();
-			c.fill();
+	function CelestialBody(name,x,y, radius, distance, target, hasParticles, filler, hasOutline, hasVelocity){
+		this.name = name;this.x = x; this.y = y; this.radius = radius; this.target = target;	this.distance = distance;
+		this.myline = new Line(this, this.target);
+		if(hasVelocity == true){
+			this.velocity = (Math.random()-0.5)/500;
+			this.orgV = this.velocity;
+			this.dx = this.velocity;
+			this.dy = this.velocity;
 		}
-	}
+		var chance = Math.random();
+		this.color = filler;
+		if(filler == ''){
+			this.color = '#2d3436';
+		}
+		this.outline = hasOutline;
+		
+		this.particleArray = [];
+		if(hasParticles == true){
+			for(var p = 0; p < 300; p++){
+				this.particleArray.push(new Particle(this.x+(Math.random()-0.5)*this.radius, this.y+(Math.random()-0.5)*this.radius, 0.035));
+			}
+		}
 
-	function Planet(x,y,radius,distance, Sun){
-		this.x = x;
-		this.y = y;
-		this.radius = radius;
-		this.distance = distance;
-		this.velocity = (Math.random()-0.5)/100;
-		this.orgV = this.velocity;
-		this.dx = this.velocity;
-		this.dy = this.velocity;
 		this.draw = function(){
 			c.beginPath();
 			c.arc(this.x, this.y, this.radius, Math.PI*2, false);
-			c.fillStyle= '#8d8d8d';
+
+			c.fillStyle = this.color;
 			c.fill();
+			if(this.outline != ''){
+				if(hasVelocity == false){
+					c.lineWidth = 1;
+				} else {
+					c.lineWidth = 2;
+				}
+				c.strokeStyle = this.outline;
+				c.stroke();
+			}
 		}
 
 		this.update = function(){
-			this.dx += this.velocity;
-			this.dy += this.velocity;
-			this.x = Sun.x + (Math.sin(this.dx) * this.distance);
-			this.y = Sun.y + (Math.cos(this.dy) * this.distance );
+			if(hasParticles == true){
+				for(var i = 0; i < this.particleArray.length; i++){
+					this.particleArray[i].update(this.x, this.y);
+				}
+			}
+			if(hasVelocity== true){
+				this.dx += this.velocity;
+				this.dy += this.velocity;	
+			}
+			
+			if(this.target != null){
+				this.x = this.target.x + (Math.sin(this.dx) * this.distance);
+				this.y = this.target.y + (Math.cos(this.dy) * this.distance );
+			}
 			this.draw();
 		}
 
 		this.reset = function(){
 			this.velocity = this.orgV;
 		}
+
 	}
 
-	var particleArray = [];
-	for(var p = 0; p < 300; p++){
-		particleArray.push(new Particle(innerWidth/2+(Math.random()-0.5)*30, innerHeight/2+(Math.random()-0.5)*30, 0.01));
-	}
-	var sunArray = [];
-	for(var s = 0; s < 1; s++){
-		sunArray.push(new Sun(innerWidth/2, innerHeight/2));
+	function Line(org,target){
+		this.org = org;
+		this.target = target;
+		this.draw = function(){
+			c.beginPath();
+				c.strokeStyle = '#636e72';
+				c.moveTo(this.org.x, this.org.y);
+				c.lineWidth = 1;
+		}
+
+		this.update = function(){
+			this.draw();
+			c.lineTo(this.target.x, this.target.y);
+			c.stroke();
+		}
 	}
 
-	var planetArray = [];
-	for(var a = 0; a < 2; a++){
-		planetArray.push(new Planet(innerWidth/2+ Math.random()*60, innerHeight/2+Math.random()*80, 28, 200, sunArray[0]));
+	var cbArray = [];
+	cbArray.push(new CelestialBody('sun',innerWidth/2, innerHeight/2, 20, 0, null,true,'#DEDEDE', '#2d3436', false));
+	var randomP = getRandomInt(2,4);
+	for(var p = 0; p < randomP; p++){
+		var color = '';
+		if(Math.random() < 0.2){
+			color = '#d63031';
+		} else {
+			color = '#2d3436'; 
+		}
+		cbArray.push(new CelestialBody('Planet'+p,innerWidth/2 + Math.random() * 30, innerHeight/2+Math.random()*30, getRandomInt(5,11), p*50+100, cbArray[0], false,color, '', true));
 	}
-
-	var focusedElement = sunArray[0];
+	
+	for(var a = 0; a < randomP; a++){
+		if(Math.random() > 0.5){
+			var randomM = getRandomInt(0,3);
+			for(var m = 0; m < randomM; m++){
+				cbArray.push(new CelestialBody(a+'_m'+m,innerWidth/2 + Math.random() * 30, innerHeight/2+Math.random()*30, getRandomInt(3,5), m*10+15, cbArray[a+1], false,color,'', true));
+			}		
+		}
+	}
+	
+	var focusedElement = cbArray[0];
 	function animate(){
+		getDimensions();
 		requestAnimationFrame(animate);
 		c.clearRect(0,0,innerWidth,innerHeight);
-		for(var i = 0; i < particleArray.length; i++){
-			particleArray[i].update();
-		}
-		sunArray[0].draw();
-		for(var j = 0; j < planetArray.length; j++){
-			planetArray[j].update();
-		}
+		c.fillStyle = '#DEDEDE';
+		c.fillRect(0,0,innerWidth,innerHeight);
 		
+		for(var l = 0; l < cbArray.length; l++){
+			if(cbArray[l].target != null){	
+				cbArray[l].myline.update();
+			}
+		}
 
+		for(var cb = 0; cb < cbArray.length; cb++){
+			cbArray[cb].update();
+		}	
 		
+	}
+
+	function getRandomInt(min, max) {
+  		min = Math.ceil(min);
+  		max = Math.floor(max);
+  		return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 	}
 
 	function isIntersect(point, circle) {
@@ -128,21 +194,14 @@
 		    x: e.clientX,
 		    y: e.clientY
 		  };
-	 	 planetArray.forEach(Planet => {
-		    if (isIntersect(pos, Planet)) {
-		      focusedElement = Planet;
-		      console.log(focusedElement);
+	 	 cbArray.forEach(CelestialBody => {
+		    if (isIntersect(pos, CelestialBody)) {
+		      focusedElement = CelestialBody;
+		      console.log(focusedElement.name);
 		    }
 	  	});
-	  	sunArray.forEach(Sun =>{
-		  if(isIntersect(pos, Sun)){
-		  	console.log('Sun');
-		  	focusedElement = Sun;
-		  }
-		});
 	});
-
-	getDimensions();
+	
 	animate();
 
 </script></html>
