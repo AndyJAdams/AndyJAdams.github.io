@@ -18,137 +18,159 @@
     width: 33%;
     margin: auto;
   }
-  #activity{
-    background-color: #DCDCDC;
-    width: 200px;
-    height: 80px;
-  }
 
+  .btn{
+  	background-color: #bcbcbc;
+  	width: 350px;
+  	height: 60px;
+  	margin: 5px;
+  }
+  
+  #chart_area{
+  	width: 600px;
+  	height: 400px;
+  }
  
 </style>
 <title>UPDN</title>
 </head>
 <body id='body'>
 <div class="content">
-  <div id='chart_area'></div>
-  <table id='activity_table'>
-    <tr><td><input id='act_name' type='text' placeholder="Activity Name"/></td><td><button type='button' id='add' onclick='createData()'>ADD</button></td></tr>
-  </table>
-  <button type='button' onclick='clearAll()'>CLEAR</button>&nbsp;<button type='button' onclick='dumpData()'>DUMP</button>
+	<div id='addBTN' class='btn'>Add Data Point</div>
+	<div id='clearBTN' class='btn'>Clear</div>
+	
+</div>
+<div id='chart_area'>
+	<canvas id="myChart" width="400" height="400"></canvas>
 </div>
 <script>
-  var data = localStorage.getItem('data');
-  var keyArray = [];
-  var dataSetArray = [];
-  if(data != null){
-    loadDataSets();
-  }
+	$(document).ready(function(){
+		var data;
+		var points = []; 
 
-  function loadDataSets(){
-    data = localStorage.getItem('data');
-    var keyArray = data.split('~');
-    console.log('loading data');
-    for(var i = 0; i < keyArray.length; i++){
-      var datelist = localStorage.getItem(keyArray[i]);
-      if(datelist != null){
-        var dateOutput = datelist.split('~');
-        var ds = new DataSet();
-        for(var j = 0; j < dateOutput.length; j++){  
-          ds.add(dateOutput[j]);
-        }
-        dataSetArray.push(ds);
-        displayDataKeys();
-      }
-    }
+		$('#addBTN').click(function(){
+			loadData();
+			addData();
+		});
 
-    //Use datasets to populate chart here
-  }
+		$('#clearBTN').click(function(){
+			clearAllData();
+		});
 
-  function displayDataKeys(){
-    for(var i = 0; i < dataSetArray.length; i++){
-      var body = document.getElementById('body');
-      var display = '<div id="activity" name="'+dataSetArray[i].key+'">'+dataSetArray[i].key+'</div>';
-      body.append(display);
-    }
-  }
+		function loadData(){
+			points = [];
+			data = localStorage.getItem('data');
+			if(data != null){
+				var pData = data.split('~');
+				for(var i = 0; i < pData.length-1; i++){
+					pData[i].trim();
+					console.log("pushing: " + pData[i]);
+					if(pData != ''){
+						points.push(pData[i]);
+					}
+				}
+			}
+			console.log('Data loaded '+points);
+		}
 
-  function addData(e){
-    console.log('adding data');
-    var key = e.getAttribute('name');
-    for(var i = 0; i < dataSetArray.length; i++){
-      if(dataSetArray[i].key == key){
-        var d = new Date(Date.now());
-        var newDateData = (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear();
-        dataSetArray[i].add(newDateData);
-        saveData();
-      }
-    }
-  }
+		function addData(){
+			var d = new Date(Date.now());
+			var nd = (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear()+"~";
+			points.push(nd);
+			console.log('Data added: '+nd);
+			saveData();
+			displayData();
+		}
 
-  function createData(){
-    console.log('creating data');
-    var newKey = document.getElementById('act_name').value;
-    var ds = new DataSet();
-    ds.key = newKey;
-    var d = new Date(Date.now());
-    var newDateData = (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear();
-    ds.add(newDateData);
-    dataSetArray.push(ds);
-    saveData();
-  }
+		function saveData(){
+			var d = '';
+			for(var i = 0; i < points.length;i++){
+				var out = points[i];
+				if(i != points.length-1){
+					out += '~';
+				}
+				d+= out;
+			}
+			localStorage.setItem('data', d);
+			console.log('Data saved');
+			
+		}
 
-  function saveData(){
-    console.log('saving data');
-    var keys = '';
-    for(var i = 0; i < dataSetArray.length; i++){
-      console.log('Compiling dataset: '+dataSetArray[i].key);
-      keys+=(dataSetArray[i].key+"~");
-      var dates = '';
-      for(var j = 0; j < dataSetArray[i].events.length; j++){
-        dates+= (dataSetArray[i].events[j]+"~");
-      }
-      console.log('Commiting dataset: '+dataSetArray[i].key + " -- " + dates);
-      localStorage.setItem(dataSetArray[i].key,dates);
-    }
-    localStorage.setItem('data',keys);
-    loadDataSets();
-  }
+		function displayData(){
+			loadData();
+			// clearDisplayPoints();
+			// for(var i = 0; i < points.length-1; i++){
+			// 	if(points[i] != ''){
+			// 		$('body').append('<div class="datapoint">'+points[i]+'</div><br class="datapoint"/>');
+			// 	}
+			// }
+			chartData();
+			console.log('Data displayed');
 
-  function DataSet(){
-    this.key = "";
-    this.events = [];
+		}
 
-    this.add = function(d){
-      this.events.push(d);
-    }
-  }
+		function clearDisplayPoints(){
+			$('.datapoint').each(function(){
+				$(this).remove();
+			});
+			console.log('Display cleared');
+		}
 
-  function clearSet(key){
-    console.log('clearing set data ' + key);
-    for(var i = 0; i < dataSetArray.length; i++){
-      if(dataSetArray[i].key == key){
-        localStorage.removeItem(dataSetArray[i].key);
-        loadDataSets();
-      }
-    }
-  }
+		function clearAllData(){
+			localStorage.clear();
+			clearDisplayPoints();
+			console.log('Data cleared');
+		}
 
-  function clearAll(){
-    console.log('wiping data');
-    localStorage.clear();
-  }
+		function chartData(){
+			var uniquePoints = [];
+			var pointCounts = [];
+			var prevPoint = points[0];
+			var count = 1;
+			for(var i = 1; i < points.length;i++){
+				if(points[i] != prevPoint){
+					console.log("UNMATCHED: "+points[i]+" vs "+prevPoint);
+					if(i ==1){
+						uniquePoints.push(points[0]);
+						pointCounts.push(1);
+					}
+					pointCounts.push(count);
+					uniquePoints.push(points[i]);
+					prevPoint = points[i];
+				} else {
+					count++;
+				}
+			}
+			pointCounts.push(count);
+			uniquePoints.push(prevPoint);
+			var ctx = document.getElementById("myChart").getContext('2d');
+			var myChart = new Chart(ctx, {
+			    type: 'line',
+			    data: {
+			        labels: uniquePoints,
+			        datasets: [{
+			            label: 'Count',
+			            data: pointCounts,
+			            backgroundColor: '#38F24C',
+			            borderColor: '#CDCDCD',
+			            borderWidth: 1
+			        }]
+			    },
+			    options: {
+			        scales: {
+			            yAxes: [{
+			                ticks: {
+			                    beginAtZero:true
+			                }
+			            }]
+			        }
+			    }
+			});
+		}
 
-  function dumpData(){
-    var datasetOUT = '';
-    for(var i = 0; i < dataSetArray.length;i++){
-      datasetOUT +=(dataSetArray[i].key+"--");
-      for(var j = 0; j < dataSetArray[i].events.length;j++){
-        datasetOUT += (dataSetArray[i].events[j]);
-      }
-    }
-    var dump = '<p> DUMP : '+ datasetOUT + '</p>';
-    document.getElementById('body').append(dump);
-  }
+		displayData();
+	});
+</script>
 </script>
 </body>
 </html>
