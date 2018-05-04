@@ -13,7 +13,6 @@
     width: 250px;
   }
   .content{
-    border: 1px solid black;
     left: 33%;
     width: 33%;
     margin: auto;
@@ -29,6 +28,7 @@
   #chart_area{
   	width: 600px;
   	height: 400px;
+  	margin: auto;
   }
  
 </style>
@@ -104,6 +104,7 @@
 			// 		$('body').append('<div class="datapoint">'+points[i]+'</div><br class="datapoint"/>');
 			// 	}
 			// }
+			//$('.content').prepend('<div class="btn" id="name">BUTTON</div>');
 			chartData();
 			console.log('Data displayed');
 
@@ -137,6 +138,7 @@
 					pointCounts.push(count);
 					uniquePoints.push(points[i]);
 					prevPoint = points[i];
+					count = 1;
 				} else {
 					count++;
 				}
@@ -144,6 +146,10 @@
 			pointCounts.push(count);
 			uniquePoints.push(prevPoint);
 			var ctx = document.getElementById("myChart").getContext('2d');
+			var gradient = ctx.createLinearGradient(0,200,0,400);
+			gradient.addColorStop(0, '#DCDCDC');
+			gradient.addColorStop(1, 'white');
+			//ctx.fillStyle = gradient;
 			var myChart = new Chart(ctx, {
 			    type: 'line',
 			    data: {
@@ -151,7 +157,7 @@
 			        datasets: [{
 			            label: 'Count',
 			            data: pointCounts,
-			            backgroundColor: '#38F24C',
+			            backgroundColor: gradient,//'#38F24C',
 			            borderColor: '#CDCDCD',
 			            borderWidth: 1
 			        }]
@@ -166,6 +172,8 @@
 			        }
 			    }
 			});
+			console.log(myChart.scaleService);
+
 		}
 
 		displayData();
