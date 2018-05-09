@@ -5,6 +5,7 @@
     margin:0; 
     font-size: 24pt;
     font-family: sans-serif;
+    color: #CDC;
   }
 
   .triangle{
@@ -24,19 +25,25 @@
 <title>TRI ME</title></head>
 <body id='body'>
   <!--<canvas id='canvas'></canvas>-->
-  <h3 id='playerDisplay'>Player: 1</h3>
-  <div id='content'>
-    
-  <div>
+  <h3 id='playerDisplay' style='text-align: center;'></h3>
+  <div id='content'></div>
 </body>
 <script>
   $(document).ready(function(){
-    $('#playerDisplay').css('color', '#000');
+    window.setInterval(validate,200);
     var rows = 6;
     var tilesPerRow = 9;
-    var playerCount = 2;
+    var playerCount = 4;
     var activePlayer = 0; 
-    var playerColors = ['#000','#0F0','#F00','#00F'];
+    var playerColors = ['rgb(0, 0, 0)','rgb(0, 255, 0)','rgb(255, 0, 0)','rgb(0, 0, 255)'];
+    var changeOccured = false;
+
+    function scoreDisplay(){
+      var display = $('#playerDisplay');
+      for(var p = 0; p<playerCount; p++){
+        display.append('<b class="score" id="score_'+p+'" style="color:'+playerColors[p]+';">0</b>&nbsp;&nbsp;&nbsp;');
+      }
+    }
 
     function makeGrid(){
       var scale = 80; //Set this equal to the value of width in the .triangle declaration of CSS
@@ -51,7 +58,7 @@
           up = true;
         }
         for(var t = 0; t < tilesPerRow; t++){
-          var LEFT = (t * (scale/2))+(t*5);
+          var LEFT = ((t * (scale/2))+(t*5))+((window.innerWidth/2)-(tilesPerRow/3)*scale);
           if(!up){
             c.append("<div class='triangle down' id='"+index+"' row='"+r+"' style='top:"+TOP+"px; left:"+LEFT+"px;'></div>")
           } else {
@@ -63,17 +70,21 @@
       }
     }    
 
-    $('.triangle').on('click',function(){
+    $(document.body).on('click','.triangle',function(){
       if($(this).attr('name') != 'blocked'){
         $(this).css('background-color', playerColors[activePlayer]);
         $(this).attr('name', 'blocked');
+        var scoreText = $('#score_'+activePlayer);
+        scoreText.css('text-decoration', '');
+        //Swap to next player
         activePlayer++;
         if(activePlayer>playerCount-1){
           activePlayer=0;
         }
-        $('#playerDisplay').html('Player:'+(activePlayer+1));
-        $('#playerDisplay').css('color', playerColors[activePlayer]);
-        validate();
+        //$('#playerDisplay').html('Player:'+(activePlayer+1));
+        //$('#playerDisplay').css('color', playerColors[activePlayer]);
+        $('#score_'+(activePlayer)).css('text-decoration', 'underline');
+
       } 
     });
 
@@ -114,129 +125,53 @@
         }
         //Loop through all colors and find matches
         for(var c = 0; c < color.length; c++){
-          for(var n = c+1; n < color.length; n++){
-            if(color[n] == color[c]){
+          for(var n = 0; n < color.length; n++){
+            if(n != c && color[n] == color[c]){
               tri.css('background-color',color[c]);
+              tri.attr('name','blocked');
               changeOccured = true;
             }
           } 
         }
       }
-      if(changeOccured){
-        validate();
-      } else {
-        checkWinner();
-      }
+      checkWinner();
     }
 
-    function chekWinner(){
+    function checkWinner(){
       var count = 0;
+      var points = [];
+      for(var p =0; p < playerCount; p++){
+        points.push(0);
+      }
       for(var i = 0; i < tilesPerRow*rows; i++){
-        if($('#'+i).attr('name')!='blocked'){
+        var tile = $('#'+i);
+        if(tile.attr('name')!='blocked'){
           count++;
+        } else {
+          for(var c = 0; c < playerColors.length; c++){
+            if(tile.attr('name')=='blocked'){
+              
+              if(tile.css('background-color')==playerColors[c]){
+                points[c]++;
+              }
+            }
+          }
         }
       }
+      for(var o = 0; o < points.length; o++){
+        $('#score_'+o).html(points[o]);
+      }
       if(count == 0){
-        //A winner has been found... display. 
+        //Somebody won...
+        console.log('winner');
       }
     }
     
+    
     makeGrid();
+    scoreDisplay();
   });
 
-  /*
-  <div class='triangle up' id='0' style='top: 30px; left: 30px;'></div>
-    <div class='triangle down' id='1' style='top: 30px; left: 75px;'></div>
-    <div class='triangle up' id='2' style='top: 30px; left: 120px;'></div>
-    <div class='triangle down' id='3' style='top: 30px; left: 165px;'></div>
-    <div class='triangle up' id='4' style='top: 30px; left: 210px;'></div>
-    <div class='triangle down' id='5' style='top: 30px; left: 255px;'></div>
-    <div class='triangle down' id='5' style='top: 115px; left: 30px;'></div>
-    <div class='triangle up' id='0' style='top: 200px; left: 30px;'></div>
-    */
 
-
-
-  /* CANVAS ATTEMPT
-  var canvas = document.getElementById('canvas');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  var c = canvas.getContext('2d');
-  // c.beginPath();
-  // c.moveTo(100,100);
-  // c.lineTo(200,100);
-  // c.lineTo(150,150);
-  // c.lineTo(100,100);
-  // c.stroke();
-  var rows = 7;
-  var tpr = 15; //Tiles Per Row
-  var sizeSetting = 80;
-  var triArray = [];
-  var index = 0;
-
-  for(var r = 0; r < rows; r++){
-    var inverter = 0; 
-    for(var i = 0; i < tpr; i++){
-      inverter++;
-      var invert = false;
-      if(index%2!=0){
-        invert = true;
-      }
-      if(i%2==0){
-          inverter--;
-      }
-      var sx = (inverter*sizeSetting)+sizeSetting;
-      if(r%2 != 0){
-        sx += (sizeSetting/2); 
-        if(!invert){
-          sx-=sizeSetting;
-        }
-        console.log('OffsetRow '+r + " i:"+ index + " invert:"+invert + " val:"+ inverter + " sx:"+sx);
-      }
-
-      
-      var sy = (r*sizeSetting)+(sizeSetting/1.25);
-      triArray.push(new Triangle(index, invert, sx, sy, sizeSetting));
-      index++;
-    }
-  }
-
-  function animate(){
-    requestAnimationFrame(animate);
-    c.clearRect(0,0,innerWidth,innerHeight);
-
-    for(var i = 0; i < triArray.length; i++){
-      triArray[i].draw();
-    }
-  }
-
-  function Triangle(index, inversion, startX, startY, size){
-    this.index = index;
-    this.inversion = inversion;
-    this.sx = startX;
-    this.sy = startY;
-    this.size = size;
-
-    this.draw = function(){
-      c.beginPath();
-      c.moveTo(this.sx, this.sy);
-      if(!this.inversion){
-        c.lineTo(this.sx+this.size, this.sy);
-        c.lineTo(this.sx+(this.size-(this.size/2)),this.sy+(this.size));
-        c.lineTo(this.sx, this.sy);
-      } else {
-        c.lineTo(this.sx+(this.size/2),this.sy+(this.size));
-        c.lineTo(this.sx-(this.size/2),this.sy+(this.size));
-        c.lineTo(this.sx, this.sy);
-        
-      }
-      c.fillStyle ='#CCC';
-      c.fill();
-      c.stroke();
-    }
-  }
-
-  animate();
-  */
 </script>
 </html>
