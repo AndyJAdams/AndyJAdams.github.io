@@ -30,7 +30,7 @@
 		canvas.addEventListener('touchmove', function(e){
 			ctx.fillRect(e.touches[0].clientX-10, e.touches[0].clientY-10, 20, 20);
 			ctx.fill();
-			output.innerHTML = (e.touches[0].clientX + ","+e.touches[0].clientY);
+			output.innerHTML = (e.touches[0].clientX + ","+e.touches[0].clientY + " x " + e.touches[0].force);
 			e.preventDefault();
 		},false);
 
