@@ -1,0 +1,46 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>TEST</title>
+	<style type="text/css">
+		body{ 
+			margin: 0; 
+		}
+		canvas{
+			border: 1px solid black;
+		}
+	</style>
+</head>
+<body>
+	<canvas></canvas>
+	<p id='output'></p>
+	<script>
+		var canvas = document.querySelector('canvas');
+		canvas.width = 300;
+		canvas.height = 300;
+		var ctx = canvas.getContext('2d');
+		var output = document.getElementById('output');
+
+		function animate(){
+			requestAnimationFrame(animate);
+			ctx.clearRect(0,0,innerWidth, innerHeight);
+		}
+
+		canvas.addEventListener('touchmove', function(e){
+			ctx.fillRect(e.touches[0].clientX-10, e.touches[0].clientY-10, 20, 20);
+			ctx.fill();
+			output.innerHTML = (e.touches[0].clientX + ","+e.touches[0].clientY);
+			event.preventDefault();
+		},false);
+
+		canvas.addEventListener('mousemove', function(event){
+			ctx.fillRect(event.x-10, event.y-10, 20,20);
+			ctx.fill();
+			output.innerHTML = (event.x + ","+event.y);
+		},false);
+
+		animate();
+	</script>
+</body>
+</html>
