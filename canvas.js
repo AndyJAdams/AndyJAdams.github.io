@@ -85,5 +85,14 @@ window.addEventListener('mousedown', function(event){
 	}
 });
 
+canvas.addEventListener('touchstart', function(e){
+	if(circleArray.length < 100){
+		for(var i = 0; i < e.touches.length; i++){
+			circleArray.push(new Circle(e.touches[i].clientX, e.touches[i].clientY, 100, 1, '#FFFFFF55'));
+		}
+	}
+	e.preventDefault();
+});
+
 
 animate();

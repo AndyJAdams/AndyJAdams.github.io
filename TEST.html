@@ -31,7 +31,7 @@
 			ctx.fillRect(e.touches[0].clientX-10, e.touches[0].clientY-10, 20, 20);
 			ctx.fill();
 			output.innerHTML = (e.touches[0].clientX + ","+e.touches[0].clientY);
-			event.preventDefault();
+			e.preventDefault();
 		},false);
 
 		canvas.addEventListener('mousemove', function(event){
