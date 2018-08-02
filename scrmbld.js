@@ -60,11 +60,11 @@ var sp = {
 	locked: undefined
 }
 
-window.addEventListener('touchstart',function(event){
+canvas.addEventListener('touchstart',function(event){
 	sp.x = event.x;
 	sp.y = event.y;
 	sp.drag = true;
-	e.preventDefault();
+	event.preventDefault();
 });
 
 window.addEventListener('mousedown',function(event){
@@ -73,7 +73,7 @@ window.addEventListener('mousedown',function(event){
 	sp.drag = true;
 });
 
-window.addEventListener('touchmove', function(event){
+canvas.addEventListener('touchmove', function(event){
 	if(sp.drag){
 		if(sp.locked == undefined && (Math.abs(event.x-sp.x) > 20 || Math.abs(event.y-sp.y)>20)){
 			if(Math.abs(event.x-sp.x) > Math.abs(event.y-sp.y)){
@@ -92,7 +92,7 @@ window.addEventListener('touchmove', function(event){
 			sp.locked = 'y';
 		}
 	}
-	e.preventDefault();
+	event.preventDefault();
 });
 
 window.addEventListener('mousemove', function(event){
@@ -116,18 +116,18 @@ window.addEventListener('mousemove', function(event){
 	}
 });
 
-window.addEventListener('touchend',function(event){
+canvas.addEventListener('touchend',function(event){
 	sp.drag = false;
 	sp.locked = undefined;
 	myBox.override();
-	e.preventDefault();
+	event.preventDefault();
 });
 
-window.addEventListener('touchcancel', function(event){
+canvas.addEventListener('touchcancel', function(event){
 	sp.drag = false;
 	sp.locked = undefined;
 	myBox.override();
-	e.preventDefault();
+	event.preventDefault();
 });
 
 window.addEventListener('mouseup', function(event){
