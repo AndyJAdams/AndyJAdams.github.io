@@ -64,6 +64,7 @@ window.addEventListener('touchstart',function(event){
 	sp.x = event.x;
 	sp.y = event.y;
 	sp.drag = true;
+	e.preventDefault();
 });
 
 window.addEventListener('mousedown',function(event){
@@ -91,6 +92,7 @@ window.addEventListener('touchmove', function(event){
 			sp.locked = 'y';
 		}
 	}
+	e.preventDefault();
 });
 
 window.addEventListener('mousemove', function(event){
@@ -118,12 +120,14 @@ window.addEventListener('touchend',function(event){
 	sp.drag = false;
 	sp.locked = undefined;
 	myBox.override();
+	e.preventDefault();
 });
 
 window.addEventListener('touchcancel', function(event){
 	sp.drag = false;
 	sp.locked = undefined;
 	myBox.override();
+	e.preventDefault();
 });
 
 window.addEventListener('mouseup', function(event){
