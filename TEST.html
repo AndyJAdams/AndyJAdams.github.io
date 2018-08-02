@@ -17,8 +17,8 @@
 	<p id='output'></p>
 	<script>
 		var canvas = document.querySelector('canvas');
-		canvas.width = 300;
-		canvas.height = 300;
+		canvas.width = window.innerWidth-2;
+		canvas.height = window.innerHeight-50;
 		var ctx = canvas.getContext('2d');
 		var output = document.getElementById('output');
 
