@@ -77,18 +77,27 @@ function animate(){
 		circleArray[i].update();
 	}
 }
-
+var clicks = 0;
 window.addEventListener('mousedown', function(event){
 	if(circleArray.length < 100){
 		var color = colorArray[Math.floor(Math.random() * colorArray.length)];
-		circleArray.push(new Circle(event.x, event.y, 100, 1, '#FFFFFF55'));
+		circleArray.push(new Circle(event.x, event.y, 100, 1, colorArray[clicks]));
+        clicks++;
+        if(clicks >= colorArray.length){
+            clicks = 0;
+        }
 	}
 });
-
+var taps = 0; 
 canvas.addEventListener('touchstart', function(e){
 	if(circleArray.length < 100){
+        
 		for(var i = 0; i < e.touches.length; i++){
-			circleArray.push(new Circle(e.touches[i].clientX, e.touches[i].clientY, 100, 1, '#FFFFFF55'));
+			circleArray.push(new Circle(e.touches[i].clientX, e.touches[i].clientY, 100, 1, colorArray[taps]));
+            taps++;
+            if(taps >= colorArray.length){
+                taps = 0;
+            }
 		}
 	}
 	e.preventDefault();
