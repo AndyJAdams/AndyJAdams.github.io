@@ -30,6 +30,8 @@
             this.w = w;
             this.h = h;
             this.color = colour;
+            this.nx = x;
+            this.ny = y;
             
             this.draw= function(){
                 ctx.fillStyle = this.color;
@@ -41,6 +43,10 @@
             }
             
             this.update = function(){
+                if(Math.abs(this.x-this.nx)>0 || Math.abs(this.y-this.ny)>0){ //Determine if we are in position
+                    //this.x -= (this.x-this.nx);
+                    //this.y -= (this.y-this.ny)/6;
+                }
                 this.draw();
             }
         }
@@ -69,24 +75,34 @@
                 }
             }
 		}
-
+        
+        var cx, cy, drag = false, lock = undefined;
+        var smp = {
+            x: undefined,
+            y: undefined
+        }
+        var offset = {
+            x: undefined,
+            y: undefined
+        }
+        var affected = [];
+        
+        //TOUCH INPUT SECTION
 //		canvas.addEventListener('touchmove', function(e){
 //			ctx.fillRect(e.touches[0].clientX-10, e.touches[0].clientY-10, 20, 20);
 //			ctx.fill();
 //			output.innerHTML = (e.touches[0].clientX + ","+e.touches[0].clientY + " x " + e.touches[0].force);
 //			e.preventDefault();
 //		},false);
-        var cx, cy, drag = false, lock = undefined;
-        var smp = {
-            x: undefined,
-            y: undefined
-        }
-        var affected = [];
+        
+        //MOUSE INPUT SECTION
+        
         canvas.addEventListener('mousedown', function(event){
 			//Do the down
             cx = Math.floor(event.x/tileWidth) * tileWidth;
             cy = Math.floor(event.y/tileHeight) * tileHeight;
             smp.x = event.x; smp.y = event.y;
+            offset.x = smp.x - cx; offset.y = smp.y - cy;
             drag = true;
 		},false);
         
@@ -111,6 +127,21 @@
                         }
                     }
                 }
+                /*
+                if(lock=='x'){ //Horizontal
+                    if(Math.abs(cmp.x-smp.x)>10){ //Drag is taking place
+                        var dragx = cmp.x-smp.x;
+                        for(var i = 0; i < affected.length; i++){
+                            affected[i].x = affected[i].nx + dragx;
+                            if(affected[i].x > ((columns)*tileWidth)+3){
+                                affected[i].nx = 2;
+                            } else if(affected[i].x < 0){
+                                affected[i].nx = (columns-1)*tileWidth+2;
+                            }
+                        }
+                    }
+                }
+                */
                 
                 if(lock == 'x'){
                     //Horz
@@ -155,6 +186,12 @@
             
 		},false);
         
+        canvas.addEventListener('mouseout', function(event){
+           drag = false;
+            lock = undefined;
+            affected.empty;
+        });
+        
         function GetColumn(col){
             var retTiles = [];
             for(var i = 0; i < rows; i++){
@@ -166,6 +203,7 @@
             }
             return retTiles;
         }
+        
         
         window.addEventListener('keydown', function(event){
            if(event.keyCode == 68){
