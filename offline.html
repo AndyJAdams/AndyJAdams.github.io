@@ -1,0 +1,79 @@
+<DOCUMENT html><html><head><title>OFFLINE</title><style>body{margin:0;}#canvas{background-color: #000;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+ var canvas = document.querySelector('canvas');
+ canvas.width = window.innerWidth;
+ canvas.height = window.innerHeight;
+ var ctx = canvas.getContext('2d');
+ var colorArray = ['#2B66A8','#5D110D','#ED7200'];
+ function Star(x,y){
+ 	this.x = x;
+ 	this.y = y;
+ 	this.interval = 0.0005 * Math.random();
+ 	this.speed = this.interval;
+ 	this.out = false;
+ 	this.w = 2;
+ 	this.h = 2;
+ 	this.color = '#DDD';
+ 	this.rand = Math.random()*100;
+	if(this.rand < 2){
+		this.color = colorArray[Math.floor(Math.random()*colorArray.length)];
+		this.w = 4; this.h = 4;
+	}
+
+ 	this.draw = function(){
+ 		if(!this.out){
+	 		this.speed += this.interval;
+	 		if(this.y < (innerHeight/2)-100){
+	 			this.y -= this.speed;
+	 		} else if(this.y > (innerHeight/2)+100){
+	 			this.y += this.speed;
+	 		} 
+	 		if(this.x < (innerWidth/2)-100){
+	 			this.x -= this.speed;
+	 		} else if(this.x > (innerWidth/2)+100){
+	 			this.x += this.speed;
+	 		} 
+	 		if(this.x < (innerWidth/2)-20){
+	 			this.x -= this.speed;
+	 		} else if(this.x > (innerWidth/2)+20){
+	 			this.x += this.speed;
+	 		} else {
+	 			if(this.y < innerWidth/2){
+	 				this.y-= this.speed;
+	 			} else {
+	 				this.y+= this.speed;
+	 			}
+	 		}
+
+	 		//this.w += this.speed/10;
+	 		//this.h += this.speed/10;
+	 		ctx.fillStyle=this.color;
+	 		ctx.fillRect(this.x, this.y, this.w, this.h);
+	 	}
+
+	 	if(this.x - 10 > innerWidth || this.x - 10 < 0 || this.y - 10 > innerHeight || this.y + 10 < 0){
+	 		this.out = true;
+	 	}
+
+ 	}
+ }
+ var starCount = 200;
+ var StarArray = [];
+ for(var i = 0; i < starCount; i++){
+ 	StarArray.push(new Star(Math.random()*innerWidth,Math.random()*innerHeight));
+ }
+
+ function animate(){
+ 	window.requestAnimationFrame(animate);
+ 	ctx.clearRect(0,0,innerWidth,innerHeight);
+
+ 	for(var i = 0; i < starCount; i++){
+ 		if(StarArray[i].out){
+ 			StarArray[i] = new Star(Math.random()*innerWidth,Math.random()*innerHeight);
+ 		}
+ 		StarArray[i].draw();
+ 	}
+ }
+
+ animate();
+</script></body></html>
