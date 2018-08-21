@@ -1,0 +1,239 @@
+<DOCUMENT html><html><head><title>Path</title><style>body{margin:0;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+var can = document.querySelector('canvas');
+can.width = window.innerWidth-2;
+can.height = window.innerHeight-2;
+var ctx = can.getContext('2d');
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+ctx.font = '28px Verdana';
+ctx.fillStyle='#000';
+function Point(x,y){
+	this.x = x;
+	this.y = y;
+	this.tarX = this.x;
+	this.prevX = this.x;
+
+	this.update = function(){
+		if(this.x < this.tarX){
+			this.x += (this.tarX-this.x)/4;
+		} else if(this.x > this.tarX){
+			this.x -= (this.x-this.tarX)/4;
+		}
+	}
+}
+
+function Player(x,y,radius){
+	this.x = x;
+	this.y = y;
+	this.radius = radius;
+	this.nearestPoint = undefined;
+	this.wave = 0.0;
+	this.flipped = false;
+	this.arms = false;
+	this.moveDelta = 0;
+	this.failTimer = new Date();
+	
+	this.draw = function(){
+		if(fail){
+			this.y += this.radius;
+		}
+		if(this.wave > 1.0){
+			this.flipped = true;
+		} else if(this.wave < -1.0){
+			this.flipped = false;
+		}
+		if(!this.flipped){
+			this.wave+= 0.5;
+		} else {
+			this.wave -= 0.5;
+		}
+		if(this.nearestPoint != undefined){
+			//ARMS
+			ctx.strokeStyle='#FF6C09';
+			if(Math.abs(this.nearestPoint.x-this.x) < 60 && !fail){
+				ctx.beginPath();
+				ctx.moveTo(this.nearestPoint.x, this.nearestPoint.y);
+				ctx.lineTo(this.x-(this.radius*0.7), this.y-7);
+				ctx.moveTo(this.x+(this.radius*0.5), this.y-7);
+				ctx.lineTo(this.nearestPoint.x, this.nearestPoint.y);
+
+				ctx.stroke();
+				this.arms = false;
+				this.failTimer = 0;
+
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(this.x-(this.radius/2), this.y-10);
+				ctx.lineTo(this.x-(this.radius+30), (this.y-10)+(Math.sin(this.wave)*15));
+				ctx.moveTo(this.x+(this.radius/2), this.y-10);
+				ctx.lineTo(this.x+(this.radius+30), (this.y-10)-(Math.sin(this.wave)*15));
+				ctx.stroke();
+				this.arms = true;
+				if(this.failTimer == 0){
+					this.failTimer = new Date();
+				}
+			}
+			//HEAD
+			ctx.beginPath();
+			if(this.nearestPoint.x < this.x-20 && !this.arms){
+				ctx.arc(this.x-7, this.y-this.radius-5,this.radius*0.7,0,2*Math.PI);
+			} else if(this.nearestPoint.x > this.x+20 && !this.arms){
+				ctx.arc(this.x+7, this.y-this.radius-5,this.radius*0.7,0,2*Math.PI);
+			} else {
+				ctx.arc(this.x,this.y-this.radius-5,this.radius*0.7,0,2*Math.PI);
+			}
+			ctx.fillStyle='#FF6C09';
+			ctx.fill();
+			ctx.closePath();
+			//LEGS
+			ctx.beginPath();
+			ctx.moveTo((this.x+this.moveDelta)-10,this.y+40);
+			ctx.lineTo(this.x-10,this.y);
+			ctx.lineTo(this.x+10,this.y);
+			ctx.lineTo((this.x+this.moveDelta)+10,this.y+40);
+			ctx.stroke();
+			ctx.closePath();
+
+			if(this.moveDelta < 0.0){
+				this.moveDelta += Math.abs(this.moveDelta)/4;
+			} else if(this.moveDelta > 0.0){
+				this.moveDelta -= this.moveDelta/4;
+			}
+			ctx.beginPath();
+			ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+			ctx.fillStyle = '#FF6C09';
+			ctx.strokeStyle = '#FF6C09';
+			ctx.fill();
+			ctx.stroke();
+			ctx.closePath();
+		}
+		/*
+		if(this.failTimer > 0 && !fail){
+			var dif = 3-Math.floor((new Date()-this.failTimer)/300);
+			ctx.font='28px Verdana';
+			ctx.fillText(dif+'', this.x, this.y + 80);
+			if(new Date() - this.failTimer > 1000){
+				fail = true;
+			} 
+		}
+		*/
+	}	
+}
+
+var pointCount = 30;
+var dist = innerHeight/(pointCount-1);
+var pointArray=[];
+var interval = 0;
+var limit = 60;
+var steps = 0;
+for(var i = 0; i < pointCount; i++){
+	pointArray.push(new Point(innerWidth/2, i*dist));
+}
+
+var fail = false; var start = false;
+
+var player = new Player(innerWidth/2, innerHeight/2, 15);
+var difficulty = innerWidth/6;
+
+function animate(){
+	window.requestAnimationFrame(animate);
+	ctx.clearRect(0,0,innerWidth,innerHeight);
+	//if(clicked){
+		interval++;
+		ctx.lineWidth = 6;
+		ctx.beginPath();
+		for(var p = 0; p < pointArray.length; p++){
+			if(p == 0){
+				ctx.strokeStyle='#000';
+				ctx.moveTo(pointArray[p].x,pointArray[p].y);
+				if(!fail){
+					if(interval >= limit){
+						pointArray[p].tarX = ((Math.random()-0.5)*difficulty)+innerWidth/2;
+						difficulty+= 10;
+						if(difficulty > innerWidth/2){
+							difficulty = innerWidth/2;
+						}
+						interval = 0;
+						// steps++;
+						// if(steps >= 10){
+						// 	limit -= 10;
+						// 	if(limit < 10){
+						// 		limit = 10;
+						// 	}
+						// 	steps = 0;
+						// }
+					}
+				}
+			} else {
+				ctx.lineTo(pointArray[p].x, pointArray[p].y);
+				if(!fail){
+					pointArray[p].tarX = pointArray[p-1].x;
+				}
+			}
+			pointArray[p].update();
+		}
+		ctx.stroke();
+
+		player.draw();
+		start = true;
+	// } else {
+	// 	ctx.font = '18px Verdana';
+	// 	if(!start){
+	// 		ctx.fillText("HANG ON", 20,60);
+	// 	} else {
+	// 		if(!fail){
+	// 			ctx.fillText("PAUSED, CLICK TO RESUME", 20, 60);
+	// 		} else {
+	// 			ctx.fillText('CLICK TO RETRY', 20, 60);
+	// 		}
+	// 	}
+	// }
+	
+}
+var prevMouseX = innerWidth/2;
+var clicked = false;
+window.addEventListener('mousemove', function(e){
+	if(!fail){
+		var x = e.pageX;
+		var y = e.pageY;
+		player.x = x;
+		player.y = y;
+		//Get the nearest point via pointArray
+		var nearestPoint = undefined;
+		var ny = 10000;
+		for(var i = 0; i < pointArray.length; i++){
+			//Get the closest point on the line
+			if(Math.abs(pointArray[i].y-player.y) < ny){
+				ny = Math.abs(pointArray[i].y-player.y);
+				nearestPoint = pointArray[i-2];
+			}
+			//assign the nearest point only if it's outside the cirlce range. 
+		}
+		if(nearestPoint != undefined){
+			player.nearestPoint = nearestPoint;
+		}
+
+		player.moveDelta -= x-prevMouseX;
+
+		prevMouseX = x;
+	} 
+});
+
+window.addEventListener('mousedown', function(e){
+	clicked = true;
+});
+
+window.addEventListener('mouseup', function(e){
+	clicked = false;
+	if(fail){
+		fail = false;
+	}
+});
+
+window.addEventListener('mouseleave', function(e){
+	clicked = false;
+});
+
+animate();
+</script></body></html>
