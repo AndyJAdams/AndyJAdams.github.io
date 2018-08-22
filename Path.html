@@ -108,7 +108,7 @@ function Player(x,y,radius){
 			ctx.stroke();
 			ctx.closePath();
 		}
-		/*
+		
 		if(this.failTimer > 0 && !fail){
 			var dif = 3-Math.floor((new Date()-this.failTimer)/300);
 			ctx.font='28px Verdana';
@@ -117,7 +117,7 @@ function Player(x,y,radius){
 				fail = true;
 			} 
 		}
-		*/
+		
 	}	
 }
 
@@ -227,12 +227,38 @@ window.addEventListener('mousedown', function(e){
 window.addEventListener('mouseup', function(e){
 	clicked = false;
 	if(fail){
+		player = new Player(innerWidth/2, innerHeight/2, 15);
+		this.failTimer = 0;
 		fail = false;
 	}
 });
 
 window.addEventListener('mouseleave', function(e){
 	clicked = false;
+});
+
+//TOUCH CONTROLS
+canvas.addEventListener('touchmove',function(e){
+	player.x = e.touches[0].x;
+	player.y = e.touches[0].y;
+	var np = undefined;
+	for(var i = 0; i < pointArray.length; i++){
+			//Get the closest point on the line
+			if(Math.abs(pointArray[i].y-player.y) < ny){
+				ny = Math.abs(pointArray[i].y-player.y);
+				nearestPoint = pointArray[i-2];
+			}
+			//assign the nearest point only if it's outside the cirlce range. 
+		}
+		if(nearestPoint != undefined){
+			player.nearestPoint = nearestPoint;
+		}
+
+		player.moveDelta -= x-prevMouseX;
+
+		prevMouseX = x;
+	}
+	e.preventDefault();
 });
 
 animate();
