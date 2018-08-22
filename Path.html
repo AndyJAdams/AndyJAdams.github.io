@@ -243,21 +243,21 @@ canvas.addEventListener('touchmove',function(e){
 	player.y = e.touches[0].y;
 	var np = undefined;
 	for(var i = 0; i < pointArray.length; i++){
-			//Get the closest point on the line
-			if(Math.abs(pointArray[i].y-player.y) < ny){
-				ny = Math.abs(pointArray[i].y-player.y);
-				nearestPoint = pointArray[i-2];
-			}
-			//assign the nearest point only if it's outside the cirlce range. 
+		//Get the closest point on the line
+		if(Math.abs(pointArray[i].y-player.y) < ny){
+			ny = Math.abs(pointArray[i].y-player.y);
+			nearestPoint = pointArray[i-2];
 		}
-		if(nearestPoint != undefined){
-			player.nearestPoint = nearestPoint;
-		}
-
-		player.moveDelta -= x-prevMouseX;
-
-		prevMouseX = x;
+		//assign the nearest point only if it's outside the cirlce range. 
 	}
+	if(nearestPoint != undefined){
+		player.nearestPoint = nearestPoint;
+	}
+
+	player.moveDelta -= x-prevMouseX;
+
+	prevMouseX = x;
+	
 	e.preventDefault();
 });
 
