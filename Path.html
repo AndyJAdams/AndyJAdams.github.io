@@ -240,7 +240,7 @@ window.addEventListener('mouseleave', function(e){
 //TOUCH CONTROLS
 canvas.addEventListener('touchmove',function(e){
 	player.x = e.touches[0].x;
-	player.y = e.touches[0].y;
+	player.y = e.touches[0].y + 80;
 	var np = undefined;
 	for(var i = 0; i < pointArray.length; i++){
 		//Get the closest point on the line
@@ -257,7 +257,7 @@ canvas.addEventListener('touchmove',function(e){
 	player.moveDelta -= x-prevMouseX;
 
 	prevMouseX = x;
-	
+
 	e.preventDefault();
 });
 
