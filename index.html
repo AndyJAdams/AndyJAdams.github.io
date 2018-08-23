@@ -1,129 +1,40 @@
-<DOCTYPE HTML> <!--THIS IS A WEBPAGE-->
-<html>
-<head> <!--This is the header, it contains things like the page title -->
-	<title><(- v -)></title> <!--TITLE that shows up in the browser tab -->
-	<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-	<script>
-	  (adsbygoogle = window.adsbygoogle || []).push({
-	    google_ad_client: "ca-pub-9661280257894151",
-	    enable_page_level_ads: true
-	  });
-	</script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> <!--THIS IS A MAGIC SCRIPT -->
-	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-	
-	<style>
-		body{
-			font-family: sans-serif;
-			background-color: #000000;
-		}
-		#name{
-			margin-bottom: 4px;
-			margin-right: 20px;
-			margin-left: 10px;
-			margin-top: 6px;
-			color: #DDDDDD;
-		}
+<doctype html>
+<html><head><title>AJA</title></head>
+<style>
+*{
+	font-family: Courier;
+	margin-left: 5px;
+}
 
-		#top{
-			position: absolute;
-			top:0;
-			right:0;
-			text-align: left;
-			background-color: #333333;
-			width: 330px;
-		}
-		#left{
-			position: absolute;
-			top:40px;
-			right:0;
-			text-align: left;
-			background-color: #333333;
-			width: 330px;
-			height: 530px;
-		}
+a{
+	text-decoration: none;
+	color: #000;
+	font-size: 24pt;
+}
 
-		#up_arrow{
-			position: absolute;
-			bottom: 0;
-		}
+.sub{
+	font-size: 28pt;
+	text-decoration: underline;
+}
+.games{color:#31995E;}
+.projects{color:#36598D;}
+.contact{color:#D66345;}
 
-		#me {
-			width: 320px;
-		}
-
-		#right{
-			position: absolute;
-			left: 0;
-			top: 60px;
-			width: 28%;
-		}
-
-		.category{
-			width: 100%;
-			height: 60px;
-			margin-bottom: 20px;
-		}
-
-		.banner{
-			width: 100%;
-			height: 40px;
-			margin-bottom: 0;
-			font-size: 28pt;
-
-		}
-
-		#content_frame{
-			position: absolute;
-			right: 0;
-			top: 60px;
-			width: 70%;
-			height: 90%;
-			border: hidden;
-		}
-	</style>
-</head>
+</style>
 <body>
-	<!-- CONTENT AREA -->
-	<div id='right'>
-		<div id='blokd' class='banner row0' style='background-color: #DCDCDC;' >BLOK'D</div>
-	</div>
-	<div id='frame'>
-		<iframe id='content_frame' src=""  ></iframe>
-	</div>
-	<div id='top'>
-		<h1 style='font-size: 18pt;' id='name'> Andrew J. Adams
-			<img id='drop' src='https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-arrow-down-b-256.png' height='25px' width='25px'/></a>
-			<a href="https://twitter.com/AndyJamesAdams"><img id='twitter' src='https://cdn1.iconfinder.com/data/icons/logotypes/32/square-twitter-256.png' height='25px' width='25px'/></a>
-			<a href="https://www.facebook.com/andrew.j.adams.1048"><img id='FB' src='http://icons.iconarchive.com/icons/sicons/flat-shadow-social/256/facebook-icon.png' height='25px' width='25px'/></a>
-		</h1>
-	</div>
-	<div id='left'>
-		<img id='me' src='https://scontent-ort2-2.xx.fbcdn.net/v/t1.0-9/27021_403813565660_2125887_n.jpg?_nc_cat=0&_nc_eui2=v1%3AAeFLWVv0UFs-O4L9-w5_-RRceBriBAUcfIWYbWTWJpoVaNWh72hD99ysJNcbvY5nqh0wgQJeRPnTBZ1UDcK3f3vsWPWRAPKiK4enrQRppKFb3w&oh=f08ebbddd6d24ef3b59c44efa191a574&oe=5B340705'/>
-		<p style='margin: 20px; color: #DDDDDD;'>
-			Andrew is a full time software engineer and systems technician.
-			His skills include front end web development, applications programming, database administration, and systems automation. His personal hobbies include art, reading, games, and many other creative outlets. 
-			<br/><br/>
-			He currently resides in Eau Claire Wisconsin with his wife, two sons, and two cats. 
-		</p>
-		<img id='up_arrow' src='https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-arrow-up-b-256.png' width='25px' height='25px'/>
-	</div>
-	
-	<!--SCRIPTING-->
-	<script>
-		$(document).ready(function(){
-			$('#left').hide(); $('#blokd_iframe').hide();
-			$('#drop').on('click',function(){$('#left').slideToggle(); return false;});
-			$('#up_arrow').on('click',function(){$('#left').slideToggle(); return false;});
-			$('#blokd').on('click', function(){
-				var cf = $('#content_frame');
-				if(cf.attr('src') == ''){
-					cf.attr('src','./blokd.html'); return false;
-				} else {
-					cf.attr('src', '');
-				}
-			});
-		});
-	</script>
+	<h2><b style='font-size: 36pt;'>Andrew J. Adams</b> > Creator of stuff</h2>
+	<h2><b class='sub games'>Games</b><br/>
+		<a href='https://andyjadams.github.io/blokd.html'>Blokd</a> - Self Defeating Match 3<br/>
+		<a href='https://itunes.apple.com/us/app/unmatch/id1061419426'>Unmatch</a> - Anti Matching (iOS) <br/>
+		<a href='https://andrewjamesadams.itch.io/drop-space'>Drop Space</a> - Planet Dropping Fun <br/>
+		<a href='https://andrewjamesadams.itch.io/global'>Global</a> - flight path sim
+	</h2>
+	<h2><b class='sub projects'>Projects</b><br/>
+		<a href='#'>N/A</a>
+	</h2>
+	<h2><b class='sub contact'>Contact</b><br/>
+		<a href='mailto:andrewjamesadams@live.com?Subject=General Inquiries' target='_top'>Email</a><br/>
+		<a href='https://www.twitter.com/AndyJamesAdams'>Twitter</a><br/>
+	</h2>
 </body>
+</html>

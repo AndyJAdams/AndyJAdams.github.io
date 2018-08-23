@@ -1,0 +1,82 @@
+<DOCUMENT html><html><head><title>Path</title><style>body{margin:0;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+var can = document.querySelector('canvas');
+can.width = window.innerWidth-2;
+can.height = window.innerHeight-2;
+var ctx = can.getContext('2d');
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+ctx.lineWidth = 5;
+ctx.font = '28px Verdana';
+ctx.fillStyle='#000';
+
+
+function Player(x,y,radius){
+	this.x = x;
+	this.y = y;
+	this.radius = radius;
+	this.moveDelta = 0;
+	
+	this.draw = function(){
+		if(this.moveDelta < 0.0){
+			this.moveDelta += Math.abs(this.moveDelta)/4;
+		} else if(this.moveDelta > 0.0){
+			this.moveDelta -= this.moveDelta/4;
+		}
+		//arms
+		ctx.beginPath();
+		ctx.moveTo(this.x, this.y);
+		ctx.lineTo(this.x+this.moveDelta, this.y+40);
+		ctx.lineTo(this.x+this.moveDelta+7, this.y+40);
+		ctx.lineTo(this.x+this.moveDelta+12, this.y+65);
+		
+		ctx.stroke();
+		
+		//HEAD
+		ctx.beginPath();
+		ctx.arc(this.x+(this.moveDelta*0.6)+7, this.y+30,this.radius*0.7,0,2*Math.PI);
+		ctx.fill();
+		ctx.closePath();
+		
+		//LEGS
+		ctx.beginPath();
+		ctx.moveTo(this.x+(this.moveDelta*1.5)-7,this.y+80);
+		ctx.lineTo(this.x+this.moveDelta-5,this.y+45);
+		ctx.lineTo(this.x+this.moveDelta+5,this.y+45);
+		ctx.lineTo(this.x+(this.moveDelta*1.5)+7,this.y+80);
+		ctx.stroke();
+		ctx.closePath();
+		
+		//BODY
+		ctx.beginPath();
+		ctx.arc(this.x+this.moveDelta, this.y+45, this.radius, 0, 2 * Math.PI);
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath();
+		
+	}	
+}
+
+var player = new Player(innerWidth/2, innerHeight/2, 10);
+
+function animate(){
+	window.requestAnimationFrame(animate);
+	ctx.clearRect(0,0,innerWidth,innerHeight);
+	player.draw();	
+}
+
+var prevMouseX = 0;
+window.addEventListener('mousemove', function(e){
+	var x = e.pageX;
+	var y = e.pageY;
+	player.x = x;
+	player.y = y;
+	
+	player.moveDelta -= x-prevMouseX;
+
+	prevMouseX = x;
+
+
+});
+animate();
+</script></body></html>
