@@ -1,0 +1,24 @@
+<DOCUMENT html><html><head><title>OrientationCheck</title><style>body{margin:0;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+var canvas = document.querySelector('canvas');
+function scaleCanvas(){
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+}
+scaleCanvas();
+var ctx = canvas.getContext('2d');
+var tilt = 0;
+var halfX = innerWidth/2;
+function animate(){
+	window.requestAnimationFrame(animate);
+	ctx.clearRect(0,0,innerWidth, innerHeight);
+
+	ctx.fillRect((tilt*2)+(halfX-10),innerHeight/2-10,20,20);
+}
+
+window.addEventListener('deviceorientation', function(e){
+	tilt = e.gamma;
+})
+
+animate();
+</script></body></html>
