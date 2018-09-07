@@ -348,12 +348,46 @@ window.addEventListener('resize', function(e){
 })
 
 //TOUCH CONTROLS *EXPERIMENTAL - Disregard*
-window.addEventListener('touchstart', function(e){
+canvas.addEventListener('touchstart', handleTouchStart, false);
+canvas.addEventListener('touchend', handleTouchEnd, false);
+canvas.addEventListener('touchcancel', handleTouchCancel, false);
+canvas.addEventListener('touchmove', handleTouchMove, false);
+var ongoingTouches = [];
+var released = false;
+function handleTouchStart(e){
 	e.preventDefault();
-})
+	var touches = e.changedTouches;
+	for(var i =0; i < touches.length; i++){
+		ongoingTouches.push(copyTouch(touches[i]));
+	}
+	if(fail && released){
+		if(holdtime > best){
+			updateScore(holdtime); //Update our best score if applicable.
+		}
 
-window.addEventListener('touchmove',function(e){
+		player = new Player(touches[0].pageX, touches[0].pageY, 15); //Create a new player body.
+		this.failTimer = 0; //reset our fail timer
+		fail = false; //reset failure game state
+		starttime = new Date(); //Restart the hold clock
+		//Reset difficulty curve variables
+		steps = 0;
+		interval = 0;
+		limit = 60;
+		difficulty = 0;
+		obstacles = []; //Clear the obstacles array.
+	}
+}
+
+
+function handleTouchMove(e){
 	e.preventDefault();
+	var touches = e.changedTouches;
+	for(var i = 0; i < touches.length; i++){
+		var idx = ongoingTouchIndexById(touches[i].identifier);
+		if(idx >= 0){
+			ongoingTouches.splice(idx,1,copyTouch(touches[i]));
+		}
+	}
 	player.x = e.touches[0].x;
 	player.y = e.touches[0].y + 80;
 	var np = undefined;
@@ -372,10 +406,28 @@ window.addEventListener('touchmove',function(e){
 
 	player.moveDelta -= player.x-prevMouseX;
 
-	prevMouseX = player.x;
+	prevMouseX = player.x;	
+}
 
-	
-})
+function handleTouchEnd(e){
+	e.preventDefault();
+	var touches = e.changedTouches;
+	for(var i = 0; i < touches.length; i++){
+		var idx = ongoingTouchIndexById(touches[i].identifier);
+		if(idx >= 0){
+			ongoingTouches.splice(idx,1);
+		}
+	}
+}
+
+function handleTouchCancel(e){
+	e.preventDefault();
+	var touches = e.changedTouches;
+	for(var i = 0; i < touches.length; i++){
+		var idx = ongoingTouchIndexById(touches[i].identifier);
+		ongoingTouches.splice(idx, 1);
+	}
+}
 
 //Use the pythagorean theorem to determine the distance between two points. 
 //The square root of the product from two squared, absolute value distances.
