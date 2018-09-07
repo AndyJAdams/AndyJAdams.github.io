@@ -105,11 +105,11 @@ function Player(x,y,radius){
 		//ARMS -----
 			ctx.strokeStyle='#FF6C09';
 			//While holding on, draw arms to the nearest point on the line. 
-			if(Math.abs(this.nearestPoint.x-this.x) < 50 && !fail){
+			if(Math.abs(this.nearestPoint.x-this.x) < 20 && !fail){
 				ctx.beginPath();
 				ctx.moveTo(this.nearestPoint.x, this.nearestPoint.y);
-				ctx.lineTo(this.x-(this.radius*0.7), this.y+75);
-				ctx.moveTo(this.x+(this.radius*0.5), this.y+75);
+				ctx.lineTo(this.x-(this.radius*0.7), this.y+50);
+				ctx.moveTo(this.x+(this.radius*0.5), this.y+50);
 				ctx.lineTo(this.nearestPoint.x, this.nearestPoint.y);
 
 				ctx.stroke();
@@ -122,10 +122,10 @@ function Player(x,y,radius){
 				ctx.fillText(holdtime+"s",20,70); //Display holdtime to player while attached.
 			} else { //Waving
 				ctx.beginPath();
-				ctx.moveTo(this.x-(this.radius/2), this.y+75);
-				ctx.lineTo(this.x-(this.radius+30), (this.y+75)+(Math.sin(this.wave)*15));
-				ctx.moveTo(this.x+(this.radius/2), this.y+75);
-				ctx.lineTo(this.x+(this.radius+30), (this.y+75)+(Math.sin(this.wave)*15));
+				ctx.moveTo(this.x-(this.radius/2), this.y+50);
+				ctx.lineTo(this.x-(this.radius+30), (this.y+50)+(Math.sin(this.wave)*15));
+				ctx.moveTo(this.x+(this.radius/2), this.y+50);
+				ctx.lineTo(this.x+(this.radius+30), (this.y+50)+(Math.sin(this.wave)*15));
 				ctx.stroke();
 				this.arms = true; //Arms are not attached to line. 
 
@@ -140,11 +140,11 @@ function Player(x,y,radius){
 			ctx.beginPath();
 			//draw the head leaning towards the line for realism, but only if player is holding on. 
 			if(this.nearestPoint.x < this.x-20 && !this.arms){ //Draw and lean head right
-				ctx.arc(this.x-7, this.y-this.radius+75,this.radius*0.7,0,2*Math.PI);
+				ctx.arc(this.x-7, this.y-this.radius+50,this.radius*0.7,0,2*Math.PI);
 			} else if(this.nearestPoint.x > this.x+20 && !this.arms){ //Draw and lean head left
-				ctx.arc(this.x+7, this.y-this.radius+75,this.radius*0.7,0,2*Math.PI);
+				ctx.arc(this.x+7, this.y-this.radius+50,this.radius*0.7,0,2*Math.PI);
 			} else {
-				ctx.arc(this.x,this.y-this.radius+75,this.radius*0.7,0,2*Math.PI);
+				ctx.arc(this.x,this.y-this.radius+50,this.radius*0.7,0,2*Math.PI);
 			}
 
 			ctx.fillStyle='#FF6C09';
@@ -154,10 +154,10 @@ function Player(x,y,radius){
 		//LEGS
 			//The legs use a 'moveDelta' to follow the body, which causes a movement delay and adds realism. 
 			ctx.beginPath();
-			ctx.moveTo((this.x+this.moveDelta)-10,this.y+110);
-			ctx.lineTo(this.x-10,this.y+80);
-			ctx.lineTo(this.x+10,this.y+80);
-			ctx.lineTo((this.x+this.moveDelta)+10,this.y+110);
+			ctx.moveTo((this.x+this.moveDelta)-10,this.y+85);
+			ctx.lineTo(this.x-10,this.y+55);
+			ctx.lineTo(this.x+10,this.y+55);
+			ctx.lineTo((this.x+this.moveDelta)+10,this.y+85);
 			ctx.stroke();
 			ctx.closePath();
 
@@ -171,7 +171,7 @@ function Player(x,y,radius){
 		//Body
 			//Nothing fancy here just a circle with a vertical offset. 
 			ctx.beginPath();
-			ctx.arc(this.x, this.y+80, this.radius, 0, 2 * Math.PI);
+			ctx.arc(this.x, this.y+55, this.radius, 0, 2 * Math.PI);
 			ctx.fillStyle = '#FF6C09';
 			ctx.strokeStyle = '#FF6C09';
 			ctx.fill();
@@ -348,6 +348,10 @@ window.addEventListener('resize', function(e){
 })
 
 //TOUCH CONTROLS *EXPERIMENTAL - Disregard*
+window.addEventListener('touchstart', function(e){
+	e.preventDefault();
+})
+
 window.addEventListener('touchmove',function(e){
 	e.preventDefault();
 	player.x = e.touches[0].x;
@@ -371,7 +375,7 @@ window.addEventListener('touchmove',function(e){
 	prevMouseX = player.x;
 
 	
-});
+})
 
 //Use the pythagorean theorem to determine the distance between two points. 
 //The square root of the product from two squared, absolute value distances.
