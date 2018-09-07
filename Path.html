@@ -23,6 +23,7 @@ scaleCanvas();
 var ctx = canvas.getContext('2d');
 ctx.font = '28px Verdana';
 ctx.fillStyle='#ffa801';
+var mobileColor = '#0fbcf9';
 var holdtime; //How long you've held on
 var starttime; //When this round started
 var best = 0; //Your best time so far.
@@ -104,6 +105,9 @@ function Player(x,y,radius){
 		if(this.nearestPoint != undefined){ //Make sure we have point nearby
 		//ARMS -----
 			ctx.strokeStyle='#FF6C09';
+			if(window.innerWidth < 640){
+				ctx.strokeStyle = mobileColor;
+			}
 			//While holding on, draw arms to the nearest point on the line. 
 			if(Math.abs(this.nearestPoint.x-this.x) < 20 && !fail){
 				ctx.beginPath();
@@ -118,6 +122,9 @@ function Player(x,y,radius){
 				this.failTimer = 0; //While attached to the line, reset the failure timer.
 				holdtime = Math.floor((new Date()-starttime)/10)/100; //update hold time w/ some formatting.
 				ctx.fillStyle='#FF6C09';
+				if(window.innerWidth < 640){
+					ctx.fillStyle = mobileColor;
+				}
 				ctx.font = "48pt Helvetica";
 				ctx.fillText(holdtime+"s",20,70); //Display holdtime to player while attached.
 			} else { //Waving
@@ -148,6 +155,9 @@ function Player(x,y,radius){
 			}
 
 			ctx.fillStyle='#FF6C09';
+			if(window.innerWidth < 640){
+				ctx.fillStyle = mobileColor;
+			}
 			ctx.fill();
 			ctx.closePath();
 			
@@ -174,6 +184,10 @@ function Player(x,y,radius){
 			ctx.arc(this.x, this.y+55, this.radius, 0, 2 * Math.PI);
 			ctx.fillStyle = '#FF6C09';
 			ctx.strokeStyle = '#FF6C09';
+			if(window.innerWidth < 640){
+				ctx.fillStyle = mobileColor;
+				ctx.strokeStyle = mobileColor;
+			}
 			ctx.fill();
 			ctx.stroke();
 			ctx.closePath();
@@ -300,14 +314,96 @@ function animate(){
 
 
 var prevMouseX = innerWidth/2;
-// MOUSE MOVE LISTENER - Listens for mouse movement and determines the closest line point
-window.addEventListener('mousemove', function(e){
-	if(!fail){
-		player.x = e.pageX;
-		player.y = e.pageY;
-		//Get the nearest point via pointArray
-		var nearestPoint = undefined;
-		var ny = 10000; //nearest y position
+if(window.innerWidth > 640){
+	// MOUSE MOVE LISTENER - Listens for mouse movement and determines the closest line point
+	window.addEventListener('mousemove', function(e){
+		if(!fail){
+			player.x = e.pageX;
+			player.y = e.pageY;
+			//Get the nearest point via pointArray
+			var nearestPoint = undefined;
+			var ny = 10000; //nearest y position
+			for(var i = 0; i < pointArray.length; i++){
+				//Get the closest point on the line
+				if(Math.abs(pointArray[i].y-player.y) < ny){
+					ny = Math.abs(pointArray[i].y-player.y);
+					nearestPoint = pointArray[i];
+				}
+				//assign the nearest point only if it's outside the cirlce range. 
+			}
+			if(nearestPoint != undefined){
+				player.nearestPoint = nearestPoint;
+			}
+
+			//Update player moveDelta for leg swinging coolness.
+			player.moveDelta -= player.x-prevMouseX;
+
+			//Set previous to current.
+			prevMouseX = player.x;
+		} 
+	});
+
+	window.addEventListener('mousedown', function(e){ //When the player clicks
+		if(fail){ //We've already failed so let's reset the game. 
+			if(holdtime > best){
+				updateScore(holdtime); //Update our best score if applicable.
+			}
+
+			player = new Player(e.pageX, e.pageY, 15); //Create a new player body.
+			this.failTimer = 0; //reset our fail timer
+			fail = false; //reset failure game state
+			starttime = new Date(); //Restart the hold clock
+			obstacles = []; //Clear the obstacles array.
+		}
+	});
+
+} else {
+	//TOUCH CONTROLS *EXPERIMENTAL - Disregard*
+	canvas.addEventListener('touchstart', handleTouchStart, false);
+	canvas.addEventListener('touchend', handleTouchEnd, false);
+	canvas.addEventListener('touchcancel', handleTouchCancel, false);
+	canvas.addEventListener('touchmove', handleTouchMove, false);
+	var ongoingTouches = [];
+	var released = false;
+	function handleTouchStart(e){
+		e.preventDefault();
+		var touches = e.changedTouches;
+		for(var i =0; i < touches.length; i++){
+			ongoingTouches.push(copyTouch(touches[i]));
+		}
+		if(fail && released){
+			if(holdtime > best){
+				updateScore(holdtime); //Update our best score if applicable.
+			}
+
+			player = new Player(touches[0].pageX, touches[0].pageY, 15); //Create a new player body.
+			this.failTimer = 0; //reset our fail timer
+			fail = false; //reset failure game state
+			starttime = new Date(); //Restart the hold clock
+			//Reset difficulty curve variables
+			steps = 0;
+			interval = 0;
+			limit = 60;
+			difficulty = 0;
+			obstacles = []; //Clear the obstacles array.
+			released = false;
+		}
+	}
+
+
+	function handleTouchMove(e){
+		e.preventDefault();
+		var touches = e.changedTouches;
+		for(var i = 0; i < touches.length; i++){
+			var idx = ongoingTouchIndexById(touches[i].identifier);
+			if(idx >= 0){
+				ongoingTouches.splice(idx,1,copyTouch(touches[i]));
+			}
+		}
+		player.x = e.touches[0].x;
+		player.y = e.touches[0].y + 80;
+		var np = undefined;
+		var ny = 100000;
 		for(var i = 0; i < pointArray.length; i++){
 			//Get the closest point on the line
 			if(Math.abs(pointArray[i].y-player.y) < ny){
@@ -320,115 +416,37 @@ window.addEventListener('mousemove', function(e){
 			player.nearestPoint = nearestPoint;
 		}
 
-		//Update player moveDelta for leg swinging coolness.
 		player.moveDelta -= player.x-prevMouseX;
+		released = false;
+		prevMouseX = player.x;	
+	}
 
-		//Set previous to current.
-		prevMouseX = player.x;
-	} 
-});
-
-window.addEventListener('mousedown', function(e){ //When the player clicks
-	if(fail){ //We've already failed so let's reset the game. 
-		if(holdtime > best){
-			updateScore(holdtime); //Update our best score if applicable.
+	function handleTouchEnd(e){
+		e.preventDefault();
+		var touches = e.changedTouches;
+		for(var i = 0; i < touches.length; i++){
+			var idx = ongoingTouchIndexById(touches[i].identifier);
+			if(idx >= 0){
+				ongoingTouches.splice(idx,1);
+			}
 		}
-
-		player = new Player(e.pageX, e.pageY, 15); //Create a new player body.
-		this.failTimer = 0; //reset our fail timer
-		fail = false; //reset failure game state
-		starttime = new Date(); //Restart the hold clock
-		obstacles = []; //Clear the obstacles array.
-	}
-});
-
-//Scale the canvas to fill the window. Not the cleanest way to do this, but it works. 
-window.addEventListener('resize', function(e){
-	scaleCanvas();
-})
-
-//TOUCH CONTROLS *EXPERIMENTAL - Disregard*
-canvas.addEventListener('touchstart', handleTouchStart, false);
-canvas.addEventListener('touchend', handleTouchEnd, false);
-canvas.addEventListener('touchcancel', handleTouchCancel, false);
-canvas.addEventListener('touchmove', handleTouchMove, false);
-var ongoingTouches = [];
-var released = false;
-function handleTouchStart(e){
-	e.preventDefault();
-	var touches = e.changedTouches;
-	for(var i =0; i < touches.length; i++){
-		ongoingTouches.push(copyTouch(touches[i]));
-	}
-	if(fail && released){
-		if(holdtime > best){
-			updateScore(holdtime); //Update our best score if applicable.
-		}
-
-		player = new Player(touches[0].pageX, touches[0].pageY, 15); //Create a new player body.
-		this.failTimer = 0; //reset our fail timer
-		fail = false; //reset failure game state
-		starttime = new Date(); //Restart the hold clock
-		//Reset difficulty curve variables
-		steps = 0;
-		interval = 0;
-		limit = 60;
-		difficulty = 0;
-		obstacles = []; //Clear the obstacles array.
-	}
-}
-
-
-function handleTouchMove(e){
-	e.preventDefault();
-	var touches = e.changedTouches;
-	for(var i = 0; i < touches.length; i++){
-		var idx = ongoingTouchIndexById(touches[i].identifier);
-		if(idx >= 0){
-			ongoingTouches.splice(idx,1,copyTouch(touches[i]));
+		if(fail){
+			released = true;
 		}
 	}
-	player.x = e.touches[0].x;
-	player.y = e.touches[0].y + 80;
-	var np = undefined;
-	var ny = 100000;
-	for(var i = 0; i < pointArray.length; i++){
-		//Get the closest point on the line
-		if(Math.abs(pointArray[i].y-player.y) < ny){
-			ny = Math.abs(pointArray[i].y-player.y);
-			nearestPoint = pointArray[i];
+
+	function handleTouchCancel(e){
+		e.preventDefault();
+		var touches = e.changedTouches;
+		for(var i = 0; i < touches.length; i++){
+			var idx = ongoingTouchIndexById(touches[i].identifier);
+			ongoingTouches.splice(idx, 1);
 		}
-		//assign the nearest point only if it's outside the cirlce range. 
-	}
-	if(nearestPoint != undefined){
-		player.nearestPoint = nearestPoint;
-	}
-
-	player.moveDelta -= player.x-prevMouseX;
-
-	prevMouseX = player.x;	
-}
-
-function handleTouchEnd(e){
-	e.preventDefault();
-	var touches = e.changedTouches;
-	for(var i = 0; i < touches.length; i++){
-		var idx = ongoingTouchIndexById(touches[i].identifier);
-		if(idx >= 0){
-			ongoingTouches.splice(idx,1);
+		if(fail){
+			released = true;
 		}
 	}
 }
-
-function handleTouchCancel(e){
-	e.preventDefault();
-	var touches = e.changedTouches;
-	for(var i = 0; i < touches.length; i++){
-		var idx = ongoingTouchIndexById(touches[i].identifier);
-		ongoingTouches.splice(idx, 1);
-	}
-}
-
 //Use the pythagorean theorem to determine the distance between two points. 
 //The square root of the product from two squared, absolute value distances.
 //So I get the absolute value of the difference between the x values, and then again with the y's.
