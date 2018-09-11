@@ -9,7 +9,6 @@
  	this.x = x;
  	this.y = y;
  	this.interval = 0.0005 * Math.random();
- 	this.speed = this.interval;
  	this.out = false;
  	this.w = 2;
  	this.h = 2;
@@ -22,28 +21,7 @@
 
  	this.draw = function(){
  		if(!this.out){
-	 		this.speed += this.interval;
-	 		if(this.y < (innerHeight/2)-100){
-	 			this.y -= this.speed;
-	 		} else if(this.y > (innerHeight/2)+100){
-	 			this.y += this.speed;
-	 		} 
-	 		if(this.x < (innerWidth/2)-100){
-	 			this.x -= this.speed;
-	 		} else if(this.x > (innerWidth/2)+100){
-	 			this.x += this.speed;
-	 		} 
-	 		if(this.x < (innerWidth/2)-20){
-	 			this.x -= this.speed;
-	 		} else if(this.x > (innerWidth/2)+20){
-	 			this.x += this.speed;
-	 		} else {
-	 			if(this.y < innerWidth/2){
-	 				this.y-= this.speed;
-	 			} else {
-	 				this.y+= this.speed;
-	 			}
-	 		}
+	 		this.x -= this.interval;
 
 	 		//this.w += this.speed/10;
 	 		//this.h += this.speed/10;
