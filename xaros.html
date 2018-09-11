@@ -54,6 +54,7 @@ window.addEventListener('mousedown', function(e){
 })
 
 window.addEventListener('touchstart', function(e){
+	e.preventDefault();
 	towers.push(new Tower(e.touches[0].x, e.touches[0].y, 40));
 })
 
