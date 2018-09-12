@@ -19,53 +19,34 @@ function scaleCanvas(){
 scaleCanvas();
 var ctx = canvas.getContext('2d');
 
-function Menu(x,y){
-	this.x = x;
-	this.y = y;
-	this.left = undefined;
-	this.right = undefined;
-	this.up = undefined;
+function Tower(x,y,width, color){
+	this.x = x; this.y = y;
+	this.width = width;
+	this.color = color;
 	this.draw = function(){
-		//ctx.fillRect(this.x-30,this.y-30,60,60); //Touch point
-		ctx.beginPath();
-		ctx.moveTo(this.x-30, this.y-30);
-		ctx.lineTo(this.x+30, this.y-30);
-		ctx.lineTo(this.x+30, this.y+30);
-		ctx.lineTo(this.x-30, this.y+30);
-		ctx.lineTo(this.x-30, this.y-30);
-		ctx.stroke();
-		ctx.closePath();
-		ctx.fillRect(this.x-100, this.y-30, 60,60); //Option left
-		ctx.fillRect(this.x-30, this.y-100, 60,60); //Option up
-		ctx.fillRect(this.x+40, this.y-30, 60,60);
+		ctx.fillStyle= this.color;
+		ctx.fillRect(this.x-(this.width/2),this.y-(width/2),this.width, this.width);
 	}
 
-	this.update = function(){
+	this.update=function(){
+
 		this.draw();
 	}
 }
 
-var menu = undefined;
+var towers = [];
+towers.push(new Tower(innerWidth/2, innerHeight/2,10));
+var ongoingTouches = [];
 
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth, innerHeight);
 
-	if(menu != undefined){
-		menu.update();
-	}	
+	for(var i = 0; i < towers.length; i++){
+		towers[i].update();
+		console.log('here');
+	}
 }
-
-var drag = false;
-canvas.addEventListener('mousedown',function(e){
-	menu = new Menu(e.pageX, e.pageY);
-	drag = true;
-})
-
-canvas.addEventListener('mouseup', function(e){
-	menu = undefined;
-	drag = false;
-})
 
 function startup(){
 	canvas.addEventListener('touchstart', handlestart, false);
@@ -81,9 +62,8 @@ function handlestart(evt){
 	var touches = evt.changedTouches;
 	for(var i = 0; i < touches.length; i++){
 		ongoingTouches.push(copyTouch(touches[i]));
-		menu = new Menu(touches[i].pageX, touches[i].pageY);
+		towers.push(new Tower(touches[i].pageX, touches[i].pageY,'#F00'));
 	}
-
 }
 
 function handlemove(evt){
@@ -104,10 +84,9 @@ function handleend(evt){
 		var idx = ongoingTouchIndexById(touches[i].identifier);
 		if(idx >= 0){
 			ongoingTouches.splice(idx, 1);
-			
+			towers.push(new Tower(touches[i].pageX, touches[i].pageY,'#000'));
 		}
 	}
-	menu = undefined;
 }
 
 function handlecancel(evt){
@@ -116,9 +95,7 @@ function handlecancel(evt){
 	for(var i = 0; i < touches.length; i++){
 		var idx = ongoingTouchIndexById(touches[i].identifier);
 		ongoingTouches.splice(idx, 1);
-
 	}
-	menu = undefined;
 }
 
 function copyTouch(touch){
