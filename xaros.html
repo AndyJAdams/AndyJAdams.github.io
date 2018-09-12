@@ -34,6 +34,7 @@ function Tower(x,y,width){
 
 var towers = [];
 towers.push(new Tower(innerWidth/2, innerHeight/2,10));
+var ongoingTouches = [];
 
 function animate(){
 	window.requestAnimationFrame(animate);
@@ -45,18 +46,75 @@ function animate(){
 	}
 }
 
-window.addEventListener('resize',function(){
-	scaleCanvas();
+canvas.addEventListener('mouseup',function(e){
+	towers.push(new Tower(e.pageX, e.pageY, 40));
 })
 
-window.addEventListener('mousedown', function(e){
-	towers.push(new Tower(e.pageX,e.pageY,40));
-})
+function startup(){
+	canvas.addEventListener('touchstart', handlestart, false);
+	canvas.addEventListener('touchend', handleend, false);
+	canvas.addEventListener('touchcancel', handlecancel, false);
+	canvas.addEventListener('touchmove', handlemove, false);
+	console.log('initialized');
+}
 
-window.addEventListener('touchstart', function(e){
-	towers.push(new Tower(e.touches[0].x, e.touches[0].y, 40));
-})
+function handlestart(evt){
+	evt.preventDefault();
+	console.log('touch start');
+	var touches = evt.changedTouches;
+	for(var i = 0; i < touches.length; i++){
+		ongoingTouches.push(copyTouch(touches[i]));
+	}
+}
 
+function handlemove(evt){
+	evt.preventDefault();
+	var touches = evt.changedTouches;
+	for(var i = 0; i < touches.length; i++){
+		var idx = ongoingTouchIndexById(touches[i].identifier);
+		if(idx >= 0){
+			ongoingTouches.splice(idx,1,copyTouch(touches[i]));
+		}
+	}
+}
+
+function handleend(evt){
+	evt.preventDefault();
+	var touches = evt.changedTouches;
+	for(var i = 0; i < touches.length; i++){
+		var idx = ongoingTouchIndexById(touches[i].identifier);
+		if(idx >= 0){
+			ongoingTouches.splice(idx, 1);
+			towers.push(new Tower(touches[i].pageX, touches[i].pageY, 40));
+		}
+	}
+}
+
+function handlecancel(evt){
+	evt.preventDefault();
+	var touches = evt.changedTouches;
+	for(var i = 0; i < touches.length; i++){
+		var idx = ongoingTouchIndexById(touches[i].identifier);
+		ongoingTouches.splice(idx, 1);
+	}
+}
+
+function copyTouch(touch){
+	return {identifier: touch.identifier,pageX: touch.pageX, pageY: touch.pageY};
+}
+
+function ongoingTouchIndexById(idToFind) {
+  for (var i = 0; i < ongoingTouches.length; i++) {
+    var id = ongoingTouches[i].identifier;
+    
+    if (id == idToFind) {
+      return i;
+    }
+  }
+  return -1;    // not found
+}
+
+startup();
 animate();
 </script>
 </body>
