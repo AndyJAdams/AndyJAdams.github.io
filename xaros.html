@@ -34,7 +34,28 @@ function Tower(x,y,width, color){
 	}
 }
 
+function Menu(x,y){
+	this.x = x;
+	this.y = y;
+
+	this.draw = function(){
+		ctx.beginPath();
+		ctx.moveTo(this.x-30, this.y-30);
+		ctx.lineTo(this.x+30, this.y-30);
+		ctx.lineTo(this.x+30, this.y+30);
+		ctx.lineTo(this.x-30, this.y+30);
+		ctx.lineTo(this.x-30, this.y-30);
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	this.update = function(){
+		this.draw();
+	}
+}
+
 var towers = [];
+var menu = undefined;
 towers.push(new Tower(innerWidth/2, innerHeight/2,10,'#0F0'));
 var ongoingTouches = [];
 
@@ -44,6 +65,9 @@ function animate(){
 
 	for(var i = 0; i < towers.length; i++){
 		towers[i].update();
+	}
+	if(menu != undefined){
+		menu.update();
 	}
 }
 
@@ -62,6 +86,9 @@ function handlestart(evt){
 	for(var i = 0; i < touches.length; i++){
 		ongoingTouches.push(copyTouch(touches[i]));
 		towers.push(new Tower(touches[i].pageX, touches[i].pageY,40,'#F00'));
+		if(i == 0){
+
+		}
 	}
 }
 
