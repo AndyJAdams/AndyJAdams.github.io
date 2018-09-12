@@ -110,7 +110,7 @@ function handleend(evt){
 		var idx = ongoingTouchIndexById(touches[i].identifier);
 		if(idx >= 0){
 			ongoingTouches.splice(idx, 1);
-			towers.push(new Tower(touches[i].pageX, touches[i].pageY,50,'#000'));
+			towers.push(new Tower(touches[i].pageX, touches[i].pageY,50,'#00F'));
 		}
 	}
 }
