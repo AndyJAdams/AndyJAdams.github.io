@@ -81,9 +81,11 @@ function handlestart(evt){
 	var touches = evt.changedTouches;
 	for(var i = 0; i < touches.length; i++){
 		ongoingTouches.push(copyTouch(touches[i]));
-		
+		if(i == 0){
+			menu = new Menu(touches[0].pageX, touches[0].pageY);
+		}
 	}
-	menu = new Menu(touches[0].pageX, touches[0].pageY);
+
 }
 
 function handlemove(evt){
