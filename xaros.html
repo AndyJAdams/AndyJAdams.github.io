@@ -58,7 +58,7 @@ var towers = [];
 var menu = undefined;
 towers.push(new Tower(innerWidth/2, innerHeight/2,10,'#0F0'));
 var ongoingTouches = [];
-
+var initialTouchId = undefined;
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth, innerHeight);
@@ -84,11 +84,12 @@ function handlestart(evt){
 	console.log('touch start');
 	var touches = evt.changedTouches;
 	for(var i = 0; i < touches.length; i++){
-		ongoingTouches.push(copyTouch(touches[i]));
-		//towers.push(new Tower(touches[i].pageX, touches[i].pageY,40,'#F00'));
-		if(i == touches.length-1){
+		if(initialTouchId == undefined){
+			initialTouchId = touches[0].identifier;
 			menu = new Menu(touches[i].pageX, touches[i].pageY);
 		}
+		ongoingTouches.push(copyTouch(touches[i]));
+		//towers.push(new Tower(touches[i].pageX, touches[i].pageY,40,'#F00'));
 	}
 }
 
@@ -110,7 +111,9 @@ function handleend(evt){
 		var idx = ongoingTouchIndexById(touches[i].identifier);
 		if(idx >= 0){
 			ongoingTouches.splice(idx, 1);
-			towers.push(new Tower(touches[i].pageX, touches[i].pageY,50,'#00F'));
+		}
+		if(idx == initialTouchId){
+			menu = undefined;
 		}
 	}
 }
