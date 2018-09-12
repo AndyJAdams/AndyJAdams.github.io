@@ -86,7 +86,7 @@ function handlestart(evt){
 	for(var i = 0; i < touches.length; i++){
 		ongoingTouches.push(copyTouch(touches[i]));
 		//towers.push(new Tower(touches[i].pageX, touches[i].pageY,40,'#F00'));
-		if(i == 0){
+		if(i == touches.length-1){
 			menu = new Menu(touches[i].pageX, touches[i].pageY);
 		}
 	}
