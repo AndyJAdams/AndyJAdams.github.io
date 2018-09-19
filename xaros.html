@@ -59,6 +59,7 @@ var menu = undefined;
 towers.push(new Tower(innerWidth/2, innerHeight/2,10,'#0F0'));
 var ongoingTouches = [];
 var initialTouchId = undefined;
+ctx.font='18px Helvetica';
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth, innerHeight);
@@ -68,6 +69,8 @@ function animate(){
 	}
 	if(menu != undefined){
 		menu.update();
+		ctx.fillStyle='#000';
+		ctx.fillText(initialTouchId,20,20);
 	}
 }
 
@@ -91,7 +94,7 @@ function handlestart(evt){
 		if(initialTouchId == undefined){
 			initialTouchId = touches[0].identifier;
 			menu = new Menu(touches[i].pageX, touches[i].pageY);
-			ctx.fillText(initialTouchId,20,20);
+			
 		}
 		ongoingTouches.push(copyTouch(touches[i]));
 		//towers.push(new Tower(touches[i].pageX, touches[i].pageY,40,'#F00'));
