@@ -76,6 +76,10 @@ function startup(){
 	canvas.addEventListener('touchend', handleend, false);
 	canvas.addEventListener('touchcancel', handlecancel, false);
 	canvas.addEventListener('touchmove', handlemove, false);
+	canvas.addEventListener('mousedown',handlemstart, false);
+	canvas.addEventListener('mousemove',handlemmove, false);
+	canvas.addEventListener('mouseup',handlemend, false);
+	canvas.addEventListener('mouseleave',handlemleave, false);
 	console.log('initialized');
 }
 
@@ -114,6 +118,7 @@ function handleend(evt){
 		}
 		if(idx == initialTouchId){
 			menu = undefined;
+			initialTouchId = -1;
 		}
 	}
 }
@@ -143,6 +148,22 @@ function ongoingTouchIndexById(idToFind) {
     }
   }
   return -1;    // not found
+}
+
+function handlemstart(e){
+	menu = new Menu(e.pageX, e.pageY);
+}
+
+function handlemmove(e){
+	//Do nothing for now..
+}
+
+function handlemend(e){
+	menu = null;
+}
+
+function handlemleave(e){
+	menu = null;
 }
 
 startup();
