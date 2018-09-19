@@ -91,6 +91,7 @@ function handlestart(evt){
 		if(initialTouchId == undefined){
 			initialTouchId = touches[0].identifier;
 			menu = new Menu(touches[i].pageX, touches[i].pageY);
+			ctx.fillText(initialTouchId,20,20);
 		}
 		ongoingTouches.push(copyTouch(touches[i]));
 		//towers.push(new Tower(touches[i].pageX, touches[i].pageY,40,'#F00'));
@@ -152,6 +153,7 @@ function ongoingTouchIndexById(idToFind) {
 
 function handlemstart(e){
 	menu = new Menu(e.pageX, e.pageY);
+	ctx.fillText(menu,20,20);
 }
 
 function handlemmove(e){
