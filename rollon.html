@@ -1,0 +1,172 @@
+<DOCTYPE html>
+<html>
+<head><title>Roll On</title>
+<style>
+    body{margin:0;}
+    canvas{background-color: #E45D18;}
+</style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script>
+var canvas = document.getElementById('canvas');
+var half;
+function scaleCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    half = innerWidth/2;
+}
+scaleCanvas();
+var ctx = canvas.getContext('2d');
+
+var forceX = 0;
+var forceY = 0;
+var applyToHoles = false;
+    
+function Marble(x,y,radius){
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    
+    this.draw = function(){
+        var shiftAmt = 0;
+        ctx.beginPath();
+        ctx.arc(this.x-shiftAmt,this.y+5,this.radius,0,2*Math.PI);
+        ctx.fillStyle='#00000055';
+        ctx.fill();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, false);
+        ctx.fillStyle='#633CA3';
+        ctx.fill();
+        ctx.closePath();
+        
+    }
+    
+    this.update = function(){
+        this.x += forceX;
+        
+        if(this.x-this.radius < 0){
+            this.x = this.radius;
+            forceX = -(forceX/2);
+        } else if(this.x+this.radius>innerWidth){
+            this.x = innerWidth-this.radius;
+            forceX = -(forceX/2);
+        }
+        
+        if(this.y + this.radius > innerHeight){
+            this.y = innerHeight-this.radius;
+            forceY = -(forceY/2);
+        } else if(this.y-this.radius>innerHeight/2){
+            this.y += forceY;
+            applyToHoles = false;
+        } else {
+            //Get unstuck from middle
+            if(forceY > 0.0){
+                this.y += forceY;
+                applyToHoles = false;
+            } else {
+                applyToHoles = true;
+            }
+        }
+        this.draw();
+    }
+}
+    
+function Feature(x,y,radius, type,color){
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.type = type;
+    this.color = color;
+    
+    this.draw = function(){
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, false);
+        if(this.type == 'bouncer'){
+            ctx.strokeStyle=this.color;
+            ctx.lineWidth=10;
+            ctx.stroke();   
+        } else {
+            ctx.fillStyle=this.color;
+            ctx.fill();
+        }
+        ctx.closePath();
+    }
+    
+    this.update = function(){
+        if(applyToHoles){
+            this.y -= forceY;
+        }
+        if(this.y>innerHeight+(this.radius*2)){
+            this.radius = Math.random()*120+30;
+            this.y = -(this.radius+10);
+            this.x = Math.random() * innerWidth;
+        }
+        this.draw();
+    }
+}
+    
+    
+var marbles = [];
+marbles.push(new Marble(innerWidth/2, innerHeight-150,30));
+
+    var holes = [];
+for(var i = 0; i < 10; i++){
+    holes.push(new Feature(Math.random()*innerWidth, Math.random()*innerHeight-innerHeight/2,Math.random()*120+30,'hole','#000'));
+}
+
+var bgDots = [];
+for(var i = 0; i < 55; i++){
+    bgDots.push(new Feature(Math.random()*innerWidth, Math.random()*innerHeight,Math.random()*45,'dot','#B2430B'));
+}
+    
+var bouncers= [];
+bouncers.push(new Feature(Math.random()*innerWidth, Math.random()*innerHeight-innerHeight/2,Math.random()*50+20,'bouncer','#7F5DB8'));
+    
+function animate(){
+    window.requestAnimationFrame(animate);
+    ctx.clearRect(0,0,innerWidth, innerHeight);
+    
+    for(var b = 0; b<bgDots.length;b++){
+        bgDots[b].update();
+    }
+    
+    for(var h = 0; h < holes.length;h++){
+        holes[h].update();
+    }
+    
+    for(var c = 0; c < bouncers.length;c++){
+        bouncers[c].update();
+    }
+    
+    for(var m = 0; m < marbles.length; m++){
+        marbles[m].update();
+    }
+}
+
+window.addEventListener('resize',function(){
+    scaleCanvas();
+})
+
+document.addEventListener('keydown',function(event){
+    if(event.keyCode == 37){
+        forceX-=0.2;
+    } else if(event.keyCode == 39){
+        forceX+=0.2;
+    } 
+    if(event.keyCode == 38){
+        forceY-=0.2;
+        
+    } else if(event.keyCode ==40){
+        forceY+=0.2;
+        applyToHoles = false;
+    }
+})
+
+
+
+animate();
+</script>
+</body>
+</html>
