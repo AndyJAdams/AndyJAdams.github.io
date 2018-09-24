@@ -3,7 +3,7 @@
 <head><title>Rolli Rover</title>
 <style>
     body{margin:0;}
-    canvas{background-color: #EFEFEF;}
+    canvas{background-color: #52B494;}
 </style>
 </head>
 <body>
@@ -227,6 +227,7 @@ window.addEventListener('deviceorientation', function(event){
     } else if(orient.b > 30.0){
         orient.b = 30.0;
     }
+    //Apply it... fingers crossed.
     forceX += (orient.a/30.0);
     forceY += (orient.b/30.0);
     
