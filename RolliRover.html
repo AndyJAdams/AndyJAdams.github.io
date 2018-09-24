@@ -3,12 +3,17 @@
 <head><title>Rolli Rover</title>
 <style>
     body{margin:0;}
-    canvas{background-color: #52B494;}
+    canvas{background-color: #EFEFEF;}
 </style>
 </head>
 <body>
 <canvas id='canvas'></canvas>
 <script>
+
+
+window.screen.lockOrientation('portrait-primary');
+  
+    
 var canvas = document.getElementById('canvas');
 var half;
 function scaleCanvas(){
@@ -228,7 +233,7 @@ window.addEventListener('deviceorientation', function(event){
         orient.b = 30.0;
     }
     //Apply it... fingers crossed.
-    forceX += (orient.a/30.0);
+    forceX += (orient.g/30.0);
     forceY += (orient.b/30.0);
     
 })
