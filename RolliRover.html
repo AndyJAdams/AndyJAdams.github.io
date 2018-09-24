@@ -210,6 +210,7 @@ window.addEventListener('resize',function(){
 })
     
 window.addEventListener('deviceOrientation', function(event){
+    event.preventDefault();
     orient.a = event.alpha;
     orient.b = event.beta;
     orient.g = event.gamma;
