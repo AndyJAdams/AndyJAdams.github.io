@@ -26,6 +26,12 @@ var canControl = true;
 var scoredDist = 0;
 var displayScore = 0;
 var gameOver = false;
+
+var orient = {
+    a:0,
+    b:0,
+    g:0
+}
     
 function Marble(x,y,radius,holes,bouncers){
     this.x = x;
@@ -189,10 +195,24 @@ function animate(){
     if(gameOver){
         ctx.fillText('Refresh to play again',20,160);
     }
+    
+    //Orientation debugging
+    ctx.font = '12px sans-serif';
+    ctx.strokeStyle='#000';
+    ctx.fillText(orient.a,20,innerHeight-20);
+    ctx.fillText(orient.b,20,innerHeight-40);
+    ctx.fillText(orient.g,20,innerHeight-60);
+    
 }
 
 window.addEventListener('resize',function(){
     scaleCanvas();
+})
+    
+window.addEventListener('deviceOrientation', function(event){
+    orient.a = event.alpha;
+    orient.b = event.beta;
+    orient.g = event.gamma;
 })
 
 document.addEventListener('keydown',function(event){
