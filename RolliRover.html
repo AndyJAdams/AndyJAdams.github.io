@@ -152,6 +152,25 @@ function Feature(x,y,radius, type,color){
         this.draw();
     }
 }
+    
+function BestLine(x,y){
+    this.x = x;
+    this.y = y;
+    this.draw = function(){
+        ctx.strokeStyle='#000';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(0,this.y);
+        ctx.lineTo(innerWidth,this.y);
+    }
+    
+    this.update = function(){
+        if(applyToHoles){
+            this.y -= forceY;
+        }
+        this.draw();
+    }
+}
 
 var holes = [];
 for(var i = 0; i < 10; i++){
@@ -175,6 +194,11 @@ var marbles = [];
 marbles.push(new Marble(innerWidth/2, innerHeight-150,30));
 
 var totalForceY = 0;
+var best = 25;
+var bestLine = undefined;
+if(best > 0){
+    bestLine = new BestLine(0,-(best*110));
+}
     
 function animate(){
     window.requestAnimationFrame(animate);
@@ -194,6 +218,10 @@ function animate(){
     
     for(var m = 0; m < marbles.length; m++){
         marbles[m].update(holes,bouncers);
+    }
+    
+    if(bestLine != undefined){
+        bestLine.update();
     }
     
     displayScore = Math.round(Math.abs(scoredDist));
