@@ -174,7 +174,7 @@ for(var i = 0; i < 4;i++){
 var marbles = [];
 marbles.push(new Marble(innerWidth/2, innerHeight-150,30));
 
-var interval = 0;
+var totalForceY = 0;
     
 function animate(){
     window.requestAnimationFrame(animate);
@@ -187,8 +187,6 @@ function animate(){
     for(var h = 0; h < holes.length;h++){
         holes[h].update();
     }
-    
-    
     
     for(var c = 0; c < bouncers.length;c++){
         bouncers[c].update();
@@ -209,6 +207,9 @@ function animate(){
     //Orientation debugging
     ctx.font = '12px sans-serif';
     ctx.strokeStyle='#000';
+    totalForceY += forceY;
+    ctx.fillText(totalForceY,20,innerHeight-30);
+    ctx.fillText(totalForceY/displayScore,20,innerHeight-60);
     
 }
 
