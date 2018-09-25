@@ -168,10 +168,13 @@ for(var i = 0; i < 55; i++){
 }
     
 var bouncers= [];
-//bouncers.push(new Feature(Math.random()*innerWidth, Math.random()*innerHeight-innerHeight/2,Math.random()*50+20,'bouncer','#10986B'));
-    
+for(var i = 0; i < 4;i++){
+    bouncers.push(new Feature(Math.random()*innerWidth, Math.random()*innerHeight-innerHeight/2,Math.random()*50+20,'bouncer','#10986B'));
+}
 var marbles = [];
 marbles.push(new Marble(innerWidth/2, innerHeight-150,30));
+
+var interval = 0;
     
 function animate(){
     window.requestAnimationFrame(animate);
@@ -184,6 +187,8 @@ function animate(){
     for(var h = 0; h < holes.length;h++){
         holes[h].update();
     }
+    
+    
     
     for(var c = 0; c < bouncers.length;c++){
         bouncers[c].update();
@@ -230,8 +235,8 @@ window.addEventListener('deviceorientation', function(event){
         orient.b = 30.0;
     }
     //Apply it... fingers crossed.
-    forceX += (orient.g/300.0);
-    forceY += (orient.b/300.0);
+    forceX += (orient.g/150.0);
+    forceY += (orient.b/150.0);
     
 })
 
