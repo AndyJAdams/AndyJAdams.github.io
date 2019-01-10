@@ -80,9 +80,22 @@
 			orient.b = 30;
 		}
 
-		forceX += Math.round(orient.g/dampner); 
-		forceY += Math.round(orient.b/dampner);
+		forceX += (orient.g/dampner); 
+		forceY += (orient.b/dampner);
 	});
+
+	if(forceX > 1){
+		forceX = 1;
+	} else if(forceX < -1){
+		forceX = -1;
+	}
+
+	if(forceY > 1){
+		forceY = 1;
+	} else if(forceY < -1){
+		forceY = -1;
+	}
+
 	engine.world.gravity.x = forceX;
 	engine.world.gravity.y = forceY;
 	Engine.run(engine);
