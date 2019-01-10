@@ -50,11 +50,6 @@
 
 	var ball = new Ball(innerWidth/2, innerHeight/2, 40);
 
-	function animate(){
-		//window.requestAnimationFrame(animate);//Refresh it
-		//c.clearRect(0,0,innerWidth,innerHeight);
-	}
-
 	window.addEventListener('resize',function(){
 		swidth = window.innerWidth;
 		sheight = window.innerHeight;
@@ -87,11 +82,10 @@
 
 	});
 
-	 engine.world.gravity.x = 0;
-	 engine.world.gravity.y = 0.01;
+	engine.world.gravity.x = 0;
+	engine.world.gravity.y = 0.01;
 	Engine.run(engine);
 	Render.run(render);
-	animate();
 </script>
 </body>
 </html>
