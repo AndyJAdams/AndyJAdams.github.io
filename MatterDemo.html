@@ -37,7 +37,7 @@
     	b:0,
     	g:0
 	}
-	var dampner = 0.2;
+	var dampner = 1.0;
 	var forceX = 0;
 	var forceY = 0;
 
@@ -83,7 +83,7 @@
 	});
 
 	engine.world.gravity.x = 0;
-	engine.world.gravity.y = 0.01;
+	engine.world.gravity.y = 0;
 	Engine.run(engine);
 	Render.run(render);
 </script>
