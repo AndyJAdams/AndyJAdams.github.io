@@ -31,6 +31,7 @@ var canControl = true;
 var scoredDist = 0;
 var displayScore = 0;
 var gameOver = false;
+var canCollide = true;
 
 var orient = {
     a:0,
@@ -81,32 +82,34 @@ function Marble(x,y,radius,holes,bouncers){
                 applyToHoles = false;
             } else {
                 applyToHoles = true;
-                scoredDist += forceY/100;
+                scoredDist += forceY;
             }
         }
         
         //Check for collisions
-        for(var h = 0; h < holes.length;h++){
-            var dist = getDistance(this.x,holes[h].x,this.y,holes[h].y);
-            if(dist < holes[h].radius-this.radius){
-                //we have fallen in a hole.
-                forceX = 0; forceY = 0;
-                //Now we shrink
-                if(this.radius>0.1){
-                    this.radius--;    
-                } else {
-                    gameOver = true;
+        if(canCollide){
+            for(var h = 0; h < holes.length;h++){
+                var dist = getDistance(this.x,holes[h].x,this.y,holes[h].y);
+                if(dist < holes[h].radius-this.radius){
+                    //we have fallen in a hole.
+                    forceX = 0; forceY = 0;
+                    //Now we shrink
+                    if(this.radius>0.1){
+                        this.radius--;    
+                    } else {
+                        gameOver = true;
+                    }
+                    canControl = false;
                 }
-                canControl = false;
             }
-        }
-        //Check for bounce
-        for(var b = 0; b < bouncers.length;b++){
-            var dist = getDistance(this.x,bouncers[b].x,this.y,bouncers[b].y);
-            if(dist < bouncers[b].radius+this.radius){
-                //Bounce back
-                forceX = -forceX;
-                forceY = -forceY;
+            //Check for bounce
+            for(var b = 0; b < bouncers.length;b++){
+                var dist = getDistance(this.x,bouncers[b].x,this.y,bouncers[b].y);
+                if(dist < bouncers[b].radius+this.radius){
+                    //Bounce back
+                    forceX = -forceX;
+                    forceY = -forceY;
+                }
             }
         }
         
@@ -157,11 +160,13 @@ function BestLine(x,y){
     this.x = x;
     this.y = y;
     this.draw = function(){
-        ctx.strokeStyle='#000';
+        ctx.strokeStyle='#387BF4';
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.moveTo(0,this.y);
         ctx.lineTo(innerWidth,this.y);
+        ctx.stroke();
+        ctx.closePath();
     }
     
     this.update = function(){
@@ -194,10 +199,10 @@ var marbles = [];
 marbles.push(new Marble(innerWidth/2, innerHeight-150,30));
 
 var totalForceY = 0;
-var best = 25;
+var best = 30;
 var bestLine = undefined;
 if(best > 0){
-    bestLine = new BestLine(0,-(best*110));
+    bestLine = new BestLine(0,-((best*100)-innerHeight/2));
 }
     
 function animate(){
@@ -207,7 +212,9 @@ function animate(){
     for(var b = 0; b<bgDots.length;b++){
         bgDots[b].update();
     }
-    
+    if(bestLine != undefined){
+        bestLine.update();
+    }
     for(var h = 0; h < holes.length;h++){
         holes[h].update();
     }
@@ -220,22 +227,20 @@ function animate(){
         marbles[m].update(holes,bouncers);
     }
     
-    if(bestLine != undefined){
-        bestLine.update();
-    }
     
-    displayScore = Math.round(Math.abs(scoredDist));
+    
+    displayScore = Math.floor(Math.abs(scoredDist/100));
     ctx.font = '50px sans-serif';
-    ctx.fillText(displayScore+'m',20,100);
+    ctx.fillText(displayScore+'m',20,60);
     
     if(gameOver){
         ctx.fillText('Refresh to play again',20,160);
     }
     
     //Orientation debugging
-    ctx.font = '12px sans-serif';
+    ctx.font = '18px sans-serif';
     ctx.strokeStyle='#000';
-    
+    ctx.fillText(scoredDist,20,innerHeight-30);
     
 }
 
@@ -280,6 +285,10 @@ document.addEventListener('keydown',function(event){
         } else if(event.keyCode ==40){ //Down
             forceY+=0.2;
             applyToHoles = false;
+        }
+        
+        if(event.keyCode==79){ //Press o to toggle collisions.
+            canCollide = !canCollide;
         }
     }
 })
