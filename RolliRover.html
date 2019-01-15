@@ -55,6 +55,45 @@ function Marble(x,y,radius,holes,bouncers){
     }
     
     this.update = function(holes,bouncers, blocks){
+        //Check for collisions against holes
+        for(var h = 0; h < holes.length;h++){
+            var dist = getDistance(this.x,holes[h].x,this.y,holes[h].y);
+            if(dist < holes[h].radius-this.radius){
+                //we have fallen in a hole.
+                forceX = 0; forceY = 0;
+                //Now we shrink
+                if(this.radius>0.1){
+                    this.radius--;    
+                } else {
+                    gameOver = true;
+                }
+                canControl = false;
+            }
+        }
+
+        //Check for collisions against blocks
+        for(var k = 0; k < blocks.length; k++){
+            var coll = RectCircleColliding(this,blocks[k]);
+            if(coll == 1){ //Vertical
+                forceY = -forceY/2;
+            } else if(coll == 2){ //Horizontal
+                forceX = -forceX/2;
+            } else if(coll == 3){
+                forceX = -forceX/2;
+                forceY = -forceY/2;
+            }
+        }
+
+        //Check for bounce
+        for(var b = 0; b < bouncers.length;b++){
+            var dist = getDistance(this.x,bouncers[b].x,this.y,bouncers[b].y);
+            if(dist < bouncers[b].radius+this.radius){
+                //Bounce back
+                forceX = -forceX;
+                forceY = -forceY;
+            }
+        }
+        
         this.x += forceX;
         
         if(this.x-this.radius < 0){
@@ -85,46 +124,7 @@ function Marble(x,y,radius,holes,bouncers){
                 totalYforce += Math.abs(forceY);
             }
         }
-        
-        //Check for collisions against holes
-        for(var h = 0; h < holes.length;h++){
-            var dist = getDistance(this.x,holes[h].x,this.y,holes[h].y);
-            if(dist < holes[h].radius-this.radius){
-                //we have fallen in a hole.
-                forceX = 0; forceY = 0;
-                //Now we shrink
-                if(this.radius>0.1){
-                    this.radius--;    
-                } else {
-                    gameOver = true;
-                }
-                canControl = false;
-            }
-        }
 
-        //Check for collisions against blocks
-        for(var k = 0; k < blocks.length; k++){
-            var coll = RectCircleColliding(this,blocks[k]);
-            if(coll == 1){ //Vertical
-                forceY = -(forceY/2);
-            } else if(coll == 2){ //Horizontal
-                forceX = -(forceX/2);
-            } else if(coll == 3){
-                forceX = -(forceX/2);
-                forceY = -(forceY/2);
-            }
-        }
-
-        //Check for bounce
-        for(var b = 0; b < bouncers.length;b++){
-            var dist = getDistance(this.x,bouncers[b].x,this.y,bouncers[b].y);
-            if(dist < bouncers[b].radius+this.radius){
-                //Bounce back
-                forceX = -forceX;
-                forceY = -forceY;
-            }
-        }
-        
         this.draw();
     }
 }
