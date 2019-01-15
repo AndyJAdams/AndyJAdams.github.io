@@ -104,21 +104,16 @@ function Marble(x,y,radius,holes,bouncers){
 
         //Check for collisions against blocks
         for(var k = 0; k < blocks.length; k++){
-            var distX = Math.abs(this.x-blocks[k].x-blocks[k].w/2);
-            var distY = Math.abs(this.y-blocks[k].y-blocks[k].h/2);
-            if(distX <= blocks[k].w/2){
-                forceX = -(forceX/2);
-            }
-
-            if(distY <= blocks[k].h/2){
-                forceY = -(forceY/2);
-            }
-
-            var dx = distX-blocks[k].w/2;
-            var dy = distY-blocks[k].h/2;
-            if(dx*dx+dy*dy <= this.r * this.r){
-                forceX = -forceX;
-                forceY = -forceY;
+            var coll = RectCircleColliding(this,blocks[k]);
+            if(coll != 0){
+                console.log(k + " - " + coll);}
+            if(coll == 1){ //Horizontal??
+                forceX = 0;
+            } else if(coll == 2){ //Vertical??
+                forceY = 0;
+            } else if(coll == 3){
+                forceX = 0;
+                forceY = 0;
             }
         }
 
@@ -210,13 +205,20 @@ function Block(x,y,w,h){
         if(applyToHoles){
             this.y -= forceY;
         }
+
+        if(this.y > innerHeight+this.h+30){
+            this.h = Math.random()*80+20;
+            this.w = Math.random()*(innerWidth/4);
+            this.x = Math.random()*innerWidth;
+            this.y = -(this.h+(Math.random()*20));
+        }
         this.draw();
     }
 }
     
 var blocks = [];
-for(var i = 0; i < 4; i++){
-    //blocks.push(new Block(Math.random()*innerWidth,Math.random()*innerHeight-innerHeight/2,Math.random()*(innerWidth/4),Math.random()*30));
+for(var i = 0; i < 1; i++){
+    blocks.push(new Block(innerWidth/2-50,innerHeight/2-50,100,100);
 }
 
 var holes = [];
@@ -297,6 +299,10 @@ function Reset(){
     for(var i = 0; i < 4;i++){
         //bouncers.push(new Feature(Math.random()*innerWidth, Math.random()*innerHeight-innerHeight/2,Math.random()*50+20,'bouncer','#FFF'));
     }
+    blocks = [];
+    for(var k = 0; k < 5; k++){
+         //blocks.push(new Block(Math.random()*innerWidth,Math.random()*innerHeight-innerHeight/2,Math.random()*(innerWidth/4),Math.random()*30));
+    }
     marbles = [];
     marbles.push(new Marble(innerWidth/2, innerHeight-150,30));
     gameOver = false;
@@ -355,6 +361,32 @@ function getDistance(x1,x2,y1,y2){
     return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
 }
 
+function RectCircleColliding(circle, rect){
+    var ret = -1;
+    var distX = Math.abs(circle.radius-rect.x-rect.w/2);
+    var distY = Math.abs(circle.radius-rect.y-rect.h/2);
+
+    if(distX > (rect.w/2+circle.radius)){
+        ret = 0;
+    }
+     if (distY > (rect.h / 2 + circle.radius)) {
+        ret = 0;
+    }
+
+    if (distX <= (rect.w / 2)) {
+        ret = 1;
+    }
+    if (distY <= (rect.h / 2)) {
+        ret = 2;
+    }
+
+    var dx = distX - rect.w / 2;
+    var dy = distY - rect.h / 2;
+    if(dx * dx + dy * dy <= (circle.r * circle.r)){
+        ret = 3;
+    }
+    return ret;
+}
 
 animate();
 </script>
