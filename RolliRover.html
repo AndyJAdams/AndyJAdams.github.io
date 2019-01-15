@@ -54,7 +54,7 @@ function Marble(x,y,radius,holes,bouncers){
         
     }
     
-    this.update = function(holes,bouncers){
+    this.update = function(holes,bouncers, blocks){
         this.x += forceX;
         
         if(this.x-this.radius < 0){
@@ -86,7 +86,7 @@ function Marble(x,y,radius,holes,bouncers){
             }
         }
         
-        //Check for collisions
+        //Check for collisions against holes
         for(var h = 0; h < holes.length;h++){
             var dist = getDistance(this.x,holes[h].x,this.y,holes[h].y);
             if(dist < holes[h].radius-this.radius){
@@ -101,6 +101,27 @@ function Marble(x,y,radius,holes,bouncers){
                 canControl = false;
             }
         }
+
+        //Check for collisions against blocks
+        for(var k = 0; k < blocks.length; k++){
+            var distX = Math.abs(this.x-blocks[k].x-blocks[k].w/2);
+            var distY = Math.abs(this.y-blocks[k].y-blocks[k].h/2);
+            if(distX <= blocks[k].w/2){
+                forceX = -(forceX/2);
+            }
+
+            if(distY <= blocks[k].h/2){
+                forceY = -(forceY/2);
+            }
+
+            var dx = distX-blocks[k].w/2;
+            var dy = distY-blocks[k].h/2;
+            if(dx*dx+dy*dy <= this.r * this.r){
+                forceX = -forceX;
+                forceY = -forceY;
+            }
+        }
+
         //Check for bounce
         for(var b = 0; b < bouncers.length;b++){
             var dist = getDistance(this.x,bouncers[b].x,this.y,bouncers[b].y);
@@ -177,11 +198,29 @@ function BestLine(y){
         this.y = b;
     }
 }
-    
 
+function Block(x,y,w,h){
+    this.x = x; this.y = y; this.w = w; this.h = h;
+    this.draw = function(){
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
+
+    this.update = function(){
+        if(applyToHoles){
+            this.y -= forceY;
+        }
+        this.draw();
+    }
+}
+    
+var blocks = [];
+for(var i = 0; i < 4; i++){
+    //blocks.push(new Block(Math.random()*innerWidth,Math.random()*innerHeight-innerHeight/2,Math.random()*(innerWidth/4),Math.random()*30));
+}
 
 var holes = [];
-for(var i = 0; i < 10; i++){
+for(var i = 0; i < 5; i++){
     holes.push(new Feature(Math.random()*innerWidth, Math.random()*innerHeight-innerHeight/2,Math.random()*120+30,'hole','#000'));
 }
 
@@ -200,6 +239,8 @@ function animate(){
     window.requestAnimationFrame(animate);
     ctx.clearRect(0,0,innerWidth, innerHeight);
     
+   
+
     for(var h = 0; h < holes.length;h++){
         holes[h].update();
     }
@@ -207,12 +248,16 @@ function animate(){
     for(var c = 0; c < bouncers.length;c++){
         bouncers[c].update();
     }
-    
-    for(var m = 0; m < marbles.length; m++){
-        marbles[m].update(holes,bouncers);
+
+    for(var k = 0; k < blocks.length; k++){
+        blocks[k].update();
     }
     
-    scoredDist = Math.round(totalYforce)/100;
+    for(var m = 0; m < marbles.length; m++){
+        marbles[m].update(holes,bouncers,blocks);
+    }
+
+     scoredDist = Math.round(totalYforce)/100;
     displayScore = scoredDist;
     ctx.font = '50px sans-serif';
     ctx.fillText(displayScore+'m',20,100);
@@ -229,8 +274,6 @@ function animate(){
             bline.update();
         }
     }
-
-    
 }
 
 function Reset(){
