@@ -330,8 +330,8 @@ window.addEventListener('deviceorientation', function(event){
         orient.b = 30.0;
     }
     //Apply it... fingers crossed.
-    forceX += (orient.g);
-    forceY += (orient.b);
+    forceX += (orient.g)/10;
+    forceY += (orient.b)/10;
     
 })
 
