@@ -59,23 +59,40 @@ function Marble(x,y,radius,holes,bouncers){
 
     this.jump = function(){
         console.log("Jumping");
-        if()
+        if(this.grounded && !this.jumping){
+            this.jumping = true;
+        } else if(this.grounded && this.jumping){
+            if(this.radius < this.orgRadius*3.0){
+                this.radius += 0.2;
+            } else {
+                this.grounded = false;
+            }
+        } else if(this.jumping){
+            if(this.radius > this.orgRadius){
+                this.radius -= 0.2;
+            } else {
+                this.jumping = false;
+                this.grounded = true;
+            }
+        }
     }
     
     this.update = function(holes,bouncers, blocks){
-        //Check for collisions against holes
-        for(var h = 0; h < holes.length;h++){
-            var dist = getDistance(this.x,holes[h].x,this.y,holes[h].y);
-            if(dist < holes[h].radius-this.radius){
-                //we have fallen in a hole.
-                forceX = 0; forceY = 0;
-                //Now we shrink
-                if(this.radius>0.1){
-                    this.radius--;    
-                } else {
-                    gameOver = true;
+        if(!this.jumping){
+            //Check for collisions against holes
+            for(var h = 0; h < holes.length;h++){
+                var dist = getDistance(this.x,holes[h].x,this.y,holes[h].y);
+                if(dist < holes[h].radius-this.radius){
+                    //we have fallen in a hole.
+                    forceX = 0; forceY = 0;
+                    //Now we shrink
+                    if(this.radius>0.1){
+                        this.radius--;    
+                    } else {
+                        gameOver = true;
+                    }
+                    canControl = false;
                 }
-                canControl = false;
             }
         }
 
