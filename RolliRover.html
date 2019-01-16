@@ -375,6 +375,11 @@ document.addEventListener('keydown',function(event){
             forceY+=0.2;
             applyToHoles = false;
         }
+        if(event.keyCode == 32){
+            for(var m = 0; m < marbles.length; m++){
+                marbles[m].jump();
+            }
+        }
     }
     if(event.keyCode == 82){
         Reset();
