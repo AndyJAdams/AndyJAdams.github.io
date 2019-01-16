@@ -48,6 +48,8 @@ function Marble(x,y,radius,holes,bouncers){
     this.orgRadius = radius;
     this.jumping = false;
     this.grounded = true;
+    this.doJump = false;
+
     this.draw = function(){
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, false);
@@ -61,20 +63,7 @@ function Marble(x,y,radius,holes,bouncers){
         console.log("Jumping");
         if(this.grounded && !this.jumping){
             this.jumping = true;
-        } else if(this.grounded && this.jumping){
-            if(this.radius < this.orgRadius*3.0){
-                this.radius += 0.2;
-            } else {
-                this.grounded = false;
-            }
-        } else if(this.jumping){
-            if(this.radius > this.orgRadius){
-                this.radius -= 0.2;
-            } else {
-                this.jumping = false;
-                this.grounded = true;
-            }
-        }
+        } 
     }
     
     this.update = function(holes,bouncers, blocks){
@@ -92,6 +81,21 @@ function Marble(x,y,radius,holes,bouncers){
                         gameOver = true;
                     }
                     canControl = false;
+                }
+            }
+        } else {
+            if(this.grounded && this.jumping){
+                if(this.radius < this.orgRadius*3.0){
+                    this.radius += 0.2;
+                } else {
+                    this.grounded = false;
+                }
+            } else if(this.jumping){
+                if(this.radius > this.orgRadius){
+                    this.radius -= 0.2;
+                } else {
+                    this.jumping = false;
+                    this.grounded = true;
                 }
             }
         }
