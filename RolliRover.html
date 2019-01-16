@@ -59,6 +59,7 @@ function Marble(x,y,radius,holes,bouncers){
 
     this.jump = function(){
         console.log("Jumping");
+        if()
     }
     
     this.update = function(holes,bouncers, blocks){
@@ -185,6 +186,7 @@ function BestLine(y){
         ctx.strokeStyle = '#00000066';
         ctx.stroke();
         ctx.closePath();
+        ctx.fillText('Best',innerWidth-80,this.y-15);
     }
 
     this.update = function(){
