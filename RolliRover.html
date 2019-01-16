@@ -48,7 +48,6 @@ function Marble(x,y,radius,holes,bouncers){
     this.orgRadius = radius;
     this.jumping = false;
     this.grounded = true;
-    this.doJump = false;
 
     this.draw = function(){
         ctx.beginPath();
@@ -86,13 +85,13 @@ function Marble(x,y,radius,holes,bouncers){
         } else {
             if(this.grounded && this.jumping){
                 if(this.radius < this.orgRadius*3.0){
-                    this.radius += 0.2;
+                    this.radius += 0.5;
                 } else {
                     this.grounded = false;
                 }
             } else if(this.jumping){
                 if(this.radius > this.orgRadius){
-                    this.radius -= 0.2;
+                    this.radius -= 0.5;
                 } else {
                     this.jumping = false;
                     this.grounded = true;
