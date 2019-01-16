@@ -75,12 +75,12 @@ function Marble(x,y,radius,holes,bouncers){
         for(var k = 0; k < blocks.length; k++){
             var coll = RectCircleColliding(this,blocks[k]);
             if(coll == 1){ //Vertical
-                forceY = -forceY/2;
+                forceY = -forceY;
             } else if(coll == 2){ //Horizontal
-                forceX = -forceX/2;
+                forceX = -forceX;
             } else if(coll == 3){
-                forceX = -forceX/2;
-                forceY = -forceY/2;
+                forceX = -forceX;
+                forceY = -forceY;
             }
         }
 
@@ -98,17 +98,17 @@ function Marble(x,y,radius,holes,bouncers){
         
         if(this.x-this.radius < 0){
             this.x = this.radius;
-            forceX = -Math.round(forceX/2);
+            forceX = -forceX;
             //forceX = 0;
         } else if(this.x+this.radius>innerWidth){
             this.x = innerWidth-this.radius;
-            forceX = -(forceX/2);
+            forceX = -(forceX);
             //forceX = 0;
         }
         
         if(this.y + this.radius > innerHeight){
             this.y = innerHeight-this.radius;
-            forceY = -(forceY/2);
+            forceY = -(forceY);
             //forceY = 0;
         } else if(this.y-this.radius>innerHeight/2){
             this.y += forceY;
@@ -215,8 +215,8 @@ function Block(x,y,w,h){
 }
     
 var blocks = [];
-for(var i = 0; i < 1; i++){
-    blocks.push(new Block(50,50,100,100));
+for(var i = 0; i < 5; i++){
+    blocks.push(new Block(Math.random()*innerWidth-50,Math.random()*innerHeight-(innerHeight/2),Math.random()*(innerWidth/3) + 40,Math.random()*100+30));
 }
 
 var holes = [];
@@ -309,7 +309,7 @@ function Reset(){
 
 window.addEventListener('resize',function(){
     scaleCanvas();
-})
+});
     
 window.addEventListener('deviceorientation', function(event){
     event.preventDefault();
@@ -330,10 +330,10 @@ window.addEventListener('deviceorientation', function(event){
         orient.b = 30.0;
     }
     //Apply it... fingers crossed.
-    forceX += (orient.g)/10;
-    forceY += (orient.b)/10;
+    forceX += (orient.g)/20;
+    forceY += (orient.b)/20;
     
-})
+});
 
 document.addEventListener('keydown',function(event){
     if(canControl){
