@@ -84,15 +84,16 @@ function Marble(x,y,radius,holes,bouncers){
             }
         } else {
             if(this.grounded && this.jumping){
-                if(this.radius < this.orgRadius*3.0){
-                    this.radius += 0.5;
+                if(this.radius < this.orgRadius*7){
+                    this.radius += 1.5;
                 } else {
                     this.grounded = false;
                 }
             } else if(this.jumping){
                 if(this.radius > this.orgRadius){
-                    this.radius -= 0.5;
+                    this.radius -= 1.25;
                 } else {
+                    this.radius = this.orgRadius;
                     this.jumping = false;
                     this.grounded = true;
                 }
@@ -206,6 +207,8 @@ function BestLine(y){
         ctx.strokeStyle = '#00000066';
         ctx.stroke();
         ctx.closePath();
+        ctx.fillStyle = '#00000066';
+        ctx.font = '20px sans-serif';
         ctx.fillText('Best',innerWidth-80,this.y-15);
     }
 
