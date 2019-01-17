@@ -271,7 +271,17 @@ function animate(){
     window.requestAnimationFrame(animate);
     ctx.clearRect(0,0,innerWidth, innerHeight);
     
-   
+   if(forceX > 10.0){
+    forceX = 10.0;
+   } else if(forceX < -10){
+    forceX = -10.0;
+   }
+
+   if(forceY > 10.0){
+    forceY = 10.0;
+   } else if(forceY < -10.0){
+    forceY = -10.0;
+   }
 
     for(var h = 0; h < holes.length;h++){
         holes[h].update();
@@ -299,7 +309,6 @@ function animate(){
     }
 
     if(bestDistance > 0 && scoredDist < bestDistance){
-        ctx.fillText(bestDistance, 20,160);
         if(bline == null){
             bline = new BestLine((innerHeight/2)-(bestDistance*100));
         } else {
@@ -331,7 +340,7 @@ function Reset(){
     }
     blocks = [];
     for(var k = 0; k < 5; k++){
-         //blocks.push(new Block(Math.random()*innerWidth,Math.random()*innerHeight-innerHeight/2,Math.random()*(innerWidth/4),Math.random()*30));
+         blocks.push(new Block(Math.random()*innerWidth-50,Math.random()*innerHeight-(innerHeight/2),Math.random()*(innerWidth/3) + 40,Math.random()*100+30));
     }
     marbles = [];
     marbles.push(new Marble(innerWidth/2, innerHeight-150,30));
@@ -362,8 +371,8 @@ window.addEventListener('deviceorientation', function(event){
         orient.b = 30.0;
     }
     //Apply it... fingers crossed.
-    forceX += (orient.g)/20;
-    forceY += (orient.b)/20;
+    forceX += (orient.g)/100;
+    forceY += (orient.b)/100;
     
 });
 
