@@ -76,7 +76,7 @@
 		}
 
 		forceX = (orient.g*dampner); 
-		forceY = (orient.b*dampner);
+		forceY = -1;
 
 		ball.applyForce(forceX,forceY);
 
@@ -86,6 +86,7 @@
 	engine.world.gravity.y = 0;
 	Engine.run(engine);
 	Render.run(render);
+    
 </script>
 </body>
 </html>
