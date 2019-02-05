@@ -66,11 +66,13 @@
 			blockArray.push(new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*8)));
 		}
 	}
+        
+    var Debug = "Debug \n";
 
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
-
+        /*
 		for(var i = 0; i < blockArray.length; i++){
             if(blockArray[i] != undefined){
                 blockArray[i].update();
@@ -82,7 +84,8 @@
                 blockArray[i].label();
             }
 		}
-
+        */
+        ctx.fillText(Debug,10,30);
 	}
 
 	var closestBlock = -1;
@@ -107,6 +110,7 @@
 		mx = evt.changedTouches[0].pageX;
        my = evt.changedTouches[0].pageY; 
         closestBlock = findClosestBlock(evt.changedTouches[0].pageX,evt.changedTouches[0].pageY);
+        Debug += "MX: " + mx + " MY: " + my + " CB " + closestBlock;
 	}
         
     function TouchMove(evt){
