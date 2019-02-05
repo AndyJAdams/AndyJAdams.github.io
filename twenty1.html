@@ -72,11 +72,15 @@
 		ctx.clearRect(0,0,innerWidth,innerHeight);
 
 		for(var i = 0; i < blockArray.length; i++){
-			blockArray[i].update();
+            if(blockArray[i] != undefined){
+                blockArray[i].update();
+            }
 		}
 
 		for(var i = 0; i < blockArray.length; i++){
-			blockArray[i].label();
+            if(blockArray[i] != undefined){
+                blockArray[i].label();
+            }
 		}
 
 	}
@@ -88,7 +92,7 @@
 		for(var i = 0; i < blockArray.length;i++){
 			var blk = blockArray[i];
 			if(x > blk.x && x < blk.x+blk.w && y > blk.y && y < blk.y+blk.h){
-				closestBlock = i;
+				return i;
 			}
 		}
 	}
@@ -101,7 +105,8 @@
 	function TouchStart(evt){
 		evt.preventDefualt();
 		mx = evt.changedTouches[0].pageX;
-       my = evt.changedTouches[0].pageY; findClosestBlock(evt.changedTouches[0].pageX,evt.changedTouches[0].pageY);
+       my = evt.changedTouches[0].pageY; 
+        closestBlock = findClosestBlock(evt.changedTouches[0].pageX,evt.changedTouches[0].pageY);
 	}
         
     function TouchMove(evt){
@@ -123,7 +128,13 @@
             if(emx-mx > blockScale/2){
                 if(emx-mx > 0){
                     //Right
-                    console.log("R");
+                    var rblock = findClosestBlock(mx+blockScale,emy);
+                    var rval = blockArray[rblock].value;
+                    var cval = blockArray[closestBlock].value;
+                    if(rval+cval < 21){
+                        blockArray[rblock].value = rval+cval;
+                        blockArray[closestBlock] = undefined;
+                    }
                 } else if(emx-mx < 0){
                     //Left
                     console.log("L");
