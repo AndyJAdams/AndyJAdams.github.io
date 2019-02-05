@@ -82,6 +82,8 @@
 	}
 
 	var closestBlock = -1;
+    var mx = 0;
+    var my = 0;
 	function findClosestBlock(x,y){
 		for(var i = 0; i < blockArray.length;i++){
 			var blk = blockArray[i];
@@ -98,8 +100,47 @@
 
 	function TouchStart(evt){
 		evt.preventDefualt();
-		findClosestBlock(evt.changedTouches[0].pageX,evt.changedTouches[0].pageY);
+		mx = evt.changedTouches[0].pageX;
+       my = evt.changedTouches[0].pageY; findClosestBlock(evt.changedTouches[0].pageX,evt.changedTouches[0].pageY);
 	}
+        
+    function TouchMove(evt){
+        evt.preventDefault();
+    }
+        
+    function TouchCancel(evt){
+        evt.preventDefault();
+        closestBlock = -1;
+    }
+    
+    function TouchEnd(evt){
+        evt.preventDefault();
+        var emx = evt.changedTouches[0].pageX;
+        var emy = evt.changedTouches[0].pageY;
+        
+        if(Math.abs(emx-mx) > Math.abs(emy-my)){
+            //Horizontal
+            if(emx-mx > blockScale/2){
+                if(emx-mx > 0){
+                    //Right
+                    console.log("R");
+                } else if(emx-mx < 0){
+                    //Left
+                    console.log("L");
+                }
+            }
+        } else {
+            if(emy-my > blockScale/2){
+                if(emy-my > 0){
+                    //Down
+                    console.log("D");
+                } else if(emy-my < 0){
+                    //Up
+                    console.log("U");
+                }
+            }
+        }
+    }
 
 	animate();
 	</script>
