@@ -4,6 +4,9 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <style>
+  body{
+    margin: 0;
+  }
   #grid td{
     border-width: 2px; 
     border-style: solid; 
@@ -14,22 +17,28 @@
   }
   #Panel {
     text-align:center;
-
+    margin: auto;
   }
   #debugTXT{
     bottom: 0;
     position: fixed;
   }
   #content{
-    position: absolute;
-    left: 33%;
-    top: 0;
+    margin: auto;
   }
 </style></head>
 <!--User visible shtuff-->
 <body style="background-color: #ffffff; color: #545454;">
 <div id='content'>
-<div id="Panel" style="margin-top: -30px; position: absolute; left:12px;">
+  <div id='buttons'>
+    <div id='settingsBTN' style='width: 65px; height: 65px; border-radius: 8px; background-color: #DDDDDD; margin-top:5px; box-shadow: 0 5px 0 #CBCBCB;'>
+    <img id="settingsBTN_icon" src="https://d30y9cdsu7xlg0.cloudfront.net/png/1241-200.png" style="width: 40px; height:40px; margin: 12px;"/>
+    </div>
+    <div id='restartBTN' style='width: 65px; height: 100px; border-radius: 8px; background-color: rgb(245,130,49); margin-top: 5px; box-shadow: 0 5px 0 #c24112;'>
+      <img id="restartBTN" src="https://d30y9cdsu7xlg0.cloudfront.net/png/5045-200.png" style="width: 40px; height:40px; position: relative; left: 13px; top: 45px;"/>
+    </div>
+  </div>
+<div id="Panel" style="margin-top: -30px;">
   <p id="score" style="font-family: helvetica, sans-serif;font-size: 24pt;"><b>0</b></p>
   <table id="grid" style="margin-top: 10px;" cellspacing="6"></table><br/>
   <div id="restart">
@@ -44,12 +53,8 @@
     <table id="swatch" style="margin-left: auto; margin-right: auto; "></table>
 
 </div>
-<div id='settingsBTN' style='width: 65px; height: 100px; border-radius: 8px; background-color: #DDDDDD; position: absolute; left: 10px; top: -30px; box-shadow: 0 5px 0 #CBCBCB;'>
-  <img id="settingsBTN_icon" src="https://d30y9cdsu7xlg0.cloudfront.net/png/1241-200.png" style="width: 40px; height:40px; position: absolute; left: 13px; top: 45px;"/>
-</div>
-<div id='restartBTN' style='width: 65px; height: 100px; border-radius: 8px; background-color: rgb(245,130,49); position: absolute; left: 270px; top: -30px; box-shadow: 0 5px 0 #c24112;'>
-  <img id="restartBTN" src="https://d30y9cdsu7xlg0.cloudfront.net/png/5045-200.png" style="width: 40px; height:40px; position: absolute; left: 13px; top: 45px;"/>
-</div>
+
+
 <div id='settingsPanel' style='width:350px; height: 570px; background-color: #cccccc; position:absolute; top: -20px; border-radius: 15px; box-shadow: 0 10px 0 #aeaeae;'>
   
   <div id='musicBTN' style='width:250px; height: 70px; background-color: #11C433; position:absolute; top: 40px; left: 50px; box-shadow: 0 10px 0 #00A211; border-radius: 10px;'>
@@ -71,17 +76,7 @@
     <h3 style='font-family: helvetica, sans-serif; font-size: 26pt; color: #000000; position: absolute; top: -29px; left: 18px;'>X</h3>
   </div>
 </div>  
-<div id='intro' style='width:350px; height: 550px; background-color: #000000; position:absolute; top: 0px;'>
-  <div id='b1' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 165px; left: 80px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b2' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 165px; left: 140px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b3' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 165px; left: 200px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b4' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 225px; left: 80px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b5' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 225px; left: 140px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b6' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 225px; left: 200px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b7' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 285px; left: 80px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b8' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 285px; left: 140px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-  <div id='b9' style='width:45px; height: 45px; background-color: #ffffff; position: absolute; top: 285px; left: 200px; border-style: solid; border-color: #ffffff; border-width: 5px;'></div>
-</div>
+
 <audio id="blok" src="http://freesound.org/data/previews/95/95265_861714-lq.mp3"></audio>
 <audio id="error" src="http://freesound.org/data/previews/14/14817_40665-lq.mp3"></audio>
 <audio id="skip" src="http://freesound.org/data/previews/41/41633_433684-lq.mp3"></audio>
@@ -90,20 +85,7 @@
 <script>
 $(document).ready(function(){
   //dropout the intro then scroll away.
-  $('#b1').delay(1000).animate({
-    opacity: 0.0
-  }, 50, function(){
-    $(this).animate({
-    opacity: 1.0
-    }, 50, function(){
-      $(this).delay(800).animate({
-        opacity: 0.0
-    }, 50, function(){
-      $('#intro').delay(2400).slideToggle('slow');
-      bgMusic.play();
-    })
-  })
-  });
+  bgMusic.play();
   //Hide Extras
   $('#settingsPanel').hide();
   $('#restart').hide();
@@ -161,28 +143,28 @@ $(document).ready(function(){
         $(this).css('background-color','#99cc00');
         $(this).css('box-shadow', ' 0 10px 0 #608000');
         $('#difficultyTxt').html('DIFFICULTY: EASY');
-        $('#Panel').css('left', '12px');
+        //$('#Panel').css('left', '12px');
         gridSize = 5;
         break;
       case 1:
         $(this).css('background-color','#ffcc00');
         $(this).css('box-shadow', ' 0 10px 0 #b38f00');
         $('#difficultyTxt').html('DIFFICULTY: MEDIUM');
-        $('#Panel').css('left', '10px');
+        //$('#Panel').css('left', '10px');
         gridSize = 6;
         break;
       case 2:
         $(this).css('background-color','#cc3300');
         $(this).css('box-shadow', ' 0 10px 0 #802000');
         $('#difficultyTxt').html('DIFFICULTY: HARD');
-        $('#Panel').css('left', '5px');
+        //$('#Panel').css('left', '5px');
         gridSize = 7
         break;
       case 3:
         $(this).css('background-color','#d9d9d9');
         $(this).css('box-shadow', ' 0 10px 0 #b3b3b3');
         $('#difficultyTxt').html('DIFFICULTY: INSANE');
-        $('#Panel').css('left', '15px');
+        //$('#Panel').css('left', '15px');
         gridSize = 4;
         break;
       default:
@@ -228,6 +210,7 @@ $(document).ready(function(){
     }
   });
 
+  
 
   $('#settingsBTN').click(function(){ //Show the settings panel
     $('#settingsPanel').slideToggle();

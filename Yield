@@ -1,0 +1,14 @@
+<DOCUMENT html><html><head><title>Yield</title><style>body{margin:0;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+var canvas = document.querySelector('canvas');
+sizeCanvas();
+function sizeCanvas(){canvas.width = window.innerWidth;canvas.height = window.innerHeight;}
+var ctx = canvas.getContext('2d');
+
+function animate(){
+	window.requestAnimationFrame(animate);
+	clearRect(0,0,innerWidth,innerHeight);
+
+	
+}
+</script></body></html>

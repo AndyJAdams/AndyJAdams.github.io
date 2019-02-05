@@ -1,0 +1,22 @@
+<DOCUMENT html><html><head><title>Test 25</title><style>body{margin:0;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+var canvas = document.querySelector('canvas');
+function scaleCanvas(){
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+}
+scaleCanvas();
+var c = canvas.getContext('2d');
+
+function animate(){
+	window.requestAnimationFrame(animate);
+	c.clearRect(0,0,innerWidth,innerHeight);
+
+	c.fillRect(10,10,20,20);
+}
+
+window.addEventListener('resize',function(){
+	scaleCanvas();
+})
+animate();
+</script></body></html>

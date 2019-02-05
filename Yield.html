@@ -1,0 +1,117 @@
+<DOCUMENT html><html><head><title>Yield</title><style>body{margin:0;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+var canvas = document.querySelector('canvas');
+function sizeCanvas(){canvas.width = window.innerWidth;canvas.height = window.innerHeight;}
+sizeCanvas();
+var ctx = canvas.getContext('2d');
+var drag = false;
+let movement = {
+	sx: innerWidth/2,
+	sy: innerHeight/2,
+	cx: innerWidth/2,
+	cy: innerHeight/2
+};
+
+function Portion(width,radius, start, degrees){
+	this.width = width;
+	this.radius = radius;
+	this.degrees = toRad(start+degrees);
+	this.start = toRad(start);
+	this.selected = false;
+
+	this.draw = function(){
+		ctx.beginPath();
+		ctx.lineWidth = this.width;
+		//ctx.lineCap = 'round';
+		//ctx.strokeStyle='#00000088';
+		ctx.arc(innerWidth/2, innerHeight/2, this.radius, this.start, this.degrees);
+		ctx.stroke();
+		ctx.closePath();	
+	}
+}
+
+var portions = [];
+var portionCount = 25;
+for(var p = 0; p < portionCount; p++){
+	portions.push(new Portion(50, Math.random()*(innerHeight/3)+55,Math.random()*360,Math.random()*30+2));
+}
+
+function animate(){
+	window.requestAnimationFrame(animate);
+	ctx.clearRect(0,0,innerWidth,innerHeight);
+
+	for(var i = 0; i < portions.length; i++){
+		portions[i].draw();
+	}
+}
+
+window.addEventListener('resize',function(){
+	sizeCanvas();
+})
+
+var prevAngle = 0;
+window.addEventListener('mousedown', function(e){
+	movement.sx = e.pageX;
+	movement.sy = e.pageY;
+	var d = getDistance();
+	//Find the closest portion
+	for(var i = 0; i < portions.length; i++){
+		if(d < portions[i].radius+(portions[i].width/2) && d > portions[i].radius-(portions[i].width/2)){
+			portions[i].selected = true;
+		}
+	}
+	prevAngle = getMouseAngle(movement.sx, movement.sy);
+	drag = true;
+})
+
+window.addEventListener('mousemove', function(e){
+	if(drag){
+		movement.cx = e.pageX;
+		movement.cy = e.pageY;
+		var angle = getMouseAngle(movement.cx,movement.cy); 
+		if(angle != prevAngle){
+			var dif = angle-prevAngle;
+			for(var i = 0; i < portions.length; i++){
+				if(portions[i].selected){
+					portions[i].start -= toRad(dif);
+					portions[i].degrees -= toRad(dif);
+				}
+			}
+			prevAngle = angle;
+		}
+		
+	}
+})
+
+window.addEventListener('mouseup', function(e){
+	drag = false;
+	clearSelected();
+})
+
+function clearSelected(){
+	for(var i = 0; i < portions.length; i++){
+		portions[i].selected = false;
+	}
+}
+
+function getDistance(){
+	var distX = Math.abs(movement.sx-(innerWidth/2));
+	var distY = Math.abs(movement.sy-(innerHeight/2));
+	var dist = Math.sqrt(Math.pow(distX,2)+Math.pow(distY,2));
+	return dist;
+}
+
+function getMouseAngle(x,y){
+	return Math.atan2(x-(innerWidth/2),y-(innerHeight/2))*(180/Math.PI);
+}
+
+function toRad(deg){
+	return deg * Math.PI/180;
+}
+
+function toDeg(rad){
+	return rad * 180/Math.PI;
+}
+
+animate();
+</script></body></html>

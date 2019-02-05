@@ -1,0 +1,107 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Twenty1</title>
+	<style type="text/css">
+		body{ 
+			margin: 0; 
+		}
+		canvas{
+			border: 1px solid black;
+		}
+	</style>
+</head>
+<body>
+	<canvas id='canvas'></canvas>
+	
+	<script>
+	var canvas = document.getElementById('canvas');
+	function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	scaleCanvas();
+	var ctx = canvas.getContext('2d');
+
+	var colorArray = [
+	'#3cb44b','#42d4f4','#e6194b','#911eb4','#ffe119',
+	'#9a6324','#469990','#bfef45','#800000','#ffd8b1',
+	'#4363d8','#f032e6','#fabebe','#aaffc3','#f58231',
+	'#808000','#748BA7','#e6beff','#fffac8','#a9a9a9'
+	];
+
+	ctx.font = '25px Arial';
+
+	function Block(x,y,w,h,value){
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
+		this.value = value;
+
+		this.draw = function(){
+			ctx.fillStyle = colorArray[this.value];
+			ctx.fillRect(this.x, this.y, this.w, this.h);
+			
+		}
+
+		this.update = function(){
+			this.draw();
+		}
+
+		this.label = function(){
+			ctx.fillStyle = '#000';
+			ctx.fillText(this.value +'', this.x+(this.w/2)-12, this.y+(this.w/2)+5);
+		}
+	}	
+
+	var blockScale = ((innerWidth*0.75)/6);
+	var blockArray = [];
+	var gridSize = (blockScale * 6);
+	for(var x = 0; x < 6; x++){
+		for(var y = 0; y < 6; y++){
+			var xpos = (x*blockScale)+(innerWidth/2-gridSize/2);
+			var ypos = (y*blockScale)+(innerHeight/2-gridSize/2);
+			blockArray.push(new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*8)));
+		}
+	}
+
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		for(var i = 0; i < blockArray.length; i++){
+			blockArray[i].update();
+		}
+
+		for(var i = 0; i < blockArray.length; i++){
+			blockArray[i].label();
+		}
+
+	}
+
+	var closestBlock = -1;
+	function findClosestBlock(x,y){
+		for(var i = 0; i < blockArray.length;i++){
+			var blk = blockArray[i];
+			if(x > blk.x && x < blk.x+blk.w && y > blk.y && y < blk.y+blk.h){
+				closestBlock = i;
+			}
+		}
+	}
+
+	window.addEventListener('touchstart', TouchStart, false);
+	window.addEventListener('touchstart', TouchMove, false);
+	window.addEventListener('touchstart', TouchCancel, false);
+	window.addEventListener('touchstart', TouchEnd, false);
+
+	function TouchStart(evt){
+		evt.preventDefualt();
+		findClosestBlock(evt.changedTouches[0].pageX,evt.changedTouches[0].pageY);
+	}
+
+	animate();
+	</script>
+</body>
+</html>

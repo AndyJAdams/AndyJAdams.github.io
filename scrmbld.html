@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Scrambled</title>
+	<title>Twenty1</title>
 	<style type="text/css">
 		body{ 
 			margin: 0; 
@@ -13,8 +13,27 @@
 	</style>
 </head>
 <body>
-	<canvas></canvas>
-	<img hidden src='https://upload.wikimedia.org/wikipedia/en/b/b7/Topological_map_of_TFL_rail_systems.svg' id='img' />
-	<script src="scrmbld.js"></script>
+	<canvas id='canvas'></canvas>
+	
+	<script>
+	var canvas = document.GetElementByID('canvas');
+	function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	scaleCanvas();
+	var ctx = canvas.GetContext('2d');
+
+	var offset = 0;
+	function animate(){
+		document.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		ctx.fillRect(10+offset,10,10,10);
+		offset+= 0.1;
+	}
+
+	animate();
+	</script>
 </body>
 </html>

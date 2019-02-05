@@ -1,0 +1,104 @@
+<DOCUMENT html><html><head><title>Cardinal UI</title><style>body{margin:0;}</style></head>
+<body><canvas id='canvas'></canvas><script>
+var canvas = document.getElementById('canvas');
+function scaleCanvas(){
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+}
+scaleCanvas();
+var ctx = canvas.getContext('2d');
+var clicked = false;
+ctx.lineWidth = 1;
+
+function Tile(x,y,options,primary){
+	this.x = x;
+	this.y = y;
+	this.options = options;
+	this.primary = primary;
+	this.growWidth = 0;
+	this.displayed = false;
+
+	this.draw = function(){
+		if(this.primary){
+			ctx.beginPath();
+			ctx.moveTo(this.x-this.growWidth,this.y-this.growWidth);
+			ctx.lineTo(this.x+this.growWidth,this.y-this.growWidth);
+			ctx.lineTo(this.x+this.growWidth,this.y+this.growWidth);
+			ctx.lineTo(this.x-this.growWidth,this.y+this.growWidth);
+			ctx.lineTo(this.x-this.growWidth,this.y-this.growWidth);
+			ctx.stroke();
+			ctx.closePath();
+		} 
+		if(this.displayed){
+			if(this.options[0]){ //LEFT OPTION
+				ctx.fillRect(this.x-95, this.y-30, 60,60);
+			}
+			if(this.options[1]){ //UP OPTION
+				ctx.fillRect(this.x-30, this.y-95, 60,60);	
+			}
+			if(this.options[2]){ //RIGHT OPTION
+				ctx.fillRect(this.x+35, this.y-30, 60,60);
+			}
+			if(this.options[3]){ //DOWN OPTION
+				ctx.fillRect(this.x-30, this.y+35, 60,60);
+			}
+		}
+	}
+
+	this.update = function(){
+		if(this.growWidth < 30){
+			this.growWidth+= 5;
+		} else {
+			this.displayed = true;
+		}
+		this.draw();
+	}
+}
+
+var interfaceTile = undefined;
+
+function animate(){
+	window.requestAnimationFrame(animate);
+	ctx.clearRect(0,0,innerWidth, innerHeight);
+
+	if(interfaceTile != undefined){
+		interfaceTile.update();
+	}
+}
+
+function startup(){
+	window.addEventListener('mousedown', mouseDown, false);
+	window.addEventListener('mousemove', mouseMove, false);
+	window.addEventListener('mouseup', mouseUp, false);
+	window.addEventListener('mouseleave', mouseOut, false);
+}
+
+function mouseDown(e){
+	console.log('down ' + e.pageX +','+ e.pageY);
+	clicked = true;
+	interfaceTile = new Tile(e.pageX, e.pageY,['A','B','C','E'],true);
+}
+
+function mouseMove(e){
+	if(clicked){
+		console.log('move ' + e.pageX +','+ e.pageY);
+	}
+}
+
+function mouseUp(e){
+	if(clicked){
+		console.log('up ' + e.pageX +','+ e.pageY);
+		clicked = false;
+		interfaceTile = undefined;
+	}
+}
+
+function mouseOut(){
+	//Mouse has left usable area - cancel all transactions
+	clicked = false;
+	interfaceTile = undefined;
+}
+
+startup();
+animate();
+</script></body></html>

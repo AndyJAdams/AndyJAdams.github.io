@@ -5,19 +5,27 @@ function scaleCanvas(){
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 }
+var scrollData = [];
 scaleCanvas();
 var ctx = canvas.getContext('2d');
 var tilt = 0;
 var halfX = innerWidth/2;
+var multiplier = halfX/110;
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth, innerHeight);
-
-	ctx.fillRect((tilt*2)+(halfX-10),innerHeight/2-10,20,20);
+	var slide = (tilt*multiplier)+(halfX-10);
+	scrollData.push(slide);
+	ctx.fillRect(slide,innerHeight/2-10,20,20);
 }
 
 window.addEventListener('deviceorientation', function(e){
 	tilt = e.gamma;
+	if(tilt < -45){
+		tilt = -45;
+	} else if(tilt > 45){
+		tilt = 45;
+	}
 })
 
 animate();

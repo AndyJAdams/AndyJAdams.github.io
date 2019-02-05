@@ -1,4 +1,4 @@
-<DOCUMENT html><html><head><title>Path</title><style>body{margin:0;}</style></head>
+<DOCUMENT html><html><head><meta charset="UTF-8"/><title>Path</title><style>body{margin:0;}</style></head>
 <body><canvas id='canvas'></canvas><script>
 var can = document.querySelector('canvas');
 can.width = window.innerWidth-2;
@@ -10,73 +10,110 @@ ctx.lineWidth = 5;
 ctx.font = '28px Verdana';
 ctx.fillStyle='#000';
 
+var mx = -1;
+var my = -1;
 
-function Player(x,y,radius){
+var colorArray = ['#4E79A7','#F28E2B','#E15759','#76B7B2','#59A14F','#EDC948','#B07AA1','#FF9DA7','#9C755F','#BAB0AC'];
+
+function Block(x,y,w,h,val,joined){
 	this.x = x;
 	this.y = y;
-	this.radius = radius;
-	this.moveDelta = 0;
-	
+	this.w = w;
+	this.h = h;
+	this.val = val;
+	this.joined = [undefined,undefined,undefined,undefined];
+	this.selected = false;
+
 	this.draw = function(){
-		if(this.moveDelta < 0.0){
-			this.moveDelta += Math.abs(this.moveDelta)/4;
-		} else if(this.moveDelta > 0.0){
-			this.moveDelta -= this.moveDelta/4;
+		ctx.fillStyle = colorArray[this.val];
+		if(this.selected){
+			ctx.fillStyle = '#FFF';
 		}
-		//arms
-		ctx.beginPath();
-		ctx.moveTo(this.x, this.y);
-		ctx.lineTo(this.x+this.moveDelta, this.y+40);
-		ctx.lineTo(this.x+this.moveDelta+7, this.y+40);
-		ctx.lineTo(this.x+this.moveDelta+12, this.y+65);
-		
-		ctx.stroke();
-		
-		//HEAD
-		ctx.beginPath();
-		ctx.arc(this.x+(this.moveDelta*0.6)+7, this.y+30,this.radius*0.7,0,2*Math.PI);
-		ctx.fill();
-		ctx.closePath();
-		
-		//LEGS
-		ctx.beginPath();
-		ctx.moveTo(this.x+(this.moveDelta*1.5)-7,this.y+80);
-		ctx.lineTo(this.x+this.moveDelta-5,this.y+45);
-		ctx.lineTo(this.x+this.moveDelta+5,this.y+45);
-		ctx.lineTo(this.x+(this.moveDelta*1.5)+7,this.y+80);
-		ctx.stroke();
-		ctx.closePath();
-		
-		//BODY
-		ctx.beginPath();
-		ctx.arc(this.x+this.moveDelta, this.y+45, this.radius, 0, 2 * Math.PI);
-		ctx.fill();
-		ctx.stroke();
-		ctx.closePath();
-		
-	}	
+		ctx.fillRect(this.x, this.y, this.w+1, this.h+1);
+	}
+
+	this.update = function(){
+		CheckNeighbors(this);
+		if(this.x < mx && this.x + this.w > mx && this.y < my && this.y+this.h > my){
+			this.selected = true;
+			for(var i = 0; i < this.joined.length; i++){
+				if(this.joined[i] != undefined){
+					this.joined[i].select(true);
+				}
+			}
+		} else {
+			this.select(false);
+		}
+		this.draw();
+	}
+
+	this.select = function(sel){
+		this.selected = sel;
+	}
 }
 
-var player = new Player(innerWidth/2, innerHeight/2, 10);
+var rowCount = 8;
+var colCount = 7;
+var blockWidth = (innerWidth/colCount);
+var blockHeight = (innerHeight/rowCount);
+
+
+var blocks = [];
+for(var r = 0; r < rowCount; r++){
+	for(var c = 0; c < colCount; c++){
+		blocks.push(new Block(c*blockWidth,r*blockHeight,blockWidth,blockHeight,Math.round(Math.random()*(colorArray.length-1))));
+	}
+}
 
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth,innerHeight);
-	player.draw();	
+
+	for(var b = 0; b < blocks.length; b++){
+		blocks[b].update();
+	}
+
 }
 
-var prevMouseX = 0;
-window.addEventListener('mousemove', function(e){
-	var x = e.pageX;
-	var y = e.pageY;
-	player.x = x;
-	player.y = y;
-	
-	player.moveDelta -= x-prevMouseX;
 
-	prevMouseX = x;
+function CheckNeighbors(blk){
+	for(var i = 0; i < blocks.length; i++){
+		//Above
+		if(!blk.joined[0] && blocks[i].x == blk.x && blocks[i].y-blockHeight == blk.y){
+			if(blocks[i].val == blk.val){
+				blk.joined[0] = blocks[i];
+				blocks[i].joined[2] = blk;
+			}
+		}
+		//Below
+		if(!blk.joined[2] && blocks[i].x == blk.x && blk.y-blockHeight == blocks[i].y){
+			if(blocks[i].val == blk.val){
+				blk.joined[2] = blocks[i];
+				blocks[i].joined[0] = blk;
+			}
+		}
+		//Right
+		if(!blk.joined[1] && blocks[i].y == blk.y && blocks[i].x-blockWidth == blk.x){
+			if(blocks[i].val == blk.val){
+				blk.joined[1] = blocks[i];
+				blocks[i].joined[3] = blk;
+			}
+		}
+		//Left
+		if(!blk.joined[3] && blocks[i].y == blk.y && blk.x-blockWidth == blocks[i].x){
+			if(blocks[i].val == blk.val){
+				blk.joined[3] = blocks[i];
+				blocks[i].joined[1] = blk;
+			}
+		}
+	}
+}
 
-
+document.addEventListener('mousemove', function(e){
+	mx = e.pageX;
+	my = e.pageY;
 });
+
+
 animate();
 </script></body></html>
