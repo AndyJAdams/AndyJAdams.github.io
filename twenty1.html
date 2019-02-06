@@ -33,12 +33,20 @@
 	];
 
 	ctx.font = '25px Arial';
+	function Position(x,y,r,c){
+		this.x = x;
+		this.y = y;
+		this.r = r;
+		this.c = c;
+	}
 
-	function Block(x,y,w,h,value){
+	function Block(x,y,w,h,value,r,c){
 		this.x = x;
 		this.y = y;
 		this.w = w;
 		this.h = h;
+		this.r = r;
+		this.c = c;
 		this.value = value;
 
 		this.draw = function(){
@@ -59,12 +67,14 @@
 
 	var blockScale = ((innerWidth*0.75)/6);
 	var blockArray = [];
+	var positions = [];
 	var gridSize = (blockScale * 6);
 	for(var x = 0; x < 6; x++){
 		for(var y = 0; y < 6; y++){
 			var xpos = (x*blockScale)+(innerWidth/2-gridSize/2);
 			var ypos = (y*blockScale)+(innerHeight/2-gridSize/2);
-			blockArray.push(new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*8)));
+			blockArray.push(new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*8),y,x));
+			positions.push(new Position(xpos,ypos,x,y));
 		}
 	}
         
@@ -117,7 +127,6 @@
 	
     window.addEventListener('touchmove', function(evt){
         evt.preventDefault();
-        Debug = " TOUCH MOVE ";
     }, false);
 	
     window.addEventListener('touchcancel', function(evt){
@@ -131,6 +140,7 @@
         var emy = evt.changedTouches[0].pageY;
         closestBlock = findClosestBlock(mx,my);
         if(closestBlock > -1){
+        	var cval = blockArray[closestBlock].value;
             if(Math.abs(emx-mx) > Math.abs(emy-my)){
                 //Horizontal
                 if(Math.abs(emx-mx) > blockScale/2){
@@ -139,32 +149,75 @@
                         var rblock = findClosestBlock(mx+blockScale,emy);
                         if(rblock > -1){
                             var rval = blockArray[rblock].value;
-                            var cval = blockArray[closestBlock].value;
-                            if(rval+cval < 21){
+                            if(rval+cval < 22){
                                 blockArray[rblock].value = rval+cval;
-                                blockArray[closestBlock] = undefined;
+                                blockArray[closestBlock].w = 0;
+                                Remove21();
                             }
                         }
                     } else if(emx-mx < 0){
                         //Left
-                        console.log("L");
+                        var lblock = findClosestBlock(mx-blockScale,emy);
+                        if(lblock > -1){
+                        	var lval = blockArray[lblock].value;
+                        	if(lval+cval < 22){
+                        		blockArray[lblock].value = lval + cval;
+                        		blockArray[closestBlock].w = 0;
+                        		Remove21();
+                        	} 
+                        }
                     }
                 }
             } else {
                 if(Math.abs(emy-my) > blockScale/2){
                     if(emy-my > 0){
                         //Down
-                        console.log("D");
+                        var dblock = findClosestBlock(emx,blockScale+my);
+                        if(dblock > -1){
+                        	var dval = blockArray[dblock].value;
+                        	if(dval+cval < 22){
+                        		blockArray[dblock].value = dval + cval;
+                        		blockArray[closestBlock].w = 0;;
+                        		Remove21();
+                        	}
+                        }
                     } else if(emy-my < 0){
                         //Up
-                        console.log("U");
+                        var ublock = findClosestBlock(emx,my-blockScale);
+                        if(ublock > -1){
+                        	var uval = blockArray[ublock].value;
+                        	if(uval+cval < 22){
+                        		blockArray[ublock].value = uval+cval;
+                        		blockArray[closestBlock].w = 0;
+                        		Remove21();
+                        	}
+                        }
                     }
                 }
             }
-            Debug = "X: " + (emx-mx) + " Y: " + (emy-my);
+            
         }
-        
+        closestBlock = -1;
     }, false);
+
+    function Remove21(){
+    	for(var i = 0; i < blockArray.length; i++){
+    		if(blockArray[i].value == 21){
+    			console.log("TODO ADD SCORE HERE");
+    			blockArray[i] = undefined;
+    		}
+    	}
+    }
+
+    function DropBlocks(){
+    	Debug = "Missing: ";
+    	for(var i = 0; i < blockArray.length; i++){
+    		if(blockArray[i].w < 1){
+    			//Get the blocks above this and move down
+    			Debug += blockArray[i].r + "," + blockArray[i].c + " ";
+    		}
+    	}
+    }
 
 	animate();
 	</script>
