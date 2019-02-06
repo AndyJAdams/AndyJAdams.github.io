@@ -9,6 +9,7 @@
 		}
 		canvas{
 			border: 1px solid black;
+            touch-action: none;
 		}
 	</style>
 </head>
@@ -72,7 +73,7 @@
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
-        /*
+        
 		for(var i = 0; i < blockArray.length; i++){
             if(blockArray[i] != undefined){
                 blockArray[i].update();
@@ -84,79 +85,86 @@
                 blockArray[i].label();
             }
 		}
-        */
+        
         ctx.fillText(Debug,10,30);
 	}
 
 	var closestBlock = -1;
     var mx = 0;
     var my = 0;
-	function findClosestBlock(x,y){
+	function findClosestBlock(a,b){
 		for(var i = 0; i < blockArray.length;i++){
-			var blk = blockArray[i];
-			if(x > blk.x && x < blk.x+blk.w && y > blk.y && y < blk.y+blk.h){
+			if(
+                blockArray[i] != undefined && 
+                a > blockArray[i].x && 
+                a < blockArray[i].x+blockArray[i].w && 
+                b > blockArray[i].y && 
+                b < blockArray[i].y+blockArray[i].h
+            ){
 				return i;
 			}
 		}
+        return -1;
 	}
 
-	window.addEventListener('touchstart', TouchStart, false);
-	window.addEventListener('touchstart', TouchMove, false);
-	window.addEventListener('touchstart', TouchCancel, false);
-	window.addEventListener('touchstart', TouchEnd, false);
-
-	function TouchStart(evt){
-		evt.preventDefualt();
-		mx = evt.changedTouches[0].pageX;
-       my = evt.changedTouches[0].pageY; 
-        closestBlock = findClosestBlock(evt.changedTouches[0].pageX,evt.changedTouches[0].pageY);
-        Debug += " TOUCH START \n";
-	}
-        
-    function TouchMove(evt){
+	window.addEventListener('touchstart', function(evt){
         evt.preventDefault();
-        Debug += " TOUCH MOVE \n"
-    }
+		mx = evt.changedTouches[0].pageX;
+        my = evt.changedTouches[0].pageY; 
         
-    function TouchCancel(evt){
+        Debug = " TOUCH START ";
+    }, false);
+	
+    window.addEventListener('touchmove', function(evt){
+        evt.preventDefault();
+        Debug = " TOUCH MOVE ";
+    }, false);
+	
+    window.addEventListener('touchcancel', function(evt){
         evt.preventDefault();
         closestBlock = -1;
-    }
-    
-    function TouchEnd(evt){
+    }, false);
+	
+    window.addEventListener('touchend', function(evt){
         evt.preventDefault();
         var emx = evt.changedTouches[0].pageX;
         var emy = evt.changedTouches[0].pageY;
-        
-        if(Math.abs(emx-mx) > Math.abs(emy-my)){
-            //Horizontal
-            if(emx-mx > blockScale/2){
-                if(emx-mx > 0){
-                    //Right
-                    var rblock = findClosestBlock(mx+blockScale,emy);
-                    var rval = blockArray[rblock].value;
-                    var cval = blockArray[closestBlock].value;
-                    if(rval+cval < 21){
-                        blockArray[rblock].value = rval+cval;
-                        blockArray[closestBlock] = undefined;
+        closestBlock = findClosestBlock(mx,my);
+        if(closestBlock > -1){
+            if(Math.abs(emx-mx) > Math.abs(emy-my)){
+                //Horizontal
+                if(Math.abs(emx-mx) > blockScale/2){
+                    if(emx-mx > 0){
+                        //Right
+                        var rblock = findClosestBlock(mx+blockScale,emy);
+                        if(rblock > -1){
+                            var rval = blockArray[rblock].value;
+                            var cval = blockArray[closestBlock].value;
+                            if(rval+cval < 21){
+                                blockArray[rblock].value = rval+cval;
+                                blockArray[closestBlock] = undefined;
+                            }
+                        }
+                    } else if(emx-mx < 0){
+                        //Left
+                        console.log("L");
                     }
-                } else if(emx-mx < 0){
-                    //Left
-                    console.log("L");
+                }
+            } else {
+                if(Math.abs(emy-my) > blockScale/2){
+                    if(emy-my > 0){
+                        //Down
+                        console.log("D");
+                    } else if(emy-my < 0){
+                        //Up
+                        console.log("U");
+                    }
                 }
             }
-        } else {
-            if(emy-my > blockScale/2){
-                if(emy-my > 0){
-                    //Down
-                    console.log("D");
-                } else if(emy-my < 0){
-                    //Up
-                    console.log("U");
-                }
-            }
+            Debug = "X: " + (emx-mx) + " Y: " + (emy-my);
         }
-    }
+        
+    }, false);
 
 	animate();
 	</script>
