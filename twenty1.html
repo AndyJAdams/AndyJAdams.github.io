@@ -24,15 +24,22 @@
 	}
 	scaleCanvas();
 	var ctx = canvas.getContext('2d');
-
+	var DebugDisplay = true;
+	var inset = 10;
+	/*
 	var colorArray = [
 	'#3cb44b','#42d4f4','#e6194b','#911eb4','#ffe119',
 	'#9a6324','#469990','#bfef45','#800000','#ffd8b1',
 	'#4363d8','#f032e6','#fabebe','#aaffc3','#f58231',
 	'#808000','#748BA7','#e6beff','#fffac8','#a9a9a9'
 	];
-
-	ctx.font = '25px Arial';
+	*/
+	var colorArray = [
+	'#050505','#080808','#0B0B0B','#0D0D0D','#0F0F0F',
+	'#252525','#282828','#2b2b2b','#2d2d2d','#2f2f2f',
+	'#454545','#484848','#4b4b4b','#4d4d4d','#4f4f4f',
+	'#656565','#686868','#6b6b6b','#6d6d6d','#6f6f6f',
+	];
 	function Position(x,y,r,c){
 		this.x = x;
 		this.y = y;
@@ -51,7 +58,7 @@
 
 		this.draw = function(){
 			ctx.fillStyle = colorArray[this.value];
-			ctx.fillRect(this.x, this.y, this.w, this.h);
+			ctx.fillRect(this.x+(inset/2), this.y+(inset/2), this.w-inset, this.h-inset);
 			
 		}
 
@@ -60,23 +67,50 @@
 		}
 
 		this.label = function(){
+			ctx.font = 'bold 36px Tahoma';
             if(this.w > 5){
-			 ctx.fillStyle = '#000';
+			 ctx.fillStyle = '#FFF';
 			 ctx.fillText(this.value +'', this.x+(this.w/2)-12, this.y+(this.w/2)+5);
+			 	if(DebugDisplay){
+			 		//Row & Column [BOTTOM RIGHT]
+            		ctx.font ='28px Arial';
+            		ctx.fillStyle = '#FFF';
+            		ctx.fillText(this.r + "," + this.c,this.x+(this.w)-50,this.y+(this.w)-15);
+            		//Raw position [TOP LEFT]
+            		ctx.font = '26px Arial';
+            		ctx.fillStyle = '#BBB';
+            		ctx.fillText(Math.round(this.x) + "," + Math.round(this.y),this.x+8,this.y+30);
+            	}
             }
+            
 		}
 	}	
 
-	var blockScale = ((innerWidth*0.75)/6);
-	var blockArray = [];
-	var positions = [];
-	var gridSize = (blockScale * 6);
-	for(var x = 0; x < 6; x++){
-		for(var y = 0; y < 6; y++){
-			var xpos = (x*blockScale)+(innerWidth/2-gridSize/2);
-			var ypos = (y*blockScale)+(innerHeight/2-gridSize/2);
-			blockArray.push(new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*8),y,x));
-			positions.push(new Position(xpos,ypos,x,y));
+	Array.matrix = function(rows,columns){
+		var row = [];
+		for(var i = 0; i < columns; i++){
+			var col = [];
+			for(var j = 0; j < rows; j++){
+				col[j] = undefined;
+			}
+			row[i] = col;
+		}
+		return row;
+	}
+
+	var gridRows = 5;
+	var gridCols = 4;
+	var blockScale = ((innerWidth*0.85)/gridCols);
+	var blockArray = Array.matrix(gridRows,gridCols);
+	var positions = Array.matrix(gridRows,gridCols);
+	var gridHeight = (blockScale * gridRows);
+	var gridWidth = (blockScale * gridCols);
+	for(var x = 0; x < gridCols; x++){
+		for(var y = 0; y < gridRows; y++){
+			var xpos = (x*blockScale)+(innerWidth/2-gridWidth/2);
+			var ypos = (y*blockScale)+(innerHeight/2-gridHeight/2);
+			blockArray[x][y] = new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*7)+1,x,y);
+			positions[x][y] = new Position(xpos,ypos,x,y);
 		}
 	}
         
@@ -87,36 +121,37 @@
 		ctx.clearRect(0,0,innerWidth,innerHeight);
         
 		for(var i = 0; i < blockArray.length; i++){
-            if(blockArray[i] != undefined){
-                blockArray[i].update();
-            }
+			for(var j = 0; j < blockArray[i].length; j++){
+	            if(blockArray[i][j] != undefined){
+	                blockArray[i][j].update();
+	                blockArray[i][j].label();
+	            }
+	        }
 		}
-
-		for(var i = 0; i < blockArray.length; i++){
-            if(blockArray[i] != undefined){
-                blockArray[i].label();
-            }
-		}
-        
+		ctx.font = '32px Arial';
+        ctx.fillStyle = '#000';
         ctx.fillText(Debug,10,30);
 	}
 
-	var closestBlock = -1;
-    var mx = 0;
+	var mx = 0;
     var my = 0;
+
+	var closestBlock = undefined;    
 	function findClosestBlock(a,b){
 		for(var i = 0; i < blockArray.length;i++){
-			if(
-                blockArray[i] != undefined && 
-                a > blockArray[i].x && 
-                a < blockArray[i].x+blockArray[i].w && 
-                b > blockArray[i].y && 
-                b < blockArray[i].y+blockArray[i].h
-            ){
-				return i;
+			for(var j = 0; j < blockArray[i].length; j++){
+				if(
+	                blockArray[i][j] != undefined && 
+	                a > blockArray[i][j].x && 
+	                a < blockArray[i][j].x+blockArray[i][j].w && 
+	                b > blockArray[i][j].y && 
+	                b < blockArray[i][j].y+blockArray[i][j].h
+	            ){
+					return blockArray[i][j];
+				}
 			}
 		}
-        return -1;
+        return undefined;
 	}
 
 	window.addEventListener('touchstart', function(evt){
@@ -141,20 +176,20 @@
         var emx = evt.changedTouches[0].pageX;
         var emy = evt.changedTouches[0].pageY;
         closestBlock = findClosestBlock(mx,my);
-        if(closestBlock > -1){
-        	var cval = blockArray[closestBlock].value;
+        if(closestBlock != undefined){
+        	var cval = closestBlock.value;
             if(Math.abs(emx-mx) > Math.abs(emy-my)){
                 //Horizontal
                 if(Math.abs(emx-mx) > blockScale/2){
                     if(emx-mx > 0){
                         //Right
                         var rblock = findClosestBlock(mx+blockScale,emy);
-                        if(rblock > -1){
-                            var rval = blockArray[rblock].value;
+                        if(rblock != undefined){
+                            var rval = rblock.value;
                             if(rval+cval < 22){
                             	if(validMove(rblock,closestBlock)){
-	                                blockArray[rblock].value = rval+cval;
-	                                blockArray[closestBlock].w = 0;
+	                                rblock.value = rval+cval;
+	                                closestBlock.w = inset;
 	                                Remove21();
 	                            }
                             }
@@ -162,12 +197,12 @@
                     } else if(emx-mx < 0){
                         //Left
                         var lblock = findClosestBlock(mx-blockScale,emy);
-                        if(lblock > -1){
-                        	var lval = blockArray[lblock].value;
+                        if(lblock != undefined){
+                        	var lval = lblock.value;
                         	if(lval+cval < 22){
                         		if(validMove(lblock,closestBlock)){
-	                        		blockArray[lblock].value = lval + cval;
-	                        		blockArray[closestBlock].w = 0;
+	                        		lblock.value = lval + cval;
+	                        		closestBlock.w = inset;
 	                        		Remove21();
 	                        	}
                         	} 
@@ -179,12 +214,12 @@
                     if(emy-my > 0){
                         //Down
                         var dblock = findClosestBlock(emx,blockScale+my);
-                        if(dblock > -1){
-                        	var dval = blockArray[dblock].value;
+                        if(dblock != undefined){
+                        	var dval = dblock.value;
                         	if(dval+cval < 22){
                         		if(validMove(dblock,closestBlock)){
-	                        		blockArray[dblock].value = dval + cval;
-	                        		blockArray[closestBlock].w = 0;;
+	                        		dblock.value = dval + cval;
+	                        		closestBlock.w = inset;;
 	                        		Remove21();
 	                        	}
                         	}
@@ -192,12 +227,12 @@
                     } else if(emy-my < 0){
                         //Up
                         var ublock = findClosestBlock(emx,my-blockScale);
-                        if(ublock > -1){
-                        	var uval = blockArray[ublock].value;
+                        if(ublock != undefined){
+                        	var uval = ublock.value;
                         	if(uval+cval < 22){
                         		if(validMove(ublock,closestBlock)){
-	                        		blockArray[ublock].value = uval+cval;
-	                        		blockArray[closestBlock].w = 0;
+	                        		ublock.value = uval+cval;
+	                        		closestBlock.w = inset;
 	                        		Remove21();
 	                        	}
                         	}
@@ -211,7 +246,7 @@
     }, false);
 
     function validMove(a,b){
-    	if(blockArray[a].r == blockArray[b].r || blockArray[a].c == blockArray[b].c){
+    	if(a.r == b.r || a.c == b.c){
     		return true;
     	}
     	return false;
@@ -219,19 +254,71 @@
 
     function Remove21(){
     	for(var i = 0; i < blockArray.length; i++){
-    		if(blockArray[i].value == 21){
-    			console.log("TODO ADD SCORE HERE");
-    			blockArray[i] = undefined;
-    		}
+    		for(var j = 0; j < blockArray[i].length; j++){
+	    		if(blockArray[i][j].value == 21){
+	    			console.log("TODO ADD SCORE HERE");
+	    			blockArray[i][j].w = inset;
+	    		}
+	    	}
     	}
+    	DropBlocks();
     }
 
     function DropBlocks(){
-    	Debug = "Missing: ";
-    	for(var i = 0; i < blockArray.length; i++){
+    	/*
+    	for(var i = blockArray.length-1; i > -1; i--){
     		if(blockArray[i].w < 1){
     			//Get the blocks above this and move down
-    			Debug += blockArray[i].r + "," + blockArray[i].c + " ";
+    			var replacement = -1;
+    			for(var x = 0; x < blockArray.length; x++){
+    				console.log(x + "=" + blockArray[x].c);
+    				if(blockArray[x].c == blockArray[i].c && blockArray[x].r < blockArray[i].r && blockArray[x].w > 1 && replacement == -1){
+    					//We have found a block to replace  the missing one. 
+    					replacement = x;
+    				}
+    			}
+
+    			if(replacement == -1){
+    				//No replacement found just make up a new number...?
+    			} else {
+    				Debug = "Replacing " + blockArray[i].y + " with " + blockArray[replacement].y;
+    				var bny = blockArray[replacement].y;
+    				var bnr = blockArray[replacement].r;
+    				blockArray[replacement].y = blockArray[i].y;
+    				blockArray[replacement].r = blockArray[i].r;
+    				blockArray[i].y = bny;
+    				blockArray[i].r = bnr;
+    				//No we have swapped them... create a new tile for the missing one!
+    			}
+    		}
+    	}
+    	*/
+    	for(var i = 0; i < blockArray.length; i++){
+    		for(var j = blockArray[i].length-1; j > -1; j--){
+    			if(blockArray[i][j].w < inset+2){
+    				console.log(blockArray[i][j].c + "," + blockArray[i][j].r);
+    				var u = -1;
+    				for(var x = j-1; x > -1; x--){
+    					if(blockArray[i][x].w > inset && u == -1){
+    						u = x;
+    					}
+    				}
+    				if(u == -1){
+    					//NO REPLACEMENT
+    				} else {
+    					var uy = blockArray[i][u].y;
+    					var uc = blockArray[i][u].c;
+    					blockArray[i][u].y = blockArray[i][j].y;
+    					blockArray[i][u].c = blockArray[i][j].c;
+    					blockArray[i][j].y = uy;
+    					blockArray[i][j].c = uc;
+
+    				}
+    				// console.log('Gap at ' + i + "," + j);
+    				// if(j-1 > -1){
+    					
+    				// }
+    			}
     		}
     	}
     }
