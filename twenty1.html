@@ -152,9 +152,11 @@
                         if(rblock > -1){
                             var rval = blockArray[rblock].value;
                             if(rval+cval < 22){
-                                blockArray[rblock].value = rval+cval;
-                                blockArray[closestBlock].w = 0;
-                                Remove21();
+                            	if(validMove(rblock,closestBlock)){
+	                                blockArray[rblock].value = rval+cval;
+	                                blockArray[closestBlock].w = 0;
+	                                Remove21();
+	                            }
                             }
                         }
                     } else if(emx-mx < 0){
@@ -163,9 +165,11 @@
                         if(lblock > -1){
                         	var lval = blockArray[lblock].value;
                         	if(lval+cval < 22){
-                        		blockArray[lblock].value = lval + cval;
-                        		blockArray[closestBlock].w = 0;
-                        		Remove21();
+                        		if(validMove(lblock,closestBlock)){
+	                        		blockArray[lblock].value = lval + cval;
+	                        		blockArray[closestBlock].w = 0;
+	                        		Remove21();
+	                        	}
                         	} 
                         }
                     }
@@ -178,9 +182,11 @@
                         if(dblock > -1){
                         	var dval = blockArray[dblock].value;
                         	if(dval+cval < 22){
-                        		blockArray[dblock].value = dval + cval;
-                        		blockArray[closestBlock].w = 0;;
-                        		Remove21();
+                        		if(validMove(dblock,closestBlock)){
+	                        		blockArray[dblock].value = dval + cval;
+	                        		blockArray[closestBlock].w = 0;;
+	                        		Remove21();
+	                        	}
                         	}
                         }
                     } else if(emy-my < 0){
@@ -189,9 +195,11 @@
                         if(ublock > -1){
                         	var uval = blockArray[ublock].value;
                         	if(uval+cval < 22){
-                        		blockArray[ublock].value = uval+cval;
-                        		blockArray[closestBlock].w = 0;
-                        		Remove21();
+                        		if(validMove(ublock,closestBlock)){
+	                        		blockArray[ublock].value = uval+cval;
+	                        		blockArray[closestBlock].w = 0;
+	                        		Remove21();
+	                        	}
                         	}
                         }
                     }
@@ -201,6 +209,13 @@
         }
         closestBlock = -1;
     }, false);
+
+    function validMove(a,b){
+    	if(blockArray[a].r == blockArray[b].r || blockArray[a].c == blockArray[b].c){
+    		return true;
+    	}
+    	return false;
+    }
 
     function Remove21(){
     	for(var i = 0; i < blockArray.length; i++){
