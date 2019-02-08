@@ -17,15 +17,23 @@
 	<canvas id='canvas'></canvas>
 	
 	<script>
+	//Locate the canvas element
 	var canvas = document.getElementById('canvas');
+	//Scale to full screen
 	function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 	}
 	scaleCanvas();
+	//Get the 2D Drawing context for our 2D game
 	var ctx = canvas.getContext('2d');
+
+	//Display debug data on blocks
 	var DebugDisplay = true;
+
+	//Grid valey width via block insets
 	var inset = 10;
+
 	/*
 	var colorArray = [
 	'#3cb44b','#42d4f4','#e6194b','#911eb4','#ffe119',
@@ -40,6 +48,8 @@
 	'#454545','#484848','#4b4b4b','#4d4d4d','#4f4f4f',
 	'#656565','#686868','#6b6b6b','#6d6d6d','#6f6f6f',
 	];
+
+	//Object for position data storage
 	function Position(x,y,r,c){
 		this.x = x;
 		this.y = y;
@@ -47,6 +57,7 @@
 		this.c = c;
 	}
 
+	//Block Object
 	function Block(x,y,w,h,value,r,c){
 		this.x = x;
 		this.y = y;
@@ -63,6 +74,8 @@
 		}
 
 		this.update = function(){
+			//Called every frame... 
+			//TODO: Add animation data for movement of blocks. 
 			this.draw();
 		}
 
@@ -86,40 +99,51 @@
 		}
 	}	
 
+	//Extend Array to support multidimensions via .matrix function
+	//We pass rows and then columns
 	Array.matrix = function(rows,columns){
-		var row = [];
+		var col = [];
 		for(var i = 0; i < columns; i++){
-			var col = [];
+			var row = [];
 			for(var j = 0; j < rows; j++){
-				col[j] = undefined;
+				row[j] = undefined;
 			}
-			row[i] = col;
+			col[i] = row;
 		}
-		return row;
+		//An array of columns contains a block from each row within it. 
+		return col;
 	}
 
-	var gridRows = 5;
-	var gridCols = 4;
-	var blockScale = ((innerWidth*0.85)/gridCols);
-	var blockArray = Array.matrix(gridRows,gridCols);
-	var positions = Array.matrix(gridRows,gridCols);
-	var gridHeight = (blockScale * gridRows);
-	var gridWidth = (blockScale * gridCols);
-	for(var x = 0; x < gridCols; x++){
-		for(var y = 0; y < gridRows; y++){
-			var xpos = (x*blockScale)+(innerWidth/2-gridWidth/2);
-			var ypos = (y*blockScale)+(innerHeight/2-gridHeight/2);
-			blockArray[x][y] = new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*7)+1,x,y);
-			positions[x][y] = new Position(xpos,ypos,x,y);
+	var gridRows = 5; //number of rows
+	var gridCols = 4; // number of columns
+
+	var blockScale = ((innerWidth*0.85)/gridCols); //Since this is mobile centric... we base our scale of overall width or number of columns
+	var blockArray = Array.matrix(gridRows,gridCols); //Make the array
+	var positions = Array.matrix(gridRows,gridCols); //Make an array of positions ... not sure if this is needed
+
+	var gridHeight = (blockScale * gridRows); //Height of grid used for centering
+	var gridWidth = (blockScale * gridCols); //Width of grid used for centering
+
+	//Let's make some blocks!
+	for(var x = 0; x < gridCols; x++){ //Iterate through columns
+		for(var y = 0; y < gridRows; y++){ //iterate through rows
+
+			var xpos = (x*blockScale)+(innerWidth/2-gridWidth/2); //this is the xposition but x is actually the column
+			var ypos = (y*blockScale)+(innerHeight/2-gridHeight/2); //this is the yposition but y is the rows since rows stack upward (e.g. Y AXIS)
+			blockArray[x][y] = new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*7)+1,x,y); //Make the block
+			positions[x][y] = new Position(xpos,ypos,x,y); // Stash the position
 		}
 	}
-        
-    var Debug = "Debug \n";
 
+	//Game loop [ ~ 60FPS ]
 	function animate(){
+
+		//Recursive call (Basically the game's do-while playing loop)
 		window.requestAnimationFrame(animate);
+		//Clear the whole screen every frame
 		ctx.clearRect(0,0,innerWidth,innerHeight);
         
+        //Update and label the blocks every frame
 		for(var i = 0; i < blockArray.length; i++){
 			for(var j = 0; j < blockArray[i].length; j++){
 	            if(blockArray[i][j] != undefined){
@@ -128,14 +152,12 @@
 	            }
 	        }
 		}
-		ctx.font = '32px Arial';
-        ctx.fillStyle = '#000';
-        ctx.fillText(Debug,10,30);
 	}
 
-	var mx = 0;
-    var my = 0;
+	var mx = 0; //Touch || Mouse initial input position on x
+    var my = 0; //Touch || Mouse initial input position on y
 
+    //Find the block closest to the page mapped position
 	var closestBlock = undefined;    
 	function findClosestBlock(a,b){
 		for(var i = 0; i < blockArray.length;i++){
@@ -158,8 +180,6 @@
         evt.preventDefault();
 		mx = evt.changedTouches[0].pageX;
         my = evt.changedTouches[0].pageY; 
-        
-        Debug = " TOUCH START ";
     }, false);
 	
     window.addEventListener('touchmove', function(evt){
@@ -168,29 +188,34 @@
 	
     window.addEventListener('touchcancel', function(evt){
         evt.preventDefault();
-        closestBlock = -1;
+        closestBlock = undefined;
     }, false);
 	
+	//User has removed finger... let's figure out the desired action here. 
     window.addEventListener('touchend', function(evt){
         evt.preventDefault();
+        //Where did the finger / pointer disengage?
         var emx = evt.changedTouches[0].pageX;
         var emy = evt.changedTouches[0].pageY;
+
+        //What is the closest block to the starting touch?
         closestBlock = findClosestBlock(mx,my);
+
         if(closestBlock != undefined){
-        	var cval = closestBlock.value;
+        	var cval = closestBlock.value; 
             if(Math.abs(emx-mx) > Math.abs(emy-my)){
                 //Horizontal
                 if(Math.abs(emx-mx) > blockScale/2){
-                    if(emx-mx > 0){
+                    if(emx-mx > 0){ //The finger actually moved in some direction... this will later be tweaked as drag sensitivity
                         //Right
-                        var rblock = findClosestBlock(mx+blockScale,emy);
+                        var rblock = findClosestBlock(mx+blockScale,emy); //Closest block in the direction of the end position. 
                         if(rblock != undefined){
                             var rval = rblock.value;
                             if(rval+cval < 22){
-                            	if(validMove(rblock,closestBlock)){
-	                                rblock.value = rval+cval;
-	                                closestBlock.w = inset;
-	                                Remove21();
+                            	if(validMove(rblock,closestBlock)){ //Insure cardinal direction movements only 
+	                                rblock.value = rval+cval; //Assign sum to end block
+	                                closestBlock.w = inset; //Devalue/Remove the dragged block
+	                                Remove21(); //Call to remove blocks of 21 and then drop to fill gaps.
 	                            }
                             }
                         }
@@ -242,11 +267,11 @@
             }
             
         }
-        closestBlock = -1;
+        closestBlock = undefined; //reset touch parameters
     }, false);
 
     function validMove(a,b){
-    	if(a.r == b.r || a.c == b.c){
+    	if(a.r == b.r || a.c == b.c){ //Actions only available in 4 cardinal directions
     		return true;
     	}
     	return false;
