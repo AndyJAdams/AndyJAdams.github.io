@@ -29,33 +29,38 @@
 	var ctx = canvas.getContext('2d');
 
 	//Display debug data on blocks
-	var DebugDisplay = true;
+	var DebugDisplay = false;
 
 	//Grid valey width via block insets
 	var inset = 10;
 
+	//Track highest value for this round
+
+	var gridRows = 7; //number of rows
+	var gridCols = 6; // number of columns
+	
 	/*
 	var colorArray = [
 	'#3cb44b','#42d4f4','#e6194b','#911eb4','#ffe119',
 	'#9a6324','#469990','#bfef45','#800000','#ffd8b1',
 	'#4363d8','#f032e6','#fabebe','#aaffc3','#f58231',
-	'#808000','#748BA7','#e6beff','#fffac8','#a9a9a9'
+	'#808000','#748BA7','#e6beff','#fffac8','#a9a9a9',
+	'#0F00F0','#00FF00'
 	];
 	*/
 	var colorArray = [
-	'#050505','#080808','#0B0B0B','#0D0D0D','#0F0F0F',
-	'#252525','#282828','#2b2b2b','#2d2d2d','#2f2f2f',
-	'#454545','#484848','#4b4b4b','#4d4d4d','#4f4f4f',
-	'#656565','#686868','#6b6b6b','#6d6d6d','#6f6f6f',
+	'#000000','#060606','#0c0c0c','#121212','#181818',
+	'#1e1e1e','#242424','#2a2a2a','#303030','#363636',
+	'#3c3c3c','#434343','#494949','#555555','#5b5b5b',
+	'#616161','#676767','#6d6d6d','#737373','#797979',
+	'#808080','#868686'
 	];
-
+	
 	//Object for position data storage
-	function Position(x,y,r,c){
-		this.x = x;
-		this.y = y;
-		this.r = r;
-		this.c = c;
-	}
+	var topPosition = {
+		x: -1,
+		y: -1
+	};
 
 	//Block Object
 	function Block(x,y,w,h,value,r,c){
@@ -65,10 +70,12 @@
 		this.h = h;
 		this.r = r;
 		this.c = c;
+		this.dx = this.x;
+		this.dy = this.y;
 		this.value = value;
 
 		this.draw = function(){
-			ctx.fillStyle = colorArray[this.value];
+			ctx.fillStyle = colorArray[this.value-1];
 			ctx.fillRect(this.x+(inset/2), this.y+(inset/2), this.w-inset, this.h-inset);
 			
 		}
@@ -76,12 +83,19 @@
 		this.update = function(){
 			//Called every frame... 
 			//TODO: Add animation data for movement of blocks. 
+			if(this.x != this.dx){
+				this.x = lerp(this.x,this.dx,0.1);
+			}
+			if(this.x != this.dy){
+				this.y = lerp(this.y,this.dy,0.1);
+			}
+
 			this.draw();
 		}
 
 		this.label = function(){
-			ctx.font = 'bold 36px Tahoma';
-            if(this.w > 5){
+			ctx.font = 'bold 42px Tahoma';
+            if(this.w > inset){
 			 ctx.fillStyle = '#FFF';
 			 ctx.fillText(this.value +'', this.x+(this.w/2)-12, this.y+(this.w/2)+5);
 			 	if(DebugDisplay){
@@ -99,39 +113,45 @@
 		}
 	}	
 
+	function lerp (start, end, amt){
+  		return (1-amt)*start+amt*end
+	}
+
 	//Extend Array to support multidimensions via .matrix function
 	//We pass rows and then columns
 	Array.matrix = function(rows,columns){
-		var col = [];
-		for(var i = 0; i < columns; i++){
-			var row = [];
-			for(var j = 0; j < rows; j++){
-				row[j] = undefined;
+		var row = [];
+		for(var i = 0; i < rows; i++){
+			var col = [];
+			for(var j = 0; j < columns; j++){
+				col[j] = undefined;
 			}
-			col[i] = row;
+			row[i] = col;
 		}
 		//An array of columns contains a block from each row within it. 
-		return col;
+		return row;
 	}
 
-	var gridRows = 5; //number of rows
-	var gridCols = 4; // number of columns
+	
 
-	var blockScale = ((innerWidth*0.85)/gridCols); //Since this is mobile centric... we base our scale of overall width or number of columns
+	var blockScale = ((innerWidth*0.75)/gridCols); //Since this is mobile centric... we base our scale of overall width or number of columns
 	var blockArray = Array.matrix(gridRows,gridCols); //Make the array
-	var positions = Array.matrix(gridRows,gridCols); //Make an array of positions ... not sure if this is needed
 
 	var gridHeight = (blockScale * gridRows); //Height of grid used for centering
 	var gridWidth = (blockScale * gridCols); //Width of grid used for centering
 
 	//Let's make some blocks!
-	for(var x = 0; x < gridCols; x++){ //Iterate through columns
-		for(var y = 0; y < gridRows; y++){ //iterate through rows
+	for(var x = 0; x < gridRows; x++){ //Iterate through cols
+		for(var y = 0; y < gridCols; y++){ //iterate through rows
+			var xpos = (y*blockScale)+(innerWidth/2-gridWidth/2); //this is the xposition but x is actually the column
+			var ypos = (x*blockScale)+(innerHeight/2-gridHeight/2); //this is the yposition but y is the rows since rows stack upward (e.g. Y AXIS)
+			blockArray[x][y] = new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*11)+1,x,y); //Make the block
+			
+			if(x == 0 && y == 0){
+				topPosition.x = xpos;
+				topPosition.y = ypos;
+			}
 
-			var xpos = (x*blockScale)+(innerWidth/2-gridWidth/2); //this is the xposition but x is actually the column
-			var ypos = (y*blockScale)+(innerHeight/2-gridHeight/2); //this is the yposition but y is the rows since rows stack upward (e.g. Y AXIS)
-			blockArray[x][y] = new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*7)+1,x,y); //Make the block
-			positions[x][y] = new Position(xpos,ypos,x,y); // Stash the position
 		}
 	}
 
@@ -283,66 +303,56 @@
 	    		if(blockArray[i][j].value == 21){
 	    			console.log("TODO ADD SCORE HERE");
 	    			blockArray[i][j].w = inset;
-	    		}
+	    		} 
 	    	}
     	}
     	DropBlocks();
     }
 
-    function DropBlocks(){
-    	/*
-    	for(var i = blockArray.length-1; i > -1; i--){
-    		if(blockArray[i].w < 1){
-    			//Get the blocks above this and move down
-    			var replacement = -1;
-    			for(var x = 0; x < blockArray.length; x++){
-    				console.log(x + "=" + blockArray[x].c);
-    				if(blockArray[x].c == blockArray[i].c && blockArray[x].r < blockArray[i].r && blockArray[x].w > 1 && replacement == -1){
-    					//We have found a block to replace  the missing one. 
-    					replacement = x;
-    				}
-    			}
-
-    			if(replacement == -1){
-    				//No replacement found just make up a new number...?
-    			} else {
-    				Debug = "Replacing " + blockArray[i].y + " with " + blockArray[replacement].y;
-    				var bny = blockArray[replacement].y;
-    				var bnr = blockArray[replacement].r;
-    				blockArray[replacement].y = blockArray[i].y;
-    				blockArray[replacement].r = blockArray[i].r;
-    				blockArray[i].y = bny;
-    				blockArray[i].r = bnr;
-    				//No we have swapped them... create a new tile for the missing one!
+    function RebuildBlock(x,y,endY){
+    	var highestVal = -1;
+    	for(var i = 0; i < blockArray.length; i++){
+    		for(var j = 0; j < blockArray[i].length; j++){
+    			if(blockArray[i][j].value > highestVal){
+    				highestVal = blockArray[i][j].value;
     			}
     		}
     	}
-    	*/
-    	for(var i = 0; i < blockArray.length; i++){
+    	if(highestVal == -1){
+    		highestVal = Math.round(Math.random()*8)+1;
+    	}
+
+    	blockArray[x][y].y = topPosition.y-blockScale;
+    	blockArray[x][y].value = Math.round(Math.random()*highestVal);
+    	blockArray[x][y].w = blockScale;
+    	blockArray[x][y].dy = endY;
+    }
+
+    function DropBlocks(){
+    	for(var i = blockArray.length-1; i > -1; i--){
     		for(var j = blockArray[i].length-1; j > -1; j--){
-    			if(blockArray[i][j].w < inset+2){
-    				console.log(blockArray[i][j].c + "," + blockArray[i][j].r);
+    			if(blockArray[i][j].w < inset+20){
     				var u = -1;
-    				for(var x = j-1; x > -1; x--){
-    					if(blockArray[i][x].w > inset && u == -1){
-    						u = x;
+    				for(var x = i-1; x > -1; x--){
+    					if(blockArray[x][j].w > inset && u == -1){
+    						u = x; 
     					}
     				}
     				if(u == -1){
-    					//NO REPLACEMENT
+    					//NO REPLACEMENT FOUND
+    					RebuildBlock(i,j,blockArray[i][j].dy);
     				} else {
-    					var uy = blockArray[i][u].y;
-    					var uc = blockArray[i][u].c;
-    					blockArray[i][u].y = blockArray[i][j].y;
-    					blockArray[i][u].c = blockArray[i][j].c;
-    					blockArray[i][j].y = uy;
-    					blockArray[i][j].c = uc;
-
+    					var uy = blockArray[u][j].dy;
+    					var ur = blockArray[u][j].r;
+    					blockArray[u][j].dy = blockArray[i][j].dy;
+    					blockArray[u][j].r = blockArray[i][j].r;
+    					blockArray[i][j].dy = uy;
+    					blockArray[i][j].y = uy; //move the empty block instantly
+    					blockArray[i][j].r = ur;
+    					var org = blockArray[i][j];
+    					blockArray[i][j] = blockArray[u][j];
+    					blockArray[u][j] = org;
     				}
-    				// console.log('Gap at ' + i + "," + j);
-    				// if(j-1 > -1){
-    					
-    				// }
     			}
     		}
     	}
