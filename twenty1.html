@@ -41,6 +41,8 @@
 
 	var gridRows = 7; //number of rows
 	var gridCols = 6; // number of columns
+
+	var score = 0;
 	
 	/*
 	var colorArray = [
@@ -175,6 +177,10 @@
 	            }
 	        }
 		}
+
+		ctx.font = 'bold 128px Tahoma';
+		ctx.fillStyle = '#000';
+		ctx.fillText(score + '',(innerWidth/2-gridWidth/2),blockScale+(innerHeight/2-gridHeight/2)-165);
 	}
 
 	var mx = 0; //Touch || Mouse initial input position on x
@@ -304,7 +310,7 @@
     	for(var i = 0; i < blockArray.length; i++){
     		for(var j = 0; j < blockArray[i].length; j++){
 	    		if(blockArray[i][j].value == 21){
-	    			console.log("TODO ADD SCORE HERE");
+	    			score++;
 	    			blockArray[i][j].w = inset;
 	    		} 
 	    	}
@@ -359,6 +365,30 @@
     			}
     		}
     	}
+    	if(ValidateGrid()){
+    		console.log("FAIL BOAT");
+    	} else {
+    		console.log("CARRY ON");
+    	}
+    }
+
+    function ValidateGrid(){
+    	for(var x = 0; x < blockArray.length; x++){
+    		for(var y = 0; y < blockArray[x].length; y++){
+    			var bval = blockArray[x][y].value;
+    			if(x+1 < blockArray.length){
+    				if(blockArray[x+1][y].value + bval < 22){
+    					return false;
+    				}
+    			}
+    			if(y+1 < blockArray[x].length){
+    				if(blockArray[x][y+1].value + bval < 22){
+    					return false;
+    				}
+    			}
+    		}
+    	}
+    	return true;
     }
 
 	animate();
