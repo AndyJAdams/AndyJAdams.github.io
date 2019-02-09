@@ -115,7 +115,7 @@
 		this.draw = function(){
 			ctx.fillStyle = colorArray[this.value-1];
 			if(failboat){
-				ctx.fillStyle = '#F00';
+				ctx.fillStyle = '#000';
 			}
 			ctx.fillRect(this.x+(inset/2), this.y+(inset/2), this.w-inset, this.h-inset);
 			
@@ -200,7 +200,7 @@
 			for(var y = 0; y < gridCols; y++){ //iterate through rows
 				var xpos = (y*blockScale)+(innerWidth/2-gridWidth/2); //this is the xposition but x is actually the column
 				var ypos = (x*blockScale)+(innerHeight/2-gridHeight/2); //this is the yposition but y is the rows since rows stack upward (e.g. Y AXIS)
-				blockArray[x][y] = new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*11)+1,x,y); //Make the block
+				blockArray[x][y] = new Block(xpos, ypos,blockScale,blockScale,Math.round(Math.random()*8)+1,x,y); //Make the block
 				
 				if(x == 0 && y == 0){
 					topPosition.x = xpos;
@@ -400,6 +400,10 @@
     		highestVal = Math.round(Math.random()*8)+1;
     	}
 
+    	if(highestVal > 20){
+    		highestVal = 20;
+    	}
+
     	blockArray[x][y].y = topPosition.y-blockScale;
     	blockArray[x][y].value = Math.round(Math.random()*(highestVal-1));
     	blockArray[x][y].w = blockScale;
@@ -436,8 +440,6 @@
     	}
     	if(ValidateGrid()){
     		failboat = true;
-    	} else {
-    		console.log("CARRY ON");
     	}
     }
 
