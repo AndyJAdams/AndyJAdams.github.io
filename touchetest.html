@@ -1,0 +1,27 @@
+<DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Touché Test</title>
+<style>
+	p{
+		width: 100%;
+	}
+</style>
+</head>
+<body>
+<script type='text/javascript'>
+
+window.addEventListener('touchstart',function(evt){
+	evt.preventDefault();
+	vibrate(200);
+},false);
+
+var custom = new Event('custom');
+function vibrate(dur){
+	window.navigator.vibrate(dur);
+}
+</script>
+
+</body>
+</html>
