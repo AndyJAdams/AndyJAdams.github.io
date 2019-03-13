@@ -43,6 +43,7 @@
 			} else if(dir == 1 || dir == 3){
 				ctx.fillRect(0,this.y-20,innerWidth,this.y+20);
 			}
+
 		}
 
 		this.update = function(){
@@ -50,13 +51,17 @@
 		}
 	}
 
-	var rib = new Ribbon(50,50,0,3);
+	var rib = new Ribbon(50,50,1,3);
 
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
 		
 		rib.update();
+	}
+
+	function detectIntersects(){
+		
 	}
 
 	var mx = 0; //Touch || Mouse initial input position on x

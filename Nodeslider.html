@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Ribbons</title>
+	<title>Nodeslide</title>
 	<style type="text/css">
 		body, html{ 
 			margin: 0; 
-			background-color: #444;
+			background-color: #000;
 			position: fixed;
 		}
 		canvas{
@@ -16,12 +16,17 @@
 </head>
 <body id='body'>
 	<canvas id='canvas'></canvas>
-	
 	<script>
 	var canvas = document.getElementById('canvas');	
+	var gridWidth; var gridHeight;
+	var rows = 8;
+	var columns = 6;
+
 	function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
+		gridWidth = innerWidth*0.8;
+		gridHeight = innerHeight*0.8;
 	}
 	scaleCanvas();
 	var ctx = canvas.getContext('2d');
@@ -29,34 +34,39 @@
 	function lerp (start, end, amt){
   		return (1-amt)*start+amt*end
 	}
+	ctx.fillStyle = '#fff';
 
-	function Ribbon(x,y,dir,value){
+	var rowGap = gridHeight/rows;
+	var colGap = gridWidth/columns;
+
+	var Node = function(x,y){
 		this.x = x;
 		this.y = y;
-		this.dir = dir;
-		this.value = value;
-
 		this.draw = function(){
-			ctx.fillStyle = '#BCBCBC';
-			if(dir == 0 || dir == 2){
-				ctx.fillRect(this.x-20,0,this.x+20,innerHeight);
-			} else if(dir == 1 || dir == 3){
-				ctx.fillRect(0,this.y-20,innerWidth,this.y+20);
-			}
-		}
-
-		this.update = function(){
-			this.draw();
+			ctx.fillRect(this.x-2,this.y-2,4,4);
 		}
 	}
-
-	var rib = new Ribbon(50,50,0,3);
+	
+	var nodes = [];
+	for(var r = 0; r < rows; r++){
+		var col = [];
+		for(var c = 0; c < columns; c++){
+			var xp = 10;
+			var yp = 10;
+			col[c] = new Node(xp,yp);
+		}
+		nodes[r] = col;
+	}
 
 	function animate(){
 		window.requestAnimationFrame(animate);
-		ctx.clearRect(0,0,innerWidth,innerHeight);
+		ctx.clearRect(0,0,canvas.width,canvas.height);
 		
-		rib.update();
+		for(var i = 0; i < rows; i++){
+			for(var j = 0; j < columns; j++){
+				nodes[i][j].draw();
+			}
+		}
 	}
 
 	var mx = 0; //Touch || Mouse initial input position on x
@@ -82,6 +92,8 @@
     }, false);
 
     window.addEventListener('mousedown', function(evt){
+    	mx = evt.pageX;
+    	my = evt.pageY;
     	evt.preventDefault();
     },false);
 
@@ -89,11 +101,11 @@
     	evt.preventDefault();
     },false);
 
-    window.addEventListener('mouseup', function(evt){
+    window.addEventListener('mouseup',function(evt){
     	evt.preventDefault();
     },false);
 
-    window.addEventListener('resize', function(evt){
+    window.addEventListener('resize',function(evt){
     	scaleCanvas();
     },false);
 
