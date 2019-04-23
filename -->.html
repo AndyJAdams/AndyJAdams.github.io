@@ -1,0 +1,238 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>--></title>
+	<style type="text/css">
+		body, html{ 
+			margin: 0; 
+			background-color: #DDD;
+			position: fixed;
+		}
+		canvas{
+            touch-action: none;
+		}
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	
+	<script>
+    //Global Variables
+    var blockWidth = 100;
+    var half = blockWidth/2;
+    var qtr = blockWidth/4;
+    var eth = blockWidth/8;
+    var sxth = blockWidth/16;
+        
+	var canvas = document.getElementById('canvas');	
+	function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	scaleCanvas();
+	var ctx = canvas.getContext('2d');
+
+	function lerp (start, end, amt){
+  		return (1-amt)*start+amt*end
+	}
+        
+    function Block(x,y,type,locked){
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.locked = locked;
+        
+        this.draw = function(){
+            ctx.lineWidth = 2;
+            if(this.type > -1){
+                ctx.beginPath();
+                ctx.moveTo(this.x-half,this.y-half);
+                ctx.lineTo(this.x+half,this.y-half);
+                ctx.lineTo(this.x+half,this.y+half);
+                ctx.lineTo(this.x-half,this.y+half);
+                ctx.closePath();
+                ctx.stroke();
+                if(this.locked){
+                    ctx.fillRect(this.x-half+sxth,this.y-half+sxth,eth,eth);
+                    ctx.fillRect(this.x+half-sxth-eth,this.y+half-sxth-eth,eth,eth);
+                    ctx.fillRect(this.x-half+sxth,this.y+half-sxth-eth,eth,eth);
+                    ctx.fillRect(this.x+half-sxth-eth,this.y-half+sxth,eth,eth);
+                    
+                    
+                }
+            }
+            
+            ctx.lineWidth = 8;
+            switch(this.type){
+                case 0: //Straight horz
+                    ctx.beginPath();
+                    ctx.moveTo(this.x-half,this.y);
+                    ctx.lineTo(this.x+half,this.y);
+                    ctx.closePath();
+                    ctx.stroke();
+                    break;
+                case 1: //Straight vert
+                    ctx.beginPath();
+                    ctx.moveTo(this.x,this.y-half);
+                    ctx.lineTo(this.x,this.y+half);
+                    ctx.closePath();
+                    ctx.stroke();
+                    break;
+                case 2: //90 left-up
+                    ctx.beginPath();
+                    ctx.moveTo(this.x-half,this.y);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.lineTo(this.x,this.y-half);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 3: //90 left-down
+                    ctx.beginPath();
+                    ctx.moveTo(this.x-half,this.y);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.lineTo(this.x,this.y+half);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 4: //90 right-up
+                    ctx.beginPath();
+                    ctx.moveTo(this.x+half,this.y);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.lineTo(this.x,this.y-half);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 5: //90 right-down
+                    ctx.beginPath();
+                    ctx.moveTo(this.x+half,this.y);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.lineTo(this.x,this.y+half);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 6: //Blank
+                    ctx.fillRect(this.x-qtr,this.y-qtr,half,half);
+                    break;
+                case 7: //start left
+                    ctx.beginPath();
+                    ctx.moveTo(this.x-half, this.y);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                case 8: //start right
+                    ctx.beginPath();
+                    ctx.moveTo(this.x+half, this.y);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                case 9: //start up
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y-half);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                case 10: //start down
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y+half);
+                    ctx.lineTo(this.x,this.y);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                case 11: //end left
+                    ctx.beginPath();
+                    ctx.moveTo(this.x-half, this.y);
+                    ctx.lineTo(this.x-qtr,this.y);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                case 12: //end right
+                    ctx.beginPath();
+                    ctx.moveTo(this.x+half, this.y);
+                    ctx.lineTo(this.x+qtr,this.y);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                case 13: //end up
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y-half);
+                    ctx.lineTo(this.x,this.y-qtr);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                case 14: //end down
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y+half);
+                    ctx.lineTo(this.x,this.y+qtr);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.fillRect(this.x-eth,this.y-eth,qtr,qtr);
+                    break;
+                
+                default:
+                    break;
+            }
+        }
+    }
+
+	var b = new Block(innerWidth/2,innerHeight/2,-1,true);
+        
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+		b.draw();
+	}
+
+	var mx = 0; //Touch || Mouse initial input position on x
+    var my = 0; //Touch || Mouse initial input position on y
+
+	window.addEventListener('touchstart', function(evt){
+        evt.preventDefault();
+		mx = evt.changedTouches[0].pageX;
+        my = evt.changedTouches[0].pageY; 
+    }, false);
+	
+    window.addEventListener('touchmove', function(evt){
+        evt.preventDefault();
+    }, false);
+	
+    window.addEventListener('touchcancel', function(evt){
+        evt.preventDefault();
+    }, false);
+	
+	//User has removed finger... let's figure out the desired action here. 
+    window.addEventListener('touchend', function(evt){
+        evt.preventDefault();
+    }, false);
+
+    window.addEventListener('mousedown', function(evt){
+    	evt.preventDefault();
+    },false);
+
+    window.addEventListener('mousemove', function(evt){
+    	evt.preventDefault();
+    },false);
+
+    window.addEventListener('mouseup', function(evt){
+        b.type++;
+    	evt.preventDefault();
+    },false);
+
+    window.addEventListener('resize', function(evt){
+    	scaleCanvas();
+    },false);
+
+	animate();
+	</script>
+</body>
+</html>
