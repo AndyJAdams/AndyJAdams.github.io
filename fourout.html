@@ -1,0 +1,503 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta lang="en/us"/>
+	<meta encoding="UTF-8">
+	<title>4-OUT</title>
+	<style>
+		body{
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript'>
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	//Global Variables
+	var DEBUG = true;
+	var drag = false;
+	var colorArray = ['#f19066','#574b90','#f5cd79','#f78fb3','#546de5','#303952','#3dc1d3','#c44569'];
+	var speedDampner = 2;
+	var rows = 10;
+	var columns = 7;
+	var tileScale = 0;
+	var affectedRow = [];
+	var affectedColumn = [];
+	var closestTile = undefined;
+	var mouseDownX = -1, mouseDownY = -1;
+	var maxDelay = 60;
+	var moveDelay = maxDelay;
+	scaleCanvas();
+
+	//OBJECT DEFINITIONS
+
+	function Tile(x,y,r,value,row,column){
+		this.x = x;
+		this.y = y;
+		this.r = r/2;
+		this.value = value;
+		this.tx = this.x;
+		this.ty = this.y;
+		this.row = row;
+		this.column = column;
+		this.spacing = 10;
+		this.targetSpacing = this.spacing;
+		this.downLink = false;
+		this.rightLink = false;
+
+		this.setPiece = false;
+
+		this.draw = function(){
+			ctx.fillStyle= this.value;
+			//ctx.fillRect(this.x,this.y,this.r,this.r);
+			ctx.beginPath();
+			ctx.arc(this.x+this.r, this.y+this.r,this.r-this.spacing,0,2*Math.PI);
+			ctx.fill();
+			ctx.closePath();
+
+			if(this.downLink){
+				ctx.fillRect(this.x+this.spacing,this.y+this.r,tileScale-(this.spacing*2),tileScale);
+			}
+
+			if(this.rightLink){
+				ctx.fillRect(this.x+this.r,this.y+this.spacing,tileScale,tileScale-(this.spacing*2));
+			}
+
+			if(DEBUG){
+				ctx.fillStyle='#000';
+				ctx.font = "20px helvetica";
+				ctx.fillText(this.row+","+this.column,this.x,this.y);
+			}
+		}
+
+		this.update = function(){
+			if(this.spacing > this.targetSpacing){
+				this.spacing-= Math.abs(this.spacing-this.targetSpacing)/2;
+			} else if(this.spacing < this.targetSpacing){
+				this.spacing+= Math.abs(this.spacing-this.targetSpacing)/2;
+			}
+			if(this.x < this.tx){
+				this.x += Math.abs((this.tx-this.x)/speedDampner);
+			} else if(this.x > this.tx){
+				this.x -= Math.abs((this.x-this.tx)/speedDampner);
+			}
+
+			if(this.y < this.ty){
+				this.y += Math.abs((this.ty-this.y)/speedDampner);
+			} else if(this.y > this.ty){
+				this.y -= Math.abs((this.y-this.ty)/speedDampner);
+			}
+
+			this.draw();
+		}
+
+		this.linkDown = function(){
+			this.downLink = true;
+			this.setPiece = true;
+		}
+
+		this.linkRight = function(){
+			this.rightLink = true;
+			this.setPiece = true;
+		}
+	}
+
+	//Object containers
+	var tiles = [];
+	for(var r = 0; r < rows; r++){
+		var col = [];
+		for(var c = 0; c < columns; c++){
+			var randValue = Math.floor(Math.random()*colorArray.length);
+			var xOffset = (innerWidth-(columns*tileScale))/2;
+			var yOffset = (innerHeight-(rows*tileScale))/2;
+			col.push(new Tile(c*tileScale+xOffset,r*tileScale+yOffset,tileScale,colorArray[randValue],r,c));
+		}
+		tiles.push(col);
+	}
+
+	var shiftX = 0, shiftY = 0;
+	//Animate and render
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		if(!drag){
+			scanForLinks();
+		}
+
+		//Alter affected row
+		for(var i = 0; i < affectedRow.length;i++){
+			affectedRow[i].targetSpacing = 30;
+		}
+
+		//Alter affected column
+		for(var i = 0; i < affectedColumn.length;i++){
+			affectedColumn[i].targetSpacing = 30;
+		}
+		if(closestTile != undefined){
+			closestTile.targetSpacing = 30;
+		}
+
+		if(shiftX != 0 && closestTile != undefined){
+			if(moveDelay >= maxDelay){
+				highlightRow(closestTile);
+				if(shiftX > 0){ //RIGHT
+					var originX = affectedRow[0].x; var originY = affectedRow[0].y;
+					var originR = affectedRow[0].row; var originC = affectedRow[0].column;
+					for(var i = 0; i < affectedRow.length;i++){
+						if(i < affectedRow.length-1){
+							affectedRow[i].tx = affectedRow[i+1].x;
+							affectedRow[i].ty = affectedRow[i+1].y;
+							affectedRow[i].row = affectedRow[i+1].row;
+							affectedRow[i].column = affectedRow[i+1].column;
+						} else {
+							//Here we want to snap the piece to position
+							affectedRow[i].x = originX; affectedRow[i].tx = originX;
+							affectedRow[i].y = originY; affectedRow[i].ty = originY;
+							affectedRow[i].row = originR; affectedRow[i].column = originC;
+						}
+					}
+					var lastTile = affectedRow.pop();
+					affectedRow.unshift(lastTile);
+				} else { //LEFT
+					var originX = affectedRow[affectedRow.length-1].x;
+					var originY = affectedRow[affectedRow.length-1].y;
+					var originR = affectedRow[affectedRow.length-1].row;
+					var originC = affectedRow[affectedRow.length-1].column;
+					for(var i = affectedRow.length-1; i > -1;i--){
+						if(i > 0){
+							affectedRow[i].tx = affectedRow[i-1].x;
+							affectedRow[i].ty = affectedRow[i-1].y;
+							affectedRow[i].row = affectedRow[i-1].row;
+							affectedRow[i].column = affectedRow[i-1].column;
+						} else {
+							affectedRow[i].x = originX; affectedRow[i].tx = originX;
+							affectedRow[i].y = originY; affectedRow[i].ty = originY;
+							affectedRow[i].row = originR; affectedRow[i].column = originC;
+						}
+					}
+					var lastTile = affectedRow.shift();
+					affectedRow.push(lastTile);
+				}
+				//Now we need to update the tile array for proper linking
+				for(var j = 0; j < affectedRow.length;j++){
+					tiles[affectedRow[j].row][affectedRow[j].column] = affectedRow[j];
+				}
+				moveDelay = 0;
+			} else {
+				moveDelay+= Math.abs(shiftX);
+			}
+		} else if(shiftY != 0 && closestTile != undefined){
+			if(moveDelay >= maxDelay){
+				highlightColumn(closestTile);
+				if(shiftY > 0){ //DOWN (+)
+					console.log("SHIFT DOWN");
+					var originX = affectedColumn[0].x; var originY = affectedColumn[0].y;
+					var originR = affectedColumn[0].row; var originC = affectedColumn[0].column;
+					for(var i = 0; i < affectedColumn.length;i++){
+						if(i < affectedColumn.length-1){
+							affectedColumn[i].tx = affectedColumn[i+1].x;
+							affectedColumn[i].ty = affectedColumn[i+1].y;
+							affectedColumn[i].row = affectedColumn[i+1].row;
+							affectedColumn[i].column = affectedColumn[i+1].column;
+						} else {
+							//Here we want to snap the piece to position
+							affectedColumn[i].x = originX; affectedColumn[i].tx = originX;
+							affectedColumn[i].y = originY; affectedColumn[i].ty = originY;
+							affectedColumn[i].row = originR; affectedColumn[i].column = originC;
+						}
+					}
+					var lastTile = affectedColumn.pop();
+					affectedColumn.unshift(lastTile);
+				} else { //UP(-)
+					console.log("SHIFT UP " + affectedColumn.length);
+					var originX = affectedColumn[affectedColumn.length-1].x;
+					var originY = affectedColumn[affectedColumn.length-1].y;
+					var originR = affectedColumn[affectedColumn.length-1].row;
+					var originC = affectedColumn[affectedColumn.length-1].column;
+					for(var i = affectedColumn.length-1; i > -1;i--){
+						if(i > 0){
+							affectedColumn[i].tx = affectedColumn[i-1].x;
+							affectedColumn[i].ty = affectedColumn[i-1].y;
+							affectedColumn[i].row = affectedColumn[i-1].row;
+							affectedColumn[i].column = affectedColumn[i-1].column;
+						} else {
+							affectedColumn[i].x = originX; affectedColumn[i].tx = originX;
+							affectedColumn[i].y = originY; affectedColumn[i].ty = originY;
+							affectedColumn[i].row = originR; affectedColumn[i].column = originC;
+						}
+					}
+					var lastTile = affectedColumn.shift();
+					affectedColumn.push(lastTile);
+				
+				}
+				//Now we need to update the tile array for proper linking
+				for(var j = 0; j < affectedColumn.length;j++){
+					tiles[affectedColumn[j].row][affectedColumn[j].column] = affectedColumn[j];
+				}
+				moveDelay = 0;
+			} else {
+				moveDelay+= Math.abs(shiftY);
+			}
+		}
+
+		//Update tiles
+		for(var a = 0; a < rows; a++){
+			for(var b = 0; b < columns; b++){
+				if(closestTile != undefined && tiles[a][b] != closestTile){
+					tiles[a][b].update();
+				} else {
+					tiles[a][b].update();
+				}
+			}
+		}
+		if(closestTile != undefined){
+			closestTile.update();
+		}
+
+		if(DEBUG){
+			ctx.fillStyle='#000';
+			ctx.fillText("M: " + moveDelay,10,30);
+		}
+
+	}
+
+	//Utility Functions
+	function scanForLinks(){
+		for(var a = 0; a < rows; a++){
+			for(var b = 0; b < columns; b++){
+				//Check down
+				if(a+1 < rows){
+					if(tiles[a+1][b].value == tiles[a][b].value){
+						tiles[a][b].linkDown();
+						tiles[a+1][b].setPiece = true;
+					}
+				}
+				//Check right
+				if(b+1 < columns){
+					if(tiles[a][b+1].value == tiles[a][b].value){
+						tiles[a][b].linkRight();
+						tiles[a][b+1].setPiece = true;
+					}
+				}
+			}
+		}
+	}
+
+	function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight-4;
+		tileScale = (innerWidth*0.9)/columns;
+		if(innerWidth>innerHeight){
+			var temp = columns;
+			columns = rows;
+			rows = temp;
+			tileScale = (innerHeight*0.8)/rows;
+		}
+	}	
+
+	function getClosestTile(x,y){
+		var close = undefined;
+		for(var a = 0; a < rows; a++){
+			if(close == undefined){
+				for(var b = 0; b < columns; b++){
+					if(tiles[a][b].x < x 
+						&& tiles[a][b].x+tileScale > x
+						&& tiles[a][b].y < y
+						&& tiles[a][b].y+tileScale > y){
+						if(getDistance(x,y,tiles[a][b].x+(tileScale/2),tiles[a][b].y+(tileScale/2))<tileScale/2){
+							if(!tiles[a][b].setPiece){
+								close = tiles[a][b];
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+		return close;
+	}
+
+	function highlightRow(selected){
+		var sc = selected.column;
+		var setFound = false;
+		//First we loop to see if there are any sets in the row... if not great
+		for(var b = 0; b < columns; b++){
+			if(!tiles[selected.row][b].setPiece){
+				affectedRow.push(tiles[selected.row][b]);
+			} else {
+				affectedRow = [];
+				setFound = true;
+				break;
+			}
+		}
+		//A set was found now we have to build the row dynamically from the selected tile out.
+		if(setFound){
+			affectedRow.push(closestTile);
+			for(var b = sc; b < columns; b++){
+				if(b+1 < columns){
+					if(!tiles[selected.row][b+1].setPiece){
+						affectedRow.push(tiles[selected.row][b+1]);
+					} else {
+						break;
+					}
+				}
+			}
+			for(var a = sc; a > -1; a--){
+				if(a-1>-1){
+					if(!tiles[selected.row][a-1].setPiece){
+						affectedRow.unshift(tiles[selected.row][a-1]);
+					} else {
+						break;
+					}
+				}
+			}
+		}
+		
+	}
+
+	function highlightColumn(selected){
+		var sr = selected.row;
+		var setFound = false;
+		for(var a = 0; a < rows; a++){
+			if(!tiles[a][selected.column].setPiece){
+				affectedColumn.push(tiles[a][selected.column]);
+			} else {
+				affectedColumn = [];
+				setFound = true;
+				break;
+			}
+		}
+		if(setFound){
+			affectedColumn.push(closestTile);
+			for(var a = sr; a < rows; a++){
+				if(a+1 < rows){
+					if(!tiles[a+1][selected.column].setPiece && (a+1) != sr){
+						affectedColumn.push(tiles[a+1][selected.column]);
+					}else {
+						break;
+					}
+				}
+			}
+			for(var b = sr; b > -1; b--){
+				if(b-1 > -1){
+					if(!tiles[b-1][selected.column].setPiece && (b-1) != sr){
+						affectedColumn.unshift(tiles[b-1][selected.column]);
+					} else {
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	function getDistance(x1,y1,x2,y2){
+		return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
+	}
+
+	function resetAffectedRow(){
+		for(var i = 0; i < affectedRow.length; i++){
+			if(affectedRow[i] != closestTile){
+				affectedRow[i].targetSpacing = 10;
+			}
+		}
+		affectedRow = [];
+	}
+
+	function resetAffectedColumn(){
+		for(var i = 0; i < affectedColumn.length; i++){
+			if(affectedColumn[i]  != closestTile){
+				affectedColumn[i].targetSpacing = 10;
+			}
+		}
+		affectedColumn = [];
+	}
+
+	//Input
+	var closestOffsetX = -1, closestOffsetY = -1;
+	var resetX = -1, resetY = -1;
+	window.addEventListener('mousedown',function(evt){MOUSEDOWNEVENT(evt);});
+	window.addEventListener('mousemove',function(evt){MOUSEMOVEEVENT(evt);});
+	window.addEventListener('mouseup',function(evt){MOUSEUPEVENT(evt);});
+		
+
+	function MOUSEDOWNEVENT(evt){
+		closestTile = getClosestTile(evt.pageX,evt.pageY);
+		if(closestTile != undefined){
+			//Let's highlight the row and column for the selected tile
+			resetX = closestTile.x;
+			resetY = closestTile.y;
+			highlightRow(closestTile);
+			highlightColumn(closestTile);
+			mouseDownX = evt.pageX;
+			mouseDownY = evt.pageY;
+			drag = true;
+		}
+	}
+
+	
+	function MOUSEUPEVENT(evt){
+		//TODO: Set the new positions of the altered tiles. 
+		shiftX = 0;
+		shiftY = 0;
+		resetAffectedRow();
+		resetAffectedColumn();
+		if(closestTile != undefined){
+			//closestTile.x = resetX; 
+			//closestTile.tx = resetX;
+			//closestTile.y = resetY; 
+			//closestTile.ty = resetY;
+			resetX = -1;
+			resetY = -1;
+			closestTile.targetSpacing = 10;
+			closestTile = undefined;
+		}
+		drag = false;
+		horzvert= undefined;
+		moveDelay=maxDelay;
+	}
+
+	var horzvert = undefined;
+	function MOUSEMOVEEVENT(evt){
+		if(drag){
+			//Determine the drag direction from the starting mousedown position
+			//The drag direction needs to exceed a minimum distance before we can start moving... 
+			if(getDistance(evt.pageX,evt.pageY,mouseDownX,mouseDownY) > tileScale/2 && horzvert == undefined){
+				//Now we need to determine direction
+				var horzDist = Math.abs(evt.pageX-mouseDownX);
+				var vertDist = Math.abs(evt.pageY - mouseDownY);
+				if(horzDist > vertDist && affectedRow.length > 0){
+					horzvert = 'horz';
+				} else if(vertDist > horzDist && affectedColumn.length > 0){
+					horzvert = 'vert';
+				}
+			}
+			if(horzvert != undefined){
+				if(horzvert == 'horz'){
+					//HORIZONTAL MOVEMENT - for now let's drop the affected column
+					resetAffectedColumn();
+					// if(evt.pageX < mouseDownX){
+					// 	shiftX = Math.floor((evt.pageX-mouseDownX)/tileScale);
+					// } else {
+					shiftX = Math.floor((evt.pageX-mouseDownX)/tileScale);
+					if(shiftX > 1){shiftX = 1;}
+					if(shiftX < -1){shiftX = -1;}
+					shiftY = 0;
+				} else if(horzvert == 'vert'){
+					//VERTICAL MOVEMENT - 
+					resetAffectedRow();
+					shiftY = Math.floor((evt.pageY-mouseDownY)/tileScale);
+					if(shiftY >1){shiftY=1;}
+					if(shiftY <-1){shiftY=-1;}
+					shiftX = 0;
+					
+				}
+			}
+		}
+	};
+	animate();
+</script>
+</body>
+</html>
