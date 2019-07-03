@@ -16,10 +16,10 @@
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 	//Global Variables
-	var DEBUG = false;
+	var DEBUG = true;
 	var drag = false;
 	var colorArray = ['#f19066','#574b90','#f5cd79','#f78fb3','#546de5','#303952','#3dc1d3','#c44569'];
-	var speedDampner = 2;
+	var speedDampner = 1;
 	var rows = 10;
 	var columns = 7;
 	var tileScale = 0;
@@ -27,8 +27,8 @@
 	var affectedColumn = [];
 	var closestTile = undefined;
 	var mouseDownX = -1, mouseDownY = -1;
-	var maxDelay = 60;
-	var moveDelay = maxDelay;
+	var currentMouseX = -1, currentMouseY = -1;
+	var horzvert = undefined;
 	scaleCanvas();
 
 	//OBJECT DEFINITIONS
@@ -44,10 +44,6 @@
 		this.column = column;
 		this.spacing = 10;
 		this.targetSpacing = this.spacing;
-		this.downLink = false;
-		this.rightLink = false;
-
-		this.setPiece = false;
 
 		this.draw = function(){
 			ctx.fillStyle= this.value;
@@ -56,14 +52,6 @@
 			ctx.arc(this.x+this.r, this.y+this.r,this.r-this.spacing,0,2*Math.PI);
 			ctx.fill();
 			ctx.closePath();
-
-			if(this.downLink){
-				ctx.fillRect(this.x+this.spacing,this.y+this.r,tileScale-(this.spacing*2),tileScale);
-			}
-
-			if(this.rightLink){
-				ctx.fillRect(this.x+this.r,this.y+this.spacing,tileScale,tileScale-(this.spacing*2));
-			}
 
 			if(DEBUG){
 				ctx.fillStyle='#000';
@@ -92,16 +80,6 @@
 
 			this.draw();
 		}
-
-		this.linkDown = function(){
-			this.downLink = true;
-			this.setPiece = true;
-		}
-
-		this.linkRight = function(){
-			this.rightLink = true;
-			this.setPiece = true;
-		}
 	}
 
 	//Object containers
@@ -117,14 +95,49 @@
 		tiles.push(col);
 	}
 
-	var shiftX = 0, shiftY = 0;
 	//Animate and render
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
 
-		if(!drag){
-			scanForLinks();
+		if(drag){
+			//Determine the drag direction from the starting mousedown position
+			//The drag direction needs to exceed a minimum distance before we can start moving... 
+			var horzDist = Math.abs(currentMouseX-mouseDownX);
+			var vertDist = Math.abs(currentMouseY-mouseDownY);
+			if(getDistance(currentMouseX,currentMouseY,mouseDownX,mouseDownY) > tileScale/2 && horzvert == undefined){
+				//Now we need to determine direction
+				if(horzDist > vertDist && affectedRow.length > 0){
+					horzvert = 'horz';
+				} else if(vertDist > horzDist && affectedColumn.length > 0){
+					horzvert = 'vert';
+				}
+			}
+			if(horzvert != undefined){
+				if(horzvert == 'horz'){
+					//HORIZONTAL MOVEMENT-
+					resetAffectedColumn();
+					if(horzDist > tileScale){
+						if(currentMouseX < mouseDownX){ //LEFT
+							cycle(-1,affectedRow);
+						} else if(currentMouseX > mouseDownX){ //RIGHT
+							cycle(1,affectedRow);
+						}
+					}
+					resetAffectedRow();
+				} else if(horzvert == 'vert'){
+					//VERTICAL MOVEMENT- 
+					resetAffectedRow();
+					if(vertDist > tileScale){
+						if(currentMouseY < mouseDownY){ //UP
+							cycle(-1,affectedColumn);
+						} else if(currentMouseY > mouseDownY){//DOWN
+							cycle(1,affectedColumn);
+						}
+					}
+					resetAffectedColumn();
+				}
+			}
 		}
 
 		//Alter affected row
@@ -140,150 +153,21 @@
 			closestTile.targetSpacing = 30;
 		}
 
-		if(shiftX != 0 && closestTile != undefined){
-			if(moveDelay >= maxDelay){
-				highlightRow(closestTile);
-				if(shiftX > 0){ //RIGHT
-					var originX = affectedRow[0].x; var originY = affectedRow[0].y;
-					var originR = affectedRow[0].row; var originC = affectedRow[0].column;
-					for(var i = 0; i < affectedRow.length;i++){
-						if(i < affectedRow.length-1){
-							affectedRow[i].tx = affectedRow[i+1].x;
-							affectedRow[i].ty = affectedRow[i+1].y;
-							affectedRow[i].row = affectedRow[i+1].row;
-							affectedRow[i].column = affectedRow[i+1].column;
-						} else {
-							//Here we want to snap the piece to position
-							affectedRow[i].x = originX; affectedRow[i].tx = originX;
-							affectedRow[i].y = originY; affectedRow[i].ty = originY;
-							affectedRow[i].row = originR; affectedRow[i].column = originC;
-						}
-					}
-					var lastTile = affectedRow.pop();
-					affectedRow.unshift(lastTile);
-				} else { //LEFT
-					var originX = affectedRow[affectedRow.length-1].x;
-					var originY = affectedRow[affectedRow.length-1].y;
-					var originR = affectedRow[affectedRow.length-1].row;
-					var originC = affectedRow[affectedRow.length-1].column;
-					for(var i = affectedRow.length-1; i > -1;i--){
-						if(i > 0){
-							affectedRow[i].tx = affectedRow[i-1].x;
-							affectedRow[i].ty = affectedRow[i-1].y;
-							affectedRow[i].row = affectedRow[i-1].row;
-							affectedRow[i].column = affectedRow[i-1].column;
-						} else {
-							affectedRow[i].x = originX; affectedRow[i].tx = originX;
-							affectedRow[i].y = originY; affectedRow[i].ty = originY;
-							affectedRow[i].row = originR; affectedRow[i].column = originC;
-						}
-					}
-					var lastTile = affectedRow.shift();
-					affectedRow.push(lastTile);
-				}
-				//Now we need to update the tile array for proper linking
-				for(var j = 0; j < affectedRow.length;j++){
-					tiles[affectedRow[j].row][affectedRow[j].column] = affectedRow[j];
-				}
-				moveDelay = 0;
-			} else {
-				moveDelay+= Math.abs(shiftX);
-			}
-		} else if(shiftY != 0 && closestTile != undefined){
-			if(moveDelay >= maxDelay){
-				highlightColumn(closestTile);
-				if(shiftY > 0){ //DOWN (+)
-					console.log("SHIFT DOWN");
-					var originX = affectedColumn[0].x; var originY = affectedColumn[0].y;
-					var originR = affectedColumn[0].row; var originC = affectedColumn[0].column;
-					for(var i = 0; i < affectedColumn.length;i++){
-						if(i < affectedColumn.length-1){
-							affectedColumn[i].tx = affectedColumn[i+1].x;
-							affectedColumn[i].ty = affectedColumn[i+1].y;
-							affectedColumn[i].row = affectedColumn[i+1].row;
-							affectedColumn[i].column = affectedColumn[i+1].column;
-						} else {
-							//Here we want to snap the piece to position
-							affectedColumn[i].x = originX; affectedColumn[i].tx = originX;
-							affectedColumn[i].y = originY; affectedColumn[i].ty = originY;
-							affectedColumn[i].row = originR; affectedColumn[i].column = originC;
-						}
-					}
-					var lastTile = affectedColumn.pop();
-					affectedColumn.unshift(lastTile);
-				} else { //UP(-)
-					console.log("SHIFT UP " + affectedColumn.length);
-					var originX = affectedColumn[affectedColumn.length-1].x;
-					var originY = affectedColumn[affectedColumn.length-1].y;
-					var originR = affectedColumn[affectedColumn.length-1].row;
-					var originC = affectedColumn[affectedColumn.length-1].column;
-					for(var i = affectedColumn.length-1; i > -1;i--){
-						if(i > 0){
-							affectedColumn[i].tx = affectedColumn[i-1].x;
-							affectedColumn[i].ty = affectedColumn[i-1].y;
-							affectedColumn[i].row = affectedColumn[i-1].row;
-							affectedColumn[i].column = affectedColumn[i-1].column;
-						} else {
-							affectedColumn[i].x = originX; affectedColumn[i].tx = originX;
-							affectedColumn[i].y = originY; affectedColumn[i].ty = originY;
-							affectedColumn[i].row = originR; affectedColumn[i].column = originC;
-						}
-					}
-					var lastTile = affectedColumn.shift();
-					affectedColumn.push(lastTile);
-				
-				}
-				//Now we need to update the tile array for proper linking
-				for(var j = 0; j < affectedColumn.length;j++){
-					tiles[affectedColumn[j].row][affectedColumn[j].column] = affectedColumn[j];
-				}
-				moveDelay = 0;
-			} else {
-				moveDelay+= Math.abs(shiftY);
-			}
-		}
-
 		//Update tiles
 		for(var a = 0; a < rows; a++){
 			for(var b = 0; b < columns; b++){
-				if(closestTile != undefined && tiles[a][b] != closestTile){
 					tiles[a][b].update();
-				} else {
-					tiles[a][b].update();
-				}
 			}
-		}
-		if(closestTile != undefined){
-			closestTile.update();
-		}
-
-		if(DEBUG){
-			ctx.fillStyle='#000';
-			ctx.fillText("M: " + moveDelay,10,30);
 		}
 
 	}
 
-	//Utility Functions
-	function scanForLinks(){
-		for(var a = 0; a < rows; a++){
-			for(var b = 0; b < columns; b++){
-				//Check down
-				if(a+1 < rows){
-					if(tiles[a+1][b].value == tiles[a][b].value){
-						tiles[a][b].linkDown();
-						tiles[a+1][b].setPiece = true;
-					}
-				}
-				//Check right
-				if(b+1 < columns){
-					if(tiles[a][b+1].value == tiles[a][b].value){
-						tiles[a][b].linkRight();
-						tiles[a][b+1].setPiece = true;
-					}
-				}
-			}
-		}
+	function cycleRow(amt,group){
+		//Carousel row here
+	}
+
+	function cycleColumn(amt,group){
+		//Carousel column here
 	}
 
 	function scaleCanvas(){
@@ -308,9 +192,7 @@
 						&& tiles[a][b].y < y
 						&& tiles[a][b].y+tileScale > y){
 						if(getDistance(x,y,tiles[a][b].x+(tileScale/2),tiles[a][b].y+(tileScale/2))<tileScale/2){
-							if(!tiles[a][b].setPiece){
-								close = tiles[a][b];
-							}
+							close = tiles[a][b];
 						}
 						break;
 					}
@@ -321,73 +203,20 @@
 	}
 
 	function highlightRow(selected){
-		var sc = selected.column;
-		var setFound = false;
-		//First we loop to see if there are any sets in the row... if not great
-		for(var b = 0; b < columns; b++){
-			if(!tiles[selected.row][b].setPiece){
-				affectedRow.push(tiles[selected.row][b]);
-			} else {
-				affectedRow = [];
-				setFound = true;
-				break;
-			}
-		}
-		//A set was found now we have to build the row dynamically from the selected tile out.
-		if(setFound){
-			affectedRow.push(closestTile);
-			for(var b = sc; b < columns; b++){
-				if(b+1 < columns){
-					if(!tiles[selected.row][b+1].setPiece){
-						affectedRow.push(tiles[selected.row][b+1]);
-					} else {
-						break;
-					}
+		for(var a = 0; a < rows; a++){
+			for(var b = 0; b < columns; b++){
+				if(Math.abs(tiles[a][b].y-selected.y)<tileScale/2){
+					affectedRow.push(tiles[a][b]);
 				}
-			}
-			for(var a = sc; a > -1; a--){
-				if(a-1>-1){
-					if(!tiles[selected.row][a-1].setPiece){
-						affectedRow.unshift(tiles[selected.row][a-1]);
-					} else {
-						break;
-					}
-				}
-			}
+			} 
 		}
-		
 	}
 
 	function highlightColumn(selected){
-		var sr = selected.row;
-		var setFound = false;
 		for(var a = 0; a < rows; a++){
-			if(!tiles[a][selected.column].setPiece){
-				affectedColumn.push(tiles[a][selected.column]);
-			} else {
-				affectedColumn = [];
-				setFound = true;
-				break;
-			}
-		}
-		if(setFound){
-			affectedColumn.push(closestTile);
-			for(var a = sr; a < rows; a++){
-				if(a+1 < rows){
-					if(!tiles[a+1][selected.column].setPiece && (a+1) != sr){
-						affectedColumn.push(tiles[a+1][selected.column]);
-					}else {
-						break;
-					}
-				}
-			}
-			for(var b = sr; b > -1; b--){
-				if(b-1 > -1){
-					if(!tiles[b-1][selected.column].setPiece && (b-1) != sr){
-						affectedColumn.unshift(tiles[b-1][selected.column]);
-					} else {
-						break;
-					}
+			for(var b = 0; b < columns; b++){
+				if(Math.abs(tiles[a][b].x-selected.x)<tileScale/2){
+					affectedColumn.push(tiles[a][b]);
 				}
 			}
 		}
@@ -440,15 +269,9 @@
 	
 	function MOUSEUPEVENT(evt){
 		//TODO: Set the new positions of the altered tiles. 
-		shiftX = 0;
-		shiftY = 0;
 		resetAffectedRow();
 		resetAffectedColumn();
 		if(closestTile != undefined){
-			//closestTile.x = resetX; 
-			//closestTile.tx = resetX;
-			//closestTile.y = resetY; 
-			//closestTile.ty = resetY;
 			resetX = -1;
 			resetY = -1;
 			closestTile.targetSpacing = 10;
@@ -456,46 +279,12 @@
 		}
 		drag = false;
 		horzvert= undefined;
-		moveDelay=maxDelay;
 	}
 
-	var horzvert = undefined;
+	
 	function MOUSEMOVEEVENT(evt){
-		if(drag){
-			//Determine the drag direction from the starting mousedown position
-			//The drag direction needs to exceed a minimum distance before we can start moving... 
-			if(getDistance(evt.pageX,evt.pageY,mouseDownX,mouseDownY) > tileScale/2 && horzvert == undefined){
-				//Now we need to determine direction
-				var horzDist = Math.abs(evt.pageX-mouseDownX);
-				var vertDist = Math.abs(evt.pageY - mouseDownY);
-				if(horzDist > vertDist && affectedRow.length > 0){
-					horzvert = 'horz';
-				} else if(vertDist > horzDist && affectedColumn.length > 0){
-					horzvert = 'vert';
-				}
-			}
-			if(horzvert != undefined){
-				if(horzvert == 'horz'){
-					//HORIZONTAL MOVEMENT - for now let's drop the affected column
-					resetAffectedColumn();
-					// if(evt.pageX < mouseDownX){
-					// 	shiftX = Math.floor((evt.pageX-mouseDownX)/tileScale);
-					// } else {
-					shiftX = Math.floor((evt.pageX-mouseDownX)/tileScale);
-					if(shiftX > 1){shiftX = 1;}
-					if(shiftX < -1){shiftX = -1;}
-					shiftY = 0;
-				} else if(horzvert == 'vert'){
-					//VERTICAL MOVEMENT - 
-					resetAffectedRow();
-					shiftY = Math.floor((evt.pageY-mouseDownY)/tileScale);
-					if(shiftY >1){shiftY=1;}
-					if(shiftY <-1){shiftY=-1;}
-					shiftX = 0;
-					
-				}
-			}
-		}
+		currentMouseX = evt.pageX;
+		currentMouseY = evt.pageY;
 	};
 	animate();
 </script>
