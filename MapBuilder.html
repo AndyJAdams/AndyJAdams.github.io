@@ -1,0 +1,718 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta lang="en/us"/>
+	<meta encoding="UTF-8">
+	<title>G3</title>
+	<style>
+		body{
+			margin: 0;
+		}
+		canvas{
+			background-color: #333;
+		}
+	</style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript' src='./raw.js'></script>
+<script type='text/javascript'>
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+
+	var rows = 16;
+	var columns = 30;
+	var spacing = 0;
+	var halfX = 0, halfY = 0;
+	var offsetX = 0, offsetY = 0;
+	var startPoint = undefined;
+	var lineMode = -1;
+	var startingMoveSpeed = 0.01;
+
+	var CREATIVE_MODE = false;
+	var DEBUG = false;
+	var moveDirection = -1;
+	var moving = false;
+	var level = 5;
+
+	function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight-4;
+		halfX = innerWidth/2; halfY = innerHeight/2;
+		spacing = (innerWidth*0.8)/columns;
+		if(innerHeight>innerWidth){
+			var c = columns; columns = rows; rows = c;
+			spacing = (innerHeight*0.8)/rows;
+		}
+		offsetX = (innerWidth*0.2)/2; offsetY = (innerHeight*0.2)/2;
+	}
+	scaleCanvas();
+
+	var maps = raw.split('*');	
+
+	function Point(x,y,r,c){
+		this.x = Math.round(x);
+		this.y = Math.round(y);
+		this.links = [undefined,undefined,undefined,undefined];
+		//Links is an array of points 0-Up 1-Right 2-Down 3-left
+		this.alpha = false;
+		this.omega = false;
+		this.r = r;
+		this.c = c;
+		
+		this.setLink = function(index, pt){
+			if(index > -1 && index <4){
+				this.links[index] = pt;
+			} else {
+				console.log("ERROR - cannot set link out of 4 directions from " + this.x +","+this.y);
+			}
+		}
+	}
+
+	function Bit(x,y,r,c,i){
+		this.x = x;
+		this.y = y;
+		this.transitioning = false;
+		this.dx = this.x;
+		this.dy = this.y;
+		this.row = r;
+		this.col = c;
+		this.transDir = -1;
+		this.prevLineMode = -1;
+		this.index = i;
+		this.pending = -1;
+		this.lastStop = pa[r][c];
+		this.moveSpeed = startingMoveSpeed;
+
+		this.draw = function(){
+			if(this.index > -1){
+				ctx.fillStyle='#DDD';
+				ctx.beginPath();
+				ctx.moveTo(this.x,this.y-8);
+				ctx.lineTo(this.x+8,this.y);
+				ctx.lineTo(this.x,this.y+8);
+				ctx.lineTo(this.x-8,this.y);
+				ctx.lineTo(this.x,this.y-8);
+				ctx.fill();
+				ctx.closePath();
+			}
+		}
+
+		this.update = function(){
+			if(this.index >-1){
+				if(this.x > this.dx){
+					this.x -= this.moveSpeed;
+				} else if(this.x < this.dx){
+					this.x += this.moveSpeed;
+				} 
+				if(this.y > this.dy){
+					this.y -= this.moveSpeed;
+				} else if(this.y < this.dy){
+					this.y += this.moveSpeed;
+				}
+				if(Math.abs(this.x-this.dx) < 4 && Math.abs(this.y-this.dy) < 4){
+					if(this.pending != -1){
+						this.shift(this.pending);
+					} else if(this.transDir != -1 && !this.shift(this.transDir)){ //Check for next move
+						this.transitioning = false;
+						this.lastStop = this.links[this.transDir].end;
+						this.transDir = -1;
+						this.moveSpeed = startingMoveSpeed;
+						//Check if we're on an ending point
+						if(pa[this.row][this.col].omega){
+							this.index =-1;
+							return;
+						}
+					}
+				} else {
+					this.transitioning = true;
+				}
+				this.draw();
+			}
+		}
+
+		this.shift = function(dir){
+			if(this.prevLineMode == 1 || this.prevLineMode == 7){ //Dashed Line previous needs removal
+				var oppDir = dir-2; if(oppDir < 0){ oppDir = dir+2;}
+				pa[this.row][this.col].links[oppDir].end.links[dir] = undefined;
+				pa[this.row][this.col].links[oppDir] = undefined;
+				this.lastStop = this.links[dir].end;
+			}
+			var lk = pa[this.row][this.col].links[dir];
+			if(lk.end == this.lastStop && this.moveSpeed >= 0.03){
+				console.log("WE'RE LOOPING!!!");
+			}
+			if(lk != undefined){
+				this.transitioning = true;
+				if(lk.mode == 5 || lk.mode == 7){
+					if(dir == 0){
+						if(this.pending == -1){
+							this.dx = this.x;
+							this.dy = -10;
+							this.pending = dir;
+						} else {
+							this.dx = lk.end.x;
+							this.y = innerHeight+10;
+							this.dy = lk.end.y;
+							this.row = lk.end.r;
+							this.col = lk.end.c;
+							this.pending = -1;
+						}
+					} else if(dir == 2){
+						if(this.pending == -1){
+							this.dx = this.x;
+							this.dy = innerHeight+10;
+							this.pending  = dir;
+						} else {
+							this.dx = lk.end.x;
+							this.y = -10;
+							this.dy = lk.end.y;
+							this.row = lk.end.r;
+							this.col = lk.end.c;
+							this.pending = -1;
+						}
+					} else if(dir == 1){
+						if(this.pending == -1){
+							this.dx = innerWidth+10;
+							this.dy = this.y;
+							this.pending = dir;
+						} else {
+							this.dx = lk.end.x;
+							this.x = -10;
+							this.dy = lk.end.y;
+							this.row = lk.end.r;
+							this.col = lk.end.c;
+							this.pending = -1;
+						}
+					} else if(dir == 3){
+						if(this.pending == -1){
+							this.dx = -10;
+							this.dy = lk.end.y;
+							this.pending = dir;
+						} else {
+							this.dx = lk.end.x;
+							this.x = innerWidth+10;
+							this.dy = lk.end.y;
+							this.row = lk.end.r;
+							this.col = lk.end.c;
+							this.pending = -1;
+						}
+					}
+				} else {
+					this.dx = lk.end.x;
+					this.dy = lk.end.y;
+					this.row = lk.end.r;
+					this.col = lk.end.c;
+				} 
+				this.prevLineMode = lk.mode;
+				this.moveSpeed += 0.005;
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+
+
+	var pa = [];
+
+	for(var a = 0; a < rows; a++){
+		var row = [];
+		for(var c = 0; c < columns; c++){
+			var nx = (c*spacing)+offsetX;
+			var ny = (a*spacing)+offsetY;
+			row.push(new Point(nx,ny,a,c));
+		}
+		pa.push(row);
+	}
+
+	function Link(end, mode){
+		this.end = end;
+		this.mode = mode;
+	}
+
+	var bitArray = [];
+	var init = false;
+
+	function buildMap(mapData){
+		var map = mapData.split(",");
+		//Get Map Data
+		rows = map[0].split("-")[0];
+		columns = map[0].split("-")[1];
+		//Generate Starting positons
+		var startPoints = map[1].split(":");
+		for(var s = 0; s < startPoints.length; s++){
+			if(startPoints[s] != ""){
+				var coords = startPoints[s].split("-");
+				pa[coords[0]][coords[1]].alpha = true;
+			}
+		}
+		//Generate Links
+		var pointLinks = map[2].split('#');
+		for(var p = 0; p < pointLinks.length; p++){
+			if(pointLinks[p] == ''){
+				break;
+			}
+			var data = pointLinks[p].split(':');
+			var spX = parseInt(data[0].split('-')[0]);
+			var spY = parseInt(data[0].split('-')[1]);
+			for(var d = 1; d < data.length; d++){
+				if(data[d] != ''){
+					var extra = data[d].split('=');
+					var epX = parseInt(extra[0].split('-')[0]);
+					var epY = parseInt(extra[0].split('-')[1]);
+					var lmode = parseInt(extra[1]);
+					//Now we determine direction
+					if(spX > epX){ //
+						pa[spX][spY].links[2] = new Link(pa[epX][epY],lmode);
+						pa[epX][spY].links[0] = new Link(pa[spX][spY],lmode);
+					} else if(spX < epX){ //
+						pa[spX][spY].links[0] = new Link(pa[epX][epY],lmode);
+						pa[epX][spY].links[2] = new Link(pa[spX][spY],lmode);
+					}  
+					if(spY < epY){ //
+						pa[spX][spY].links[1] = new Link(pa[epX][epY],lmode);
+						pa[epX][epY].links[3] = new Link(pa[spX][spY],lmode);
+					} else if(spY > epY){ //
+						pa[spX][spY].links[3] = new Link(pa[epX][epY],lmode);
+						pa[epX][epY].links[1] = new Link(pa[spX][spY],lmode);
+					} 
+				}
+			}
+
+		}
+		//Generate End points
+		var endPoints = map[3].split(':');
+		for(var e = 0; e < endPoints.length; e++){
+			if(endPoints[e] != ""){
+				var ex = parseInt(endPoints[e].split('-')[0]);
+				var ey = parseInt(endPoints[e].split('-')[1]);
+				pa[ex][ey].omega = true;
+			}
+		}
+		makeBits();
+		console.log(map);
+	}
+
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		for(var a = 0; a < pa.length; a++){
+			for(var b = 0; b < pa[a].length; b++){
+				ctx.lineWidth = 2;
+				ctx.strokeStyle='#DDD';
+
+				if(CREATIVE_MODE){
+					ctx.fillStyle='#DDD';
+					ctx.fillRect(pa[a][b].x-2,pa[a][b].y-2,4,4);
+					if(DEBUG){
+						ctx.fillText(pa[a][b].r+","+pa[a][b].c,pa[a][b].x,pa[a][b].y+10);
+					}
+					ctx.fillText(lineMode,10,20);
+				} 
+
+				
+				
+				for(var i = 1; i < 3; i++){
+					var L = pa[a][b].links[i];
+					if(L != undefined){
+						ctx.beginPath();
+						ctx.setLineDash([]);
+						if(L.mode == 1 || L.mode == 7){
+							ctx.setLineDash([3,6]);
+						} 
+						if(L.mode == 5 || L.mode == 7){
+							//console.log('TODO: Make wrap mode work and pretty');
+							ctx.moveTo(pa[a][b].x,pa[a][b].y);
+							if(i == 2){
+								ctx.lineTo(pa[a][b].x,innerHeight+10);
+								ctx.moveTo(pa[a][b].x,-10);
+								ctx.lineTo(L.end.x,L.end.y);
+							} else if(i == 1){
+								ctx.lineTo(innerWidth+10,pa[a][b].y);
+								ctx.moveTo(-10,L.end.y);
+								ctx.lineTo(L.end.x, L.end.y);
+							}
+						} else {
+							ctx.moveTo(pa[a][b].x,pa[a][b].y);
+							ctx.lineTo(L.end.x, L.end.y);
+						}
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+				
+
+				if(CREATIVE_MODE){
+					bitArray = [];
+					if(pa[a][b].alpha){
+						ctx.fillStyle='#DDD';
+						ctx.fillRect(pa[a][b].x-4,pa[a][b].y-4,8,8);
+					}
+				} else {
+					var stillMoving = 0;
+					var stillActive = 0;
+					for(var i = 0; i < bitArray.length;i++){
+						bitArray[i].update();
+						if(bitArray[i] != null && bitArray[i].transitioning){
+							stillMoving++;
+						}
+						if(bitArray[i] != null && bitArray[i].index > -1){
+							stillActive++;
+						}
+					}
+					if(stillMoving == 0){
+						moveDirection = -1;
+						moving = false;
+					}
+					if(stillActive <= 0 && init == true){
+						//CREATIVE_MODE = true;
+						console.log('NEXT');
+						level++;
+						clearMap();
+						init = false;
+					}
+				}
+				if(pa[a][b].omega){
+					ctx.setLineDash([]);
+					ctx.beginPath();
+					ctx.moveTo(pa[a][b].x,pa[a][b].y-10);
+					ctx.lineTo(pa[a][b].x+10,pa[a][b].y);
+					ctx.lineTo(pa[a][b].x,pa[a][b].y+10);
+					ctx.lineTo(pa[a][b].x-10,pa[a][b].y);
+					ctx.closePath();
+					ctx.fillStyle='#333';
+					ctx.fill();
+					ctx.stroke();
+				}
+				
+			}
+		}
+
+		if(!init){
+			if(maps.length > 0){
+				if(maps[level] != undefined && maps[level] != ''){
+					//console.log(level + " == " + maps[level]);
+					buildMap(maps[level]);
+					init = true;
+				} else {
+					CREATIVE_MODE = true;
+				}
+			}
+			
+		}
+	}
+
+	function getClosestPoint(x,y){
+		var d = 100000;
+		var retPoint = undefined;
+		for(var a = 0; a < rows; a++){
+			for(var b = 0; b < columns; b++){
+				var asqr = Math.pow(Math.abs(pa[a][b].x-x),2);
+				var bsqr = Math.pow(Math.abs(pa[a][b].y-y),2);
+				var dist = Math.sqrt(asqr+bsqr);
+				if(dist < d){
+					retPoint = pa[a][b];
+					d = dist;
+				}
+			}
+		}
+		return retPoint;
+	}
+
+	function makeBits(){
+		var count = 0;
+		for(var a= 0; a < rows; a++){
+			for(var b = 0; b < columns; b++){
+				if(pa[a][b].alpha){
+					bitArray.push(new Bit(pa[a][b].x,pa[a][b].y,a,b,count));
+					count++;
+				}
+			}
+		}
+	}
+
+	function RemoveBits(index){
+		bitArray.splice(index);
+	}
+
+	function applyMove(dir){
+		moveDirection = dir;
+		for(var i = 0; i < bitArray.length; i++){
+			bitArray[i].transDir = dir;
+		}
+		moving = true;
+	}
+
+
+	function outputPath(){
+		var o = (rows+'-'+columns+',');
+		for(var i = 0; i < 3; i++){
+			for(var a = 0; a < rows; a++){
+				for(var b= 0; b < columns; b++){
+					if(i == 0){ //Check for starters
+						if(pa[a][b].alpha){
+							o+= (pa[a][b].r+'-'+pa[a][b].c+':');
+						}
+					} else if(i == 1){
+						var addData = false;
+						var pointData = pa[a][b].r+'-'+pa[a][b].c+':';
+						for(var l = 0; l < 4; l++){
+							if(pa[a][b].links[l] != undefined){
+								addData = true;
+								pointData += (pa[a][b].links[l].end.r+'-'+pa[a][b].links[l].end.c+'='+pa[a][b].links[l].mode + ':');
+							}
+						}
+						if(addData){
+							pointData += '#';
+							o+= pointData;
+						}
+					} else {
+						if(pa[a][b].omega){
+							o+=(pa[a][b].r+'-'+pa[a][b].c+':');
+						}
+					}
+				}
+			}
+			if(i < 2){
+				o+=',';
+			}	
+		}
+		console.log(o);
+	}
+
+	function clearMap(){
+		for(var a = 0; a < rows; a++){
+			for(var b = 0; b < columns; b++){
+				pa[a][b].alpha = false;
+				pa[a][b].omega = false;
+				pa[a][b].links = [undefined,undefined,undefined,undefined];
+			}
+		}
+		lineMode = -1;
+	}
+
+	function nextMap(){
+		outputPath();
+		var starts = [];
+		for(var a = 0; a < rows; a++){
+			for(var b = 0; b < columns; b++){
+				if(pa[a][b].omega){
+					starts.push(pa[a][b]);
+				}
+			}
+		}
+		clearMap();
+		for(var i = 0; i < starts.length; i++){
+			starts[i].alpha = true;
+		}
+	}
+
+	window.addEventListener('resize', function(){
+		scaleCanvas();
+	});
+
+
+	window.addEventListener('mouseup', function(evt){
+		if(CREATIVE_MODE){
+			//Is the start set yet?
+			if(startPoint == undefined){
+				//Let's get the closest point and set it as start	
+				startPoint = getClosestPoint(evt.pageX, evt.pageY);
+				if(lineMode == -1){
+					if(startPoint.omega == false){
+						startPoint.alpha = true;
+					} else {
+						startPoint.omega = false;
+					}
+					startPoint = undefined;	
+				} else if(lineMode == 9){
+					if(startPoint.alpha == false){
+						startPoint.omega = true;
+					} else {
+						startPoint.alpha = false;
+					}
+					startPoint = undefined;
+				}
+			} else {
+				if(lineMode == -1 || lineMode == 9){
+					startPoint = undefined;
+					return;
+				}
+				//Let's set the end and add both points to the path
+				var cp = getClosestPoint(evt.pageX,evt.pageY);
+				if(Math.abs(cp.x-startPoint.x) > 10 && Math.abs(cp.y-startPoint.y) > 10){
+					console.log("POINTS NOT INLINE");
+					startPoint = undefined;
+				} else if(Math.abs(cp.x-startPoint.x)>spacing+5 || Math.abs(cp.y-startPoint.y)>spacing+5){
+					if(lineMode == 5 || lineMode == 7){ //WRAP LINE
+						//Now we determine direction for the link
+						if(cp.r == startPoint.r){ //Horizontal
+							if(startPoint.c > cp.c){ //RIGHT
+								startPoint.setLink(1,new Link(cp,lineMode));
+								cp.setLink(3,new Link(startPoint,lineMode));
+							} else { //LEFT
+								startPoint.setLink(3,new Link(cp,lineMode));
+								cp.setLink(1,new Link(startPoint,lineMode));
+							}
+						} else { //Vertical
+							if(startPoint.r > cp.r){ //DOWN
+								startPoint.setLink(2,new Link(cp,lineMode));
+								cp.setLink(0,new Link(startPoint,lineMode));
+							} else {
+								startPoint.setLink(0,new Link(cp,lineMode));
+								cp.setLink(2,new Link(startPoint,lineMode));
+							}
+						}
+						startPoint = cp;
+					} else {
+						console.log("POINTS NOT ADJACENT");
+						startPoint = undefined;
+					}
+				} else if(cp == startPoint){
+					console.log("CANNOT SELECT THE SAME POINT");
+				} else {
+					var nLink = new Link(cp,lineMode);
+					var rLink = new Link(startPoint,lineMode);
+					//Which direction?
+					if(Math.abs(cp.x-startPoint.x) > Math.abs(cp.y-startPoint.y)){
+						if(cp.x > startPoint.x){ //Right
+							startPoint.setLink(1,nLink);
+							cp.setLink(3,rLink);
+						} else { //Left
+							startPoint.setLink(3,nLink);
+							cp.setLink(1,rLink);
+						}
+					} else {
+						if(cp.y > startPoint.y){ //Down
+							startPoint.setLink(2,nLink);
+							cp.setLink(0,rLink);
+						} else { //Up
+							startPoint.setLink(0,nLink);
+							cp.setLink(2,rLink);
+						}
+					}
+					startPoint = cp;
+				}
+			}
+		}
+
+	});
+
+	var swapMode = false;
+	window.addEventListener('keydown',function(evt){
+		//TODO: Make keycodes to swap in/out creative mode.
+		if(CREATIVE_MODE){
+			switch(evt.keyCode){
+				case 71: //Start (G)
+					lineMode = -1;
+					break;
+				case 83: //Standard (S)
+					lineMode = 0;
+					break;
+				case 68: //Dashed (D)
+					lineMode = 1;
+					break;
+				case 65: //One-way (A)
+					lineMode = 2;
+					break;
+				case 87: //Wrap (W)
+					lineMode = 5;
+					break;
+				case 82: //Dashed-Wrap(R)
+					lineMode = 7;
+					break;
+				case 70: //END (F)
+					lineMode = 9;
+					break;
+				case 80: //OUTPUT (P)
+					outputPath();
+					break;
+				case 88:
+					clearMap();
+					break;
+				case 78:
+					nextMap();
+					break;
+				default:
+					lineMode = 0;
+					break;
+			}
+		} else {
+			if(!moving){
+				switch(evt.keyCode){
+					case 37: //Left Arrow
+						applyMove(3);
+						break;
+					case 38: //Up Arrow
+						applyMove(0);
+						break;
+					case 39: //Right Arrow
+						applyMove(1);
+						break;
+					case 40: //Down Arrow
+						applyMove(2);
+						break;
+					case 187: //Plus Level
+						level++;
+						clearMap();
+						init = false;
+						break;
+					case 189:
+						level--;
+						clearMap();
+						init = false;
+						break;
+					default:
+					//DO NOTHING
+						break;
+				}
+			}
+		}
+		if(evt.keyCode == 16){ //SHIFT
+			swapMode = true;
+		}
+	});
+
+	window.addEventListener('keyup',function(evt){
+		if(evt.keyCode == 16){
+			swapMode = false;
+		} else if(evt.keyCode == 67){
+			if(swapMode){
+				CREATIVE_MODE = !CREATIVE_MODE;
+				if(!CREATIVE_MODE){
+					makeBits();
+				}
+			}
+		} else if(evt.keyCode == 68){
+			if(swapMode){
+				DEBUG = !DEBUG;
+			}
+		}
+	});
+
+	function getRow(point){
+		for(var a = 0; a < rows; a++){
+			for(var b = 0 ;b < columns; b++){
+				if(pa[a][b]==point){
+					return a;
+				}
+			}
+		}
+	}
+
+	function getColumn(point){
+		for(var a = 0; a < rows; a++){
+			for(var b = 0 ;b < columns; b++){
+				if(pa[a][b]==point){
+					return b;
+				}
+			}
+		}
+	}
+	animate();
+</script>
+</body>
+</html>
