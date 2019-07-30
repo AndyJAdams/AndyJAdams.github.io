@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta lang="en/us"/>
+	<meta encoding="UTF-8">
+	<title>DB_Creative</title>
+	<style>
+		body{
+			margin: 0;
+		}
+		canvas{
+			background-color: #2a2a2a;
+		}
+	</style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript'>
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	
+	//GLOBAL VARIABLES
+	var spacingX = 0,spacingY = 0;
+	var portrait = false;
+	var columns = 25;
+	var rows = 40;
+
+	function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight-4;
+		if(innerWidth < innerHeight){
+			portrait = true;
+		}
+		spacingX = innerWidth/(columns+2);
+		spacingY = innerHeight/(rows+4);
+		ctx.fillStyle='#d4d4d4';
+		ctx.strokeStyle='#d4d4d4';
+	}
+	scaleCanvas();
+
+
+	function Path(x1,y1,x2,y2){
+		this.x1 = x1; this.y1 = y1;
+		this.x2 = x2; this.y2 = y2;
+		this.draw = function(){
+			ctx.beginPath();
+			ctx.moveTo(this.x1,this.y1);
+			ctx.lineTo(this.x2,this.y2);
+			ctx.stroke();
+			ctx.closePath();
+		}
+	}
+
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		for(var y = 0; y < rows; y++){
+			for(var x =0; x < columns; x++){
+				ctx.fillRect((x*spacingX)+spacingX-1,(y*spacingY)+spacingY-1,2,2);
+			}
+		}
+	}
+
+	window.addEventListener('resize', function(){
+		scaleCanvas();
+	});
+
+	window.addEventListener('mouseup', function(evt){
+	});
+
+	window.addEventListener('keydown',function(evt){
+	});
+
+	window.addEventListener('keyup',function(evt){
+	});
+
+	animate();
+</script>
+</body>
+</html>
