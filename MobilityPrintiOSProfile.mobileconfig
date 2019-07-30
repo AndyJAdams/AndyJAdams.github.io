@@ -1,0 +1,78 @@
+0‚<	*†H†÷ ‚-0‚)10	`†He 0‚½	*†H†÷ ‚®‚ª<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+	<plist version="1.0">
+	<dict>
+		<key>PayloadContent</key>
+		<array>
+			 <dict>
+	<key>AirPrint</key>
+	<array>
+		<dict>
+	<key>IPAddress</key>
+	<string>COA-PR-01</string>
+	<key>ResourcePath</key>
+	<string>/printers/COA-G110-01-Color</string>
+	<key>Port</key><integer>9164</integer>
+	<key>ForceTLS</key><true/>
+</dict><dict>
+	<key>IPAddress</key>
+	<string>COA-PR-01</string>
+	<key>ResourcePath</key>
+	<string>/printers/COA-124-01-Color</string>
+	<key>Port</key><integer>9164</integer>
+	<key>ForceTLS</key><true/>
+</dict><dict>	<key>IPAddress</key>	<string>SMS-PR-01</string>	<key>ResourcePath</key>	<string>/printers/SMS-111-01</string>	<key>Port</key><integer>9164</integer>	<key>ForceTLS</key><true/></dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Configures AirPrint settings</string>
+	<key>PayloadDisplayName</key>
+	<string>AirPrint</string>
+	<key>PayloadIdentifier</key>
+	<string>com.papercut.pmitc.airprint</string>
+	<key>PayloadType</key>
+	<string>com.apple.airprint</string>
+	<key>PayloadUUID</key>
+	<string>953bf97e-7d89-483c-b676-87caccc944de</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+		</array>
+		<key>PayloadDescription</key><string>PaperCut printer configuration for iOS device printing.</string>
+		<key>PayloadOrganisation</key><string>PaperCut Software</string>
+		<key>PayloadDisplayName</key>
+		<string>PaperCut Mobility Print for iOS</string>
+		<key>PayloadIdentifier</key>
+		<string>PaperCut Mobility Print iOS Profile from COA-PR-01</string>
+		<key>PayloadUUID</key>
+		<string>c1b43959-37c3-4fad-9cfb-a08ac4f1f13e</string>
+		<key>PayloadType</key>
+		<string>Configuration</string>
+		<key>PayloadVersion</key>
+		<integer>1</integer>
+	</dict>
+	</plist> ‚	´0‚0‚ì z©¨Â–!0	*†H†÷ 0b10	UUS10U
+
+Apple Inc.1&0$UApple Certification Authority10UApple Root CA0120201221215Z270201221215Z0y1-0+U$Developer ID Certification Authority1&0$UApple Certification Authority10U
+
+Apple Inc.10	UUS0‚"0	*†H†÷ ‚ 0‚
+‚ ‰vO[šAî¥#+£_×s?À5°‹„
+?$§•?ëO“¯´ĞÈ>åm³è‰G¿×	äÿV˜)ç”¹5£
+Í´Àáâ`ôÊì)xEii`k_Š’ü#æ:Â"³1Oºò¶4YBî°©‘¶³x.3€EEo»Z[:çØ×2mû†6äl«ÄŠp„&ªŸDÑñ¸Æ{”›H÷Xº#ÅŸ9~Ê]Ã2_àR@ê¾¬d•[Éœå€ÊjDl>Ä°&ì{¯^ j=G©X1? v(m°ÂNi&‹ËÖĞ‚ÉNñVtĞÙKfx¢«¬§âÒL‡YÉ £¦0£0UWí¢ÏÜ|˜¡àü¾‡-,òãT0Uÿ0ÿ0U#0€+ĞiG”v	şôk.@¦÷GM^0.U'0%0# ! †http://crl.apple.com/root.crl0Uÿ†0
+*†H†÷cd 0	*†H†÷ ‚ B9tk¡ÜÆ¤7*Œ³
+D¼•,¼Y¸¬aû’2¹Ô¿;ÁP9jDt¢ì[påªİKl#q-_ÑÅ“¾î›Špe‚ã‰-¨ÍıxXI(3î z´v¬¶µ»Oß¨È—JVg/Â>¶³Äƒ:ğwmtÄ.#Qîš¥o`ô¥H§Â»ZâFE~ä—õ'· "rorÚÆPuÅ=%]£ éŸ6ŒH9³;ê€.•š`ôxÎô
+S>¢úOØ®„•2¼VM‰éxà¬šBºzF„¢‰ÎèˆÑX‹ö®VÄ,*E¯ÙK©4¬ˆÇaU‰DÉ'sî‚åNõp0‚¨0‚ ıÒß5—0	*†H†÷ 0y1-0+U$Developer ID Certification Authority1&0$UApple Certification Authority10U
+
+Apple Inc.10	UUS0190205053119Z240206053119Z0É10
+	’&‰“ò,d
+B5N3YV5P2H1W0UUNDeveloper ID Application: PaperCut Software International Pty Ltd (B5N3YV5P2H)10U
+B5N3YV5P2H100.U
+'PaperCut Software International Pty Ltd10	UUS0‚"0	*†H†÷ ‚ 0‚
+‚ ·/%#ÅôÜÄ¨ÙÈA•òÅU[/ıíÀ'¿3XC3¸£zdøUıR‚»ÛXéŠÛ<Fà[p #h}ªnm¶iqÌÂğßùMœ’xÎN×kã·NJb«ÇSâ}—P€ëœ‰R¢ı(à8õÓPváD²±
+Öe3¼¿F]ğ¿g%|‘ëŒMÖº×°&#nòáÌ~ÒI~‚'©òÃê²aÜÖ)gÚíØgÅª.pô?QrD”Yõ´»XÅ(ÏØ¯NB	EşªHd5ÚáÍÓâ7Òş¾ ëˆw¾:C}fkÑÒ§SÛâ÷|ih3%ë'=P3“ £‚á0‚İ0Uÿ0 0U#0€Wí¢ÏÜ|˜¡àü¾‡-,òãT0>+2000.+0†"http://ocsp.apple.com/ocsp-devid010‚U ‚0‚0ş	*†H†÷cd0ğ0(+http://www.apple.com/appleca0Ã+0¶³Reliance on this certificate by any party assumes acceptance of the then applicable standard terms and conditions of use, certificate policy and certification practice statements.0U%ÿ0
++0U8÷ÍÙŒÃ @^,
+{‡úby˜“0Uÿ€0
+*†H†÷cdÿ 0	*†H†÷ ‚ lÍ?zZı`CÓİLßzQ6@ÍÕóı“4Šák¡Ò¥¬œQ è_Yƒ'ƒÿÑİ·]ë­È¨|¦5{]„!Ô»ó&=rüğ”éÖj¢8”­ ÆkÄˆºNÜ7É>W„Ÿi4t‰ÂNV»iGXÙÓWáyTgZäøJ$ap‰±—Ïôï5ÿ}uÚ™/øaızsbÆ¦2ËÀŠÒ(W°ÁK›ïªéİÖí­›8lœfh»—±Ø³„|ñ_)TnÄ<L—¾Z408DNÖ£D‹É…˜O¸¡'ß•Ó©c³ÔÎäç Æò’/Û¾Œt¹ä­¸üÁ“o™›$4ûÇÒèÉÔû¡1‚˜0‚”0…0y1-0+U$Developer ID Certification Authority1&0$UApple Certification Authority10U
+
+Apple Inc.10	UUSıÒß5—0	`†He  ä0	*†H†÷	1	*†H†÷0	*†H†÷	1190717174209Z0/	*†H†÷	1" ×ocÿzM÷Xf®NÜ±©+RcMìŞ½–ò9»p)q0y	*†H†÷	1l0j0	`†He*0	`†He0	`†He0
+*†H†÷0*†H†÷ €0*†H†÷@0+0*†H†÷(0	*†H†÷ ‚ ŞBd€¸B3Tz¹Pmæ£c¢„ûƒš`Æû;ßC¾Ğ=0«hË  9åAë´h¶ajÇWõÊ’İÊoTÁ{Xç o'^ñZ?|8ÌR>ı;$îm¹İıe/Ië<=1àºÀyc\(}E
+®Ñzõ–ÄöQ+]çø~VW1`¼…½ÿ>Ş‰®ÑÔ¶48\"8ìĞ¬NûúßzùH?…¾ğ°*Å&{áÄÏ˜§ö×[ZÀ] ‡±¼¦@w8¨Ñ&²sPÍY?¶ù®ChÏv1'(Hzª¥(äÁiùßhÕV–e:~vßÀŠøÀlmj3 ]µĞÊY"Ë
