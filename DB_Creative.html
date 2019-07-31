@@ -19,6 +19,17 @@
 <body>
 <canvas id='canvas'></canvas>
 <script type='text/javascript'>
+	function getURLVars(){
+		var vars={};
+		var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(m,key,value){
+			vars[key] = value;
+		});
+		return vars;
+	}
+
+	var results = getURLVars();
+	console.log(results);
+
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 	
@@ -30,8 +41,8 @@
 	var rows = 0;
 
 	function scaleCanvas(){
-		rows = 15;
-		columns = 25;
+		rows = 25;
+		columns = 40;
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight-4;
 		if(innerWidth < innerHeight){
