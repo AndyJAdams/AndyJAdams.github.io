@@ -189,16 +189,22 @@
 		for(var i =0; i < gridPos.length; i++){
 			ctx.fillStyle = '#B3B3B3';
 			ctx.fillRect(gridPos[i].x-2,gridPos[i].y-2,4,4);
-			ctx.beginPath();
-			ctx.moveTo(gridPos[i].x-10,gridPos[i].y);
-			ctx.lineTo(gridPos[i].x,gridPos[i].y-10);
-			ctx.lineTo(gridPos[i].x+10,gridPos[i].y);
-			ctx.lineTo(gridPos[i].x,gridPos[i].y+10);
-			ctx.closePath();
 			if(gridPos[i].alpha){
+					ctx.beginPath();
+				ctx.moveTo(gridPos[i].x-10,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y-10);
+				ctx.lineTo(gridPos[i].x+10,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y+10);
+				ctx.closePath();
 				ctx.fill();
 			} else if(gridPos[i].omega){
 				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.moveTo(gridPos[i].x-10,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y-10);
+				ctx.lineTo(gridPos[i].x+10,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y+10);
+				ctx.closePath();
 				ctx.stroke();
 			}
 
