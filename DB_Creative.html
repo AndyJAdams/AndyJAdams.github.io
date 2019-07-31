@@ -7,6 +7,8 @@
 	<style>
 		body{
 			margin: 0;
+			background-color: #D6D6D6;
+			touch-action: none;
 		}
 		canvas{
 			background-color: #D6D6D6;
@@ -20,6 +22,7 @@
 	var ctx = canvas.getContext('2d');
 	
 	//GLOBAL VARIABLES
+	var DEBUG = false;
 	var spacingX = 0,spacingY = 0;
 	var portrait = false;
 	var columns =0;
@@ -39,9 +42,99 @@
 		spacingY = (innerHeight-100)/(rows+1);
 		spacingX = innerWidth/(columns);
 		ctx.fillStyle='#A3A3A3';
-		ctx.strokeStyle='#2A2A2A';
+		ctx.strokeStyle='#A3A3A3';
 		buildGrid();
+		buildInterface();
 	}
+
+	//Menu display section
+	function Button(type,x,y,w,h){
+		this.fill = '#A3A3A3';
+		this.type = type; this.x = x; this.y = y;
+		this.w = w; this.h = h;
+		
+
+		this.draw = function(){
+			ctx.fillRect(this.x, this.y, this.w, this.h);
+			switch(this.type){
+				case 0: //Start
+					ctx.fillStyle='#D6D6D6';
+					ctx.beginPath();
+					ctx.moveTo(this.x+35,this.y+30);
+					ctx.lineTo(this.x+50,this.y+15);
+					ctx.lineTo(this.x+65,this.y+30);
+					ctx.lineTo(this.x+50,this.y+45);
+					ctx.closePath();
+					ctx.fill();
+					ctx.fillStyle='#A3A3A3';
+					break;
+				case 1: //Solid
+					ctx.strokeStyle='#D6D6D6';
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(this.x+20,this.y+30);
+					ctx.lineTo(this.x+80,this.y+30);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle='#A3A3A3';
+					break;
+				case 2: //Dashed
+					ctx.strokeStyle='#D6D6D6';
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(innerWidth/2-85,innerHeight-70);
+					ctx.lineTo(innerWidth/2-75,innerHeight-70);
+					ctx.moveTo(innerWidth/2-70,innerHeight-70);
+					ctx.lineTo(innerWidth/2-60,innerHeight-70);
+					ctx.moveTo(innerWidth/2-55,innerHeight-70);
+					ctx.lineTo(innerWidth/2-45,innerHeight-70);
+					ctx.moveTo(innerWidth/2-40,innerHeight-70);
+					ctx.lineTo(innerWidth/2-30,innerHeight-70);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle='#A3A3A3';
+					break;
+				case 3: //Wrap
+					ctx.strokeStyle='#D6D6D6';
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(innerWidth/2+5,innerHeight-70);
+					ctx.lineTo(innerWidth/2+35,innerHeight-70);
+					ctx.moveTo(innerWidth/2+75,innerHeight-70);
+					ctx.lineTo(innerWidth/2+105,innerHeight-70);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle='#A3A3A3';
+					break;
+				case 4: //END
+					ctx.strokeStyle='#D6D6D6';
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(innerWidth/2+150,innerHeight-70);
+					ctx.lineTo(innerWidth/2+165,innerHeight-85);
+					ctx.lineTo(innerWidth/2+180,innerHeight-70);
+					ctx.lineTo(innerWidth/2+165,innerHeight-55);
+					ctx.lineTo(innerWidth/2+150,innerHeight-70);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle='#A3A3A3';
+					break;
+				case 5: //Output
+					ctx.strokeStyle='#D6D6D6';
+					ctx.lineWidth=10;
+					ctx.beginPath();
+					ctx.arc(this.x+50,this.y+30,15,0,2*Math.PI);
+					ctx.stroke();
+					ctx.closePath();
+					
+					ctx.strokeStyle='#A3A3A3';
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	
 	
 
 	function Path(x1,y1,x2,y2){
@@ -73,6 +166,14 @@
 		}
 	}
 
+	var btnArray = [];
+	function buildInterface(){
+		btnArray = [];
+		for(var b = 0;b<6;b++){
+			btnArray.push(new Button(b,(innerWidth/2-325)+(b*110),innerHeight-100,100,60));
+		}
+	}
+
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
@@ -81,24 +182,113 @@
 			ctx.fillRect(gridPos[i].x-2,gridPos[i].y-2,4,4);
 		}
 
+		var nearest = getNearestSnapPosition(mx,my);
+		if(nearest != undefined){
+			ctx.fillRect(nearest.x-4,nearest.y-4,8,8);
+		}
+
+		if(DEBUG){
+			ctx.fillText(rows+"x"+columns,5,innerHeight-10);
+			ctx.fillText("@"+mx+","+my,5,innerHeight-30);
+		}
+
+		for(var b = 0; b < btnArray.length; b++){
+			btnArray[b].draw();
+		}
 	}
 
 	function getNearestSnapPosition(x,y){
-
+		var dist = innerWidth;
+		var retPos = undefined;
+		for(var i = 0; i < gridPos.length;i++){
+			if(gridPos[i] != undefined){
+				var d = Math.sqrt(Math.pow(Math.abs(gridPos[i].x-x),2)+Math.pow(Math.abs(gridPos[i].y-y),2));
+				if(d < spacingX && d < spacingY && d < dist){
+					retPos = gridPos[i];
+					dist = d;
+				}
+			}
+		}
+		return retPos;
 	}
+
+	//------INPUT CONTROLS ---------------------------------------
+	//Input variables
+	var mx, my;
+	var initialPos = undefined;
+
 
 	window.addEventListener('resize', function(){
 		scaleCanvas();
 	});
 
-	window.addEventListener('mouseup', function(evt){
-	});
+	//Mouse
+	window.addEventListener('mousedown', function(evt){
+    	evt.preventDefault();
+    },false);
+    window.addEventListener('mousemove', function(evt){
+    	evt.preventDefault();
+    	mx = evt.pageX;
+    	my = evt.pageY;
+    },false);
+    window.addEventListener('mouseup', function(evt){
+    	evt.preventDefault();
+    	if(my > innerHeight-100){
+    		dectectMenuInput();
+    	}
+    },false);
 
+    //Keyboard
 	window.addEventListener('keydown',function(evt){
 	});
-
 	window.addEventListener('keyup',function(evt){
+		if(evt.keyCode==68){
+			DEBUG = !DEBUG;
+		}
 	});
+
+	//Touch
+	window.addEventListener('touchstart', function(evt){
+        evt.preventDefault();
+		mx = evt.changedTouches[0].pageX;
+        my = evt.changedTouches[0].pageY;
+    }, false);
+	
+    window.addEventListener('touchmove', function(evt){
+        evt.preventDefault();
+        mx = evt.changedTouches[0].pageX;
+        my = evt.changedTouches[0].pageY; 
+    }, false);
+	
+    window.addEventListener('touchcancel', function(evt){
+        evt.preventDefault();
+    }, false);
+	
+	//User has removed finger... let's figure out the desired action here. 
+    window.addEventListener('touchend', function(evt){
+        evt.preventDefault();
+        if(my > innerHeight-100){
+        	dectectMenuInput();
+        }
+    }, false);
+
+    function dectectMenuInput(){
+    	if(my > innerHeight-100 && my < innerHeight-40){
+	        if(mx > innerWidth/2-325 && mx < innerWidth/2-225){
+	        	console.log("TODO: START POSITION SELECTOR");
+	        } else if(mx > innerWidth/2-215 && mx < innerWidth/2-115){
+	        	console.log("TODO: SET LINE TO SOLID");
+	        } else if(mx > innerWidth/2-105 && mx < innerWidth/2-5){
+	        	console.log("TODO: SET LINE TO DASHED");
+	        } else if(mx > innerWidth/2+5 && mx < innerWidth/2+105){
+	        	console.log("TODO: SET LINE TO WRAP");
+	        } else if(mx > innerWidth/2+115 && mx < innerWidth/2+215){
+	        	console.log("TODO: END POSITION SELECTOR");
+	        } else if(mx > innerWidth/2+225 && mx < innerWidth/2+325){
+	        	console.log("TODO: OUTPUT PUZZLE DATA");
+	        } 
+	    }
+    }
 
 	scaleCanvas();
 	animate();
