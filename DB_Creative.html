@@ -39,6 +39,7 @@
 	var portrait = false;
 	var columns =0;
 	var rows = 0;
+	var selectedMode = 0;
 
 	function scaleCanvas(){
 		rows = 25;
@@ -151,23 +152,13 @@
 			ctx.fillStyle='#A3A3A3';
 		}
 	}
-	
-	
-
-	function Path(x1,y1,x2,y2){
-		this.x1 = x1; this.y1 = y1;
-		this.x2 = x2; this.y2 = y2;
-		this.draw = function(){
-			ctx.beginPath();
-			ctx.moveTo(this.x1,this.y1);
-			ctx.lineTo(this.x2,this.y2);
-			ctx.stroke();
-			ctx.closePath();
-		}
-	}
 
 	function GridPosition(x,y){
 		this.x = x; this.y = y;
+		this.linkV = undefined;
+		this.linkH = undefined;
+		this.alpha = false;
+		this.omega = false;
 	}
 
 	var gridPos = [];
@@ -253,6 +244,17 @@
     	evt.preventDefault();
     	if(my > innerHeight-100){
     		dectectMenuInput();
+    	} else {
+    		switch(selectedMode){
+    			case 0:
+    				var near = getNearestSnapPosition(mx,my);
+    				if(near != undefined){
+    					near.alpha = !near.alpha;
+    				}
+    				break;
+    			default:
+    				break;
+    		}
     	}
     },false);
 
@@ -287,6 +289,17 @@
         evt.preventDefault();
         if(my > innerHeight-100){
         	dectectMenuInput();
+        } else {
+        	switch(selectedMode){
+        		case 0:
+        			var near = getNearestSnapPosition(mx,my);
+    				if(near != undefined){
+    					near.alpha = !near.alpha;
+    				}
+        			break;
+        		default:
+        			break;
+        	}
         }
     }, false);
 
@@ -298,6 +311,7 @@
  				btnArray[b].selected = false;
  			}
  		}
+ 		selectedMode = i;
  	}
 
     function dectectMenuInput(){
