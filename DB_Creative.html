@@ -49,12 +49,15 @@
 
 	//Menu display section
 	function Button(type,x,y,w,h){
-		this.fill = '#A3A3A3';
 		this.type = type; this.x = x; this.y = y;
 		this.w = w; this.h = h;
-		
+		this.selected = false;
 
 		this.draw = function(){
+			ctx.fillStyle='#A3A3A3';
+			if(this.selected){
+				ctx.fillStyle = '#2D2D2D';
+			}
 			ctx.fillRect(this.x, this.y, this.w, this.h);
 			switch(this.type){
 				case 0: //Start
@@ -132,6 +135,8 @@
 				default:
 					break;
 			}
+			ctx.strokeStyle='#A3A3A3';
+			ctx.fillStyle='#A3A3A3';
 		}
 	}
 	
@@ -160,7 +165,6 @@
 			for(var x =0; x < columns; x++){
 				var posX = (x*spacingX)+(spacingX/2);
 				var posY = (y*spacingY)+(spacingY/2);
-				ctx.fillRect(posX,posY,1,1);
 				gridPos.push(new GridPosition(posX, posY));
 			}
 		}
@@ -172,6 +176,7 @@
 		for(var b = 0;b<6;b++){
 			btnArray.push(new Button(b,(innerWidth/2-325)+(b*110),innerHeight-100,100,60));
 		}
+		btnArray[0].selected = true;
 	}
 
 	function animate(){
@@ -179,6 +184,7 @@
 		ctx.clearRect(0,0,innerWidth,innerHeight);
 
 		for(var i =0; i < gridPos.length; i++){
+			ctx.fillStyle = '#B3B3B3';
 			ctx.fillRect(gridPos[i].x-2,gridPos[i].y-2,4,4);
 		}
 
@@ -272,20 +278,36 @@
         }
     }, false);
 
+ 	function makeMenuSelection(i){
+ 		for(var b = 0; b < btnArray.length; b++){
+ 			if(b == i){
+ 				btnArray[b].selected = true;
+ 			} else {
+ 				btnArray[b].selected = false;
+ 			}
+ 		}
+ 	}
+
     function dectectMenuInput(){
     	if(my > innerHeight-100 && my < innerHeight-40){
 	        if(mx > innerWidth/2-325 && mx < innerWidth/2-225){
 	        	console.log("TODO: START POSITION SELECTOR");
+	        	makeMenuSelection(0);
 	        } else if(mx > innerWidth/2-215 && mx < innerWidth/2-115){
 	        	console.log("TODO: SET LINE TO SOLID");
+	        	makeMenuSelection(1);
 	        } else if(mx > innerWidth/2-105 && mx < innerWidth/2-5){
 	        	console.log("TODO: SET LINE TO DASHED");
+	        	makeMenuSelection(2);
 	        } else if(mx > innerWidth/2+5 && mx < innerWidth/2+105){
 	        	console.log("TODO: SET LINE TO WRAP");
+	        	makeMenuSelection(3);
 	        } else if(mx > innerWidth/2+115 && mx < innerWidth/2+215){
 	        	console.log("TODO: END POSITION SELECTOR");
+	        	makeMenuSelection(4);
 	        } else if(mx > innerWidth/2+225 && mx < innerWidth/2+325){
 	        	console.log("TODO: OUTPUT PUZZLE DATA");
+	        	makeMenuSelection(5);
 	        } 
 	    }
     }
