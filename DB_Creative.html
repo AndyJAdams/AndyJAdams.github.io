@@ -42,8 +42,8 @@
 	var selectedMode = 0;
 
 	function scaleCanvas(){
-		rows = 25;
-		columns = 40;
+		rows = 15;
+		columns = 25;
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight-4;
 		if(innerWidth < innerHeight){
@@ -189,6 +189,33 @@
 		for(var i =0; i < gridPos.length; i++){
 			ctx.fillStyle = '#B3B3B3';
 			ctx.fillRect(gridPos[i].x-2,gridPos[i].y-2,4,4);
+			ctx.beginPath();
+			ctx.moveTo(gridPos[i].x-5,gridPos[i].y);
+			ctx.lineTo(gridPos[i].x,gridPos[i].y-5);
+			ctx.lineTo(gridPos[i].x+5,gridPos[i].y);
+			ctx.lineTo(gridPos[i].x,gridPos.y+5);
+			ctx.closePath();
+			if(gridPos[i].alpha){
+				ctx.fill();
+			} else if(gridPos[i].omega){
+				ctx.stroke();
+			}
+
+			if(gridPos[i].linkV){
+				ctx.beginPath();
+				ctx.moveTo(gridPos[i].x, gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y+spacingY);
+				ctx.stroke();
+				ctx.closePath();
+			}
+			if(gridPos[i].linkH){
+				ctx.beginPath();
+				ctx.moveTo(gridPos[i].x, gridPos[i].y);
+				ctx.lineTo(gridPos[i].x+spacingX,gridPos[i].y);
+				ctx.stroke();
+				ctx.closePath();
+			}
+
 		}
 
 		var nearest = getNearestSnapPosition(mx,my);
@@ -245,21 +272,7 @@
     	if(my > innerHeight-100){
     		dectectMenuInput();
     	} else {
-    		var near = getNearestSnapPosition(mx,my);
-    		switch(selectedMode){
-    			case 0:
-    				if(near != undefined){
-    					near.alpha = !near.alpha;
-    				}
-    				break;
-    			case 5:
-        			if(near != undefined){
-        				near.omega = !near.omega;
-        			}
-        			break;
-    			default:
-    				break;
-    		}
+    		detectGridInput();
     	}
     },false);
 
@@ -295,21 +308,7 @@
         if(my > innerHeight-100){
         	dectectMenuInput();
         } else {
-        	var near = getNearestSnapPosition(mx,my);
-        	switch(selectedMode){
-        		case 0:
-    				if(near != undefined){
-    					near.alpha = !near.alpha;
-    				}
-        			break;
-        		case 5:
-        			if(near != undefined){
-        				near.omega = !near.omega;
-        			}
-        			break;
-        		default:
-        			break;
-        	}
+        	detectGridInput();
         }
     }, false);
 
@@ -346,6 +345,23 @@
 	        	makeMenuSelection(5);
 	        } 
 	    }
+    }
+
+    function detectGridInput(){
+    	var near = getNearestSnapPosition(mx,my);
+    	if(near == undefined){
+    		return undefined;
+    	}
+    	switch(selectedMode){
+    		case 0:
+				near.alpha = !near.alpha;
+    			break;
+    		case 5:
+    			near.omega = !near.omega;
+    			break;
+    		default:
+    			break;
+    	}
     }
 
 	scaleCanvas();
