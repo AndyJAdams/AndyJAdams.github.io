@@ -290,13 +290,17 @@
         if(my > innerHeight-100){
         	dectectMenuInput();
         } else {
+        	var near = getNearestSnapPosition(mx,my);
         	switch(selectedMode){
         		case 0:
-        			var near = getNearestSnapPosition(mx,my);
     				if(near != undefined){
     					near.alpha = !near.alpha;
     				}
         			break;
+        		case 5:
+        			if(near != undefined){
+        				near.omega = !near.omega;
+        			}
         		default:
         			break;
         	}
