@@ -30,6 +30,10 @@
 	var columns =0;
 	var rows = 0;
 	var selectedMode = 0;
+	var lite = '#A3A3A3';
+	var mid ='#C4C4C4';
+	var dark = '#D6D6D6';
+	var startSpeed = 1;
 
 	function scaleCanvas(){
 		rows = 15;
@@ -44,8 +48,8 @@
 		}
 		spacingY = (innerHeight-100)/(rows+1);
 		spacingX = innerWidth/(columns);
-		ctx.fillStyle='#A3A3A3';
-		ctx.strokeStyle='#A3A3A3';
+		ctx.fillStyle=lite;
+		ctx.strokeStyle=lite;
 		buildGrid();
 		buildInterface();
 	}
@@ -57,14 +61,14 @@
 		this.selected = false;
 
 		this.draw = function(){
-			ctx.fillStyle='#A3A3A3';
+			ctx.fillStyle=lite;
 			if(this.selected){
 				ctx.fillStyle = '#2D2D2D';
 			}
 			ctx.fillRect(this.x, this.y, this.w, this.h);
 			switch(this.type){
 				case 0: //Clear all
-					ctx.strokeStyle='#D6D6D6';
+					ctx.strokeStyle=dark;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+35,this.y+15);
@@ -73,10 +77,10 @@
 					ctx.lineTo(this.x+35,this.y+45);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle='#A3A3A3';
+					ctx.strokeStyle=lite;
 					break;
 				case 1: //Start
-					ctx.fillStyle='#D6D6D6';
+					ctx.fillStyle=dark;
 					ctx.beginPath();
 					ctx.moveTo(this.x+35,this.y+30);
 					ctx.lineTo(this.x+50,this.y+15);
@@ -84,20 +88,20 @@
 					ctx.lineTo(this.x+50,this.y+45);
 					ctx.closePath();
 					ctx.fill();
-					ctx.fillStyle='#A3A3A3';
+					ctx.fillStyle=lite;
 					break;
 				case 2: //Solid
-					ctx.strokeStyle='#D6D6D6';
+					ctx.strokeStyle=dark;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+20,this.y+30);
 					ctx.lineTo(this.x+80,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle='#A3A3A3';
+					ctx.strokeStyle=lite;
 					break;
 				case 3: //Dashed
-					ctx.strokeStyle='#D6D6D6';
+					ctx.strokeStyle=dark;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+20,this.y+30);
@@ -110,10 +114,10 @@
 					ctx.lineTo(this.x+75,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle='#A3A3A3';
+					ctx.strokeStyle=lite;
 					break;
 				case 4: //Wrap
-					ctx.strokeStyle='#D6D6D6';
+					ctx.strokeStyle=dark;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x,this.y+30);
@@ -122,10 +126,10 @@
 					ctx.lineTo(this.x+100,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle='#A3A3A3';
+					ctx.strokeStyle=lite;
 					break;
 				case 5: //END
-					ctx.strokeStyle='#D6D6D6';
+					ctx.strokeStyle=dark;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+35,this.y+30);
@@ -135,10 +139,10 @@
 					ctx.lineTo(this.x+35,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle='#A3A3A3';
+					ctx.strokeStyle=lite;
 					break;
 				case 6: //Output
-					ctx.strokeStyle='#D6D6D6';
+					ctx.strokeStyle=dark;
 					ctx.lineWidth=4;
 					ctx.beginPath();
 					//Draw a play button
@@ -147,12 +151,12 @@
 					ctx.lineTo(this.x+40,this.y+45);
 					ctx.closePath();
 					//ctx.stroke();
-					ctx.fillStyle='#D6D6D6';
+					ctx.fillStyle=dark;
 					ctx.fill();
-					ctx.strokeStyle='#A3A3A3';
+					ctx.strokeStyle=lite;
 					break;
 				case 7:
-					ctx.strokeStyle='#D6D6D6';
+					ctx.strokeStyle=dark;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+25,this.y+15);
@@ -164,14 +168,129 @@
 					ctx.lineTo(this.x+75,this.y+15);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle='#A3A3A3';
+					ctx.strokeStyle=lite;
 					break;
 				default:
 					break;
 			}
-			ctx.strokeStyle='#A3A3A3';
-			ctx.fillStyle='#A3A3A3';
+			ctx.strokeStyle=lite;
+			ctx.fillStyle=lite;
 		}
+	}
+
+	function Bit(pos){
+		this.pos = pos;
+		this.x = pos.x; this.y = pos.y;
+		this.moveSpeed = startSpeed;
+		this.dx = this.x; this.dy = this.y;
+		this.targetPos = undefined;
+		this.moving = false;
+		this.dir = undefined;
+		this.draw = function(){
+			ctx.fillStyle='#000';
+			ctx.beginPath();
+			ctx.moveTo(this.x-15,this.y);
+			ctx.lineTo(this.x,this.y-15);
+			ctx.lineTo(this.x+15,this.y);
+			ctx.lineTo(this.x,this.y+15);
+			ctx.closePath();
+			ctx.fill();
+		}
+
+		this.move = function(dir){
+			console.log("call recieved");
+			this.moving = true;
+			if(dir == 'N' || dir == 'W'){
+				console.log("finding linked position");
+				this.targetPos = findLinkedPos(this.pos,dir);
+			} else {
+				console.log("LINKS FROM POS: H" + this.pos.linkH + " /V " + this.pos.linkV + " from " + dir);
+				if(dir == 'S'){
+					if(this.linkV != undefined){
+						console.log("Getting southern pos");
+						this.targetPos = this.pos.linkV.pos;
+					}
+				} else { //dir = 'E'
+					if(this.linkH != undefined){
+						console.log("Getting eastern pos");
+						this.targetPos = this.pos.linkH.pos;
+					}
+				}
+			}
+			if(this.targetPos != undefined){			
+				this.dx = this.targetPos.x;
+				this.dy = this.targetPos.y;
+				console.log("assigning move assignment from " + this.x + "," + this.y + " to " + this.dx + "," + this.dy);
+				this.dir = dir;
+			} else {
+				this.dir = undefined;
+				this.moving = false;
+			}
+			
+		}
+
+		this.update = function(){
+			var invert = 1;
+			if(Math.abs(this.x-this.dx)>spacingX+2 || Math.abs(this.y-this.dy)>spacingY+2){
+				invert = -1;
+			}
+			if(this.x > this.dx){
+				this.x-= invert*this.moveSpeed;
+			} else if(this.x < this.dx){
+				this.x+= invert*this.moveSpeed;
+			} else if(this.y > this.dy){
+				this.y -= invert*this.moveSpeed;
+			} else if(this.y < this.dy){
+				this.y += invert*this.moveSpeed;
+			} else {
+				if(this.targetPos != undefined){
+					this.pos = this.targetPos;
+					this.targetPos = undefined;
+					if(this.dir != undefined){
+						console.log(this.pos);
+						this.move(this.dir);
+					} 
+				}
+				if(this.dir == undefined && !this.moving){
+					if(this.targetPos == undefined){
+						if(this.pos.omega){
+							console.log("FIN");
+						}
+					}
+				}
+				
+			}
+
+			if(this.x > innerWidth+20){
+				this.x = -10;
+			} else if(this.x < -20){
+				this.x = innerWidth+10;
+			}
+
+			if(this.y > innerHeight+20){
+				this.y = -10;
+			} else if(this.y < -20){
+				this.y = innerHeight+10;
+			}
+			this.draw();
+		}
+	}
+
+	function findLinkedPos(pos,dir){
+		if(dir == 'N'){
+			for(var i = 0; i < gridPos.length; i++){
+				if(gridPos[i].linkV != undefined && gridPos[i].linkV.pos == pos){
+					return gridPos[i];
+				}
+			}
+		} else {
+			for(var i = 0; i < gridPos.length;i++){
+				if(gridPos[i].linkH != undefined && gridPos[i].linkH.pos == pos){
+					return gridPos[i];
+				}
+			}
+		}
+		return undefined;
 	}
 
 	function GridPosition(x,y){
@@ -192,8 +311,8 @@
 		gridPos = [];
 		for(var y = 0; y < rows; y++){
 			for(var x =0; x < columns; x++){
-				var posX = (x*spacingX)+(spacingX/2);
-				var posY = (y*spacingY)+(spacingY/2);
+				var posX = Math.floor((x*spacingX)+(spacingX/2));
+				var posY = Math.floor((y*spacingY)+(spacingY/2));
 				gridPos.push(new GridPosition(posX, posY));
 			}
 		}
@@ -208,24 +327,37 @@
 		btnArray[1].selected = true;
 	}
 
+	var bitArray = [];
+	function makeBits(){
+		bitArray = [];
+		for(var i = 0; i < gridPos.length; i++){
+			if(gridPos[i].alpha){
+				bitArray.push(new Bit(gridPos[i]));
+			}
+		}
+		console.log("CREATED " + bitArray.length + " BITS");
+	}
+
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
 
 		for(var i =0; i < gridPos.length; i++){
 			if(creativemode){
-				ctx.fillStyle = '#B3B3B3';
+				ctx.fillStyle = mid;
 				ctx.fillRect(gridPos[i].x-2,gridPos[i].y-2,4,4);
-			}
-			if(gridPos[i].alpha){
-				ctx.beginPath();
-				ctx.moveTo(gridPos[i].x-10,gridPos[i].y);
-				ctx.lineTo(gridPos[i].x,gridPos[i].y-10);
-				ctx.lineTo(gridPos[i].x+10,gridPos[i].y);
-				ctx.lineTo(gridPos[i].x,gridPos[i].y+10);
-				ctx.closePath();
-				ctx.fill();
+
+				if(gridPos[i].alpha){
+					ctx.beginPath();
+					ctx.moveTo(gridPos[i].x-10,gridPos[i].y);
+					ctx.lineTo(gridPos[i].x,gridPos[i].y-10);
+					ctx.lineTo(gridPos[i].x+10,gridPos[i].y);
+					ctx.lineTo(gridPos[i].x,gridPos[i].y+10);
+					ctx.closePath();
+					ctx.fill();
+				}
 			} 
+
 			if(gridPos[i].omega){
 				ctx.lineWidth = 2;
 				ctx.beginPath();
@@ -278,13 +410,16 @@
 		} else {
 			btnArray[6].draw();
 			btnArray[7].draw();
+			for(var i =0; i < bitArray.length;i++){
+				bitArray[i].update();
+			}
 		}
 	}
 
 	function drawLinkConnection(pos,link){
 		var m = link.type;
 		ctx.lineWidth = 2;
-		ctx.strokeStyle = '#A3A3A3';
+		ctx.strokeStyle = lite;
 		switch(m){
 			case 2: //Solid
 				ctx.setLineDash([]);
@@ -413,9 +548,28 @@
 		}
 	}
 
+	function applyMove(dir){
+		if(checkMoving()){
+			for(var i = 0; i < bitArray.length; i++){
+				console.log("Issuing call to move " + dir);
+				bitArray[i].move(dir);
+			}
+		}
+	}
+
+	function checkMoving(){
+		for(var i = 0; i < bitArray.length; i++){
+			if(bitArray[i].moving){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	//------INPUT CONTROLS ---------------------------------------
 	//Input variables
 	var mx, my;
+	var sx, sy;
 	var initialPos = undefined;
 
 
@@ -426,6 +580,8 @@
 	//Mouse
 	window.addEventListener('mousedown', function(evt){
     	evt.preventDefault();
+    	sx = evt.pageX;
+    	sy = evt.pageY;
     },false);
     window.addEventListener('mousemove', function(evt){
     	evt.preventDefault();
@@ -437,7 +593,32 @@
     	if(my > innerHeight-100){
     		dectectMenuInput();
     	} else {
-    		detectGridInput();
+    		if(creativemode){
+	    		detectGridInput();
+	    	} else {
+	    		//TODO: Determine swipe direction from SX,SY
+	    		var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
+	    		if(d > spacingX/2||d > spacingY/2){
+		    		var xdiff = Math.abs(sx-mx); var ydiff = Math.abs(sy-my);
+		    		if(xdiff > ydiff){
+		    			if(sx < mx){
+		    				console.log("SWIPE RIGHT");
+		    				applyMove('E');
+		    			} else {
+		    				console.log("SWIPE LEFT");
+		    				applyMove('W');
+		    			}
+		    		} else {
+		    			if(sy < my){
+		    				console.log("SWIPE DOWN");
+		    				applyMove('S');
+		    			} else {
+		    				console.log("SWIPE UP");
+		    				applyMove('N');
+		    			}
+		    		}
+		    	}
+	    	}
     	}
     },false);
 
@@ -445,8 +626,26 @@
 	window.addEventListener('keydown',function(evt){
 	});
 	window.addEventListener('keyup',function(evt){
-		if(evt.keyCode==68){
-			DEBUG = !DEBUG;
+		if(creativemode){
+			switch(evt.keyCode){
+				case 80: //P
+					DEBUG = !DEBUG;
+					break;
+				case 37: //L-Arrow
+					applyMove('W');
+					break;
+				case 38: //Up-Arrow
+					applyMove('N');
+					break;
+				case 39: //R-Arrow
+					applyMove('E');
+					break;
+				case 40: //Dn-Arrow
+					applyMove('S');
+					break;
+				default:
+					break;
+			}
 		}
 	});
 
@@ -455,6 +654,8 @@
         evt.preventDefault();
 		mx = evt.changedTouches[0].pageX;
         my = evt.changedTouches[0].pageY;
+        sx = mx;
+        sy = my;
     }, false);
 	
     window.addEventListener('touchmove', function(evt){
@@ -473,7 +674,32 @@
         if(my > innerHeight-100){
         	dectectMenuInput();
         } else {
-        	detectGridInput();
+        	if(creativemode){
+	        	detectGridInput();
+	        } else {
+	        	//TODO: DETERMINE SWIPE DIRECTION FROM SX,SY
+	        	var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
+	    		if(d > spacingX/2||d > spacingY/2){
+		    		var xdiff = Math.abs(sx-mx); var ydiff = Math.abs(sy-my);
+		    		if(xdiff > ydiff){
+		    			if(sx < mx){
+		    				console.log("SWIPE RIGHT");
+		    				applyMove('E');
+		    			} else {
+		    				console.log("SWIPE LEFT");
+		    				applyMove('W');
+		    			}
+		    		} else {
+		    			if(sy < my){
+		    				console.log("SWIPE UP");
+		    				applyMove('N');
+		    			} else {
+		    				console.log("SWIPE DOWN");
+		    				applyMove('S');
+		    			}
+		    		}
+		    	}
+	        }
         }
     }, false);
 
@@ -503,6 +729,9 @@
 	        } else if(mx > innerWidth/2+225 && mx < innerWidth/2+325){
 	        	makeMenuSelection(6);
 	        	creativemode = !creativemode;
+	        	if(!creativemode){
+	        		makeBits();
+	        	}
 	        } else if(mx > innerWidth/2+325 && mx < innerWidth/2+425){
 	        	makeMenuSelection(6);
 	        	var data = getMapData();
@@ -608,7 +837,7 @@
     }
 
     function setLink(pos1,pos2,dir,mode){
-    	if(dir = 0){//Horizontal
+    	if(dir == 0){//Horizontal
     		var nLink = new Link(pos2,mode);
 			if(pos1.linkH != undefined){
 				if(pos1.linkH.type != mode){
