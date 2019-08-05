@@ -314,25 +314,41 @@
 			if(dir == 'N'){
 				for(var i = 0; i < gridPos.length; i++){
 					if(gridPos[i].linkV != undefined && gridPos[i].linkV.pos == pos && gridPos[i].linkV.type != 9){
-						this.linkArray.push(gridPos[i]);
+						if(!this.contains(gridPos[i])){
+							this.linkArray.push(gridPos[i]);
+						} else {
+							return undefined;
+						}
 						return gridPos[i];
 					}
 				}
 			} else if(dir == 'W'){
 				for(var i = 0; i < gridPos.length;i++){
 					if(gridPos[i].linkH != undefined && gridPos[i].linkH.pos == pos && gridPos[i].linkH.type != 9){
-						this.linkArray.push(gridPos[i]);
+						if(!this.contains(gridPos[i])){
+							this.linkArray.push(gridPos[i]);
+						} else {
+							return undefined;
+						}
 						return gridPos[i];
 					}
 				}
 			} else if(dir == 'E'){
 				if(pos.linkH != undefined && pos.linkH.type != 9){
-					this.linkArray.push(pos);
+					if(!this.contains(pos)){
+						this.linkArray.push(pos);
+					} else {
+						return undefined;
+					}
 					return pos.linkH.pos;
 				}
 			} else {
 				if(pos.linkV != undefined && pos.linkV.type != 9){
-					this.linkArray.push(pos);
+					if(!this.contains(pos)){
+						this.linkArray.push(pos);
+					} else {
+						return undefined;
+					}
 					return pos.linkV.pos;
 				}
 			}
@@ -351,6 +367,15 @@
 				}
 			}
 			return undefined;
+		}
+
+		this.contains = function(pos){
+			for(var i =0; i < this.linkArray.length; i++){
+				if(this.linkArray[i] == pos){
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 
