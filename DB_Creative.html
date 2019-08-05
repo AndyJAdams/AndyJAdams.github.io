@@ -12,7 +12,7 @@
 			position: fixed;
 		}
 		canvas{
-			background-color: #D6D6D6;
+			background-color: #222;
 		}
 	</style>
 </head>
@@ -30,9 +30,8 @@
 	var columns =0;
 	var rows = 0;
 	var selectedMode = 0;
-	var lite = '#A3A3A3';
-	var mid ='#C4C4C4';
-	var dark = '#D6D6D6';
+	var color1 = '#000000';
+	var color2 = '#DDD';
 	var startSpeed = 1;
 
 	function scaleCanvas(){
@@ -48,8 +47,8 @@
 		}
 		spacingY = (innerHeight-100)/(rows+1);
 		spacingX = innerWidth/(columns);
-		ctx.fillStyle=lite;
-		ctx.strokeStyle=lite;
+		ctx.fillStyle=color1;
+		ctx.strokeStyle=color1;
 		buildGrid();
 		buildInterface();
 	}
@@ -59,16 +58,20 @@
 		this.type = type; this.x = x; this.y = y;
 		this.w = w; this.h = h;
 		this.selected = false;
+		var strokeFill = color2;
 
 		this.draw = function(){
-			ctx.fillStyle=lite;
 			if(this.selected){
-				ctx.fillStyle = '#2D2D2D';
+				ctx.fillStyle = color2;
+				strokeFill = color1;
+			} else {
+				ctx.fillStyle=color1;
+				strokeFill = color2;
 			}
 			ctx.fillRect(this.x, this.y, this.w, this.h);
 			switch(this.type){
 				case 0: //Clear all
-					ctx.strokeStyle=dark;
+					ctx.strokeStyle=strokeFill;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+35,this.y+15);
@@ -77,10 +80,10 @@
 					ctx.lineTo(this.x+35,this.y+45);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle=lite;
+					ctx.strokeStyle=color1;
 					break;
 				case 1: //Start
-					ctx.fillStyle=dark;
+					ctx.fillStyle=strokeFill;
 					ctx.beginPath();
 					ctx.moveTo(this.x+35,this.y+30);
 					ctx.lineTo(this.x+50,this.y+15);
@@ -88,20 +91,20 @@
 					ctx.lineTo(this.x+50,this.y+45);
 					ctx.closePath();
 					ctx.fill();
-					ctx.fillStyle=lite;
+					ctx.fillStyle=color1;
 					break;
 				case 2: //Solid
-					ctx.strokeStyle=dark;
+					ctx.strokeStyle=strokeFill;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+20,this.y+30);
 					ctx.lineTo(this.x+80,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle=lite;
+					ctx.strokeStyle=color1;
 					break;
 				case 3: //Dashed
-					ctx.strokeStyle=dark;
+					ctx.strokeStyle=strokeFill;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+20,this.y+30);
@@ -114,10 +117,10 @@
 					ctx.lineTo(this.x+75,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle=lite;
+					ctx.strokeStyle=color1;
 					break;
 				case 4: //Wrap
-					ctx.strokeStyle=dark;
+					ctx.strokeStyle=strokeFill;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x,this.y+30);
@@ -126,10 +129,10 @@
 					ctx.lineTo(this.x+100,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle=lite;
+					ctx.strokeStyle=color1;
 					break;
 				case 5: //END
-					ctx.strokeStyle=dark;
+					ctx.strokeStyle=strokeFill;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+35,this.y+30);
@@ -139,10 +142,10 @@
 					ctx.lineTo(this.x+35,this.y+30);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle=lite;
+					ctx.strokeStyle=color1;
 					break;
 				case 6: //Output
-					ctx.strokeStyle=dark;
+					ctx.strokeStyle=strokeFill;
 					ctx.lineWidth=4;
 					ctx.beginPath();
 					//Draw a play button
@@ -151,12 +154,12 @@
 					ctx.lineTo(this.x+40,this.y+45);
 					ctx.closePath();
 					//ctx.stroke();
-					ctx.fillStyle=dark;
+					ctx.fillStyle=strokeFill;
 					ctx.fill();
-					ctx.strokeStyle=lite;
+					ctx.strokeStyle=color1;
 					break;
 				case 7:
-					ctx.strokeStyle=dark;
+					ctx.strokeStyle=strokeFill;
 					ctx.lineWidth=2;
 					ctx.beginPath();
 					ctx.moveTo(this.x+25,this.y+15);
@@ -168,13 +171,13 @@
 					ctx.lineTo(this.x+75,this.y+15);
 					ctx.stroke();
 					ctx.closePath();
-					ctx.strokeStyle=lite;
+					ctx.strokeStyle=color1;
 					break;
 				default:
 					break;
 			}
-			ctx.strokeStyle=lite;
-			ctx.fillStyle=lite;
+			ctx.strokeStyle=color1;
+			ctx.fillStyle=color1;
 		}
 	}
 
@@ -186,8 +189,9 @@
 		this.targetPos = undefined;
 		this.moving = false;
 		this.dir = undefined;
+		this.linkArray = [];
 		this.draw = function(){
-			ctx.fillStyle='#000';
+			ctx.fillStyle=color2;
 			ctx.beginPath();
 			ctx.moveTo(this.x-15,this.y);
 			ctx.lineTo(this.x,this.y-15);
@@ -198,99 +202,156 @@
 		}
 
 		this.move = function(dir){
-			console.log("call recieved");
-			this.moving = true;
-			if(dir == 'N' || dir == 'W'){
-				console.log("finding linked position");
-				this.targetPos = findLinkedPos(this.pos,dir);
-			} else {
-				console.log("LINKS FROM POS: H" + this.pos.linkH + " /V " + this.pos.linkV + " from " + dir);
-				if(dir == 'S'){
-					if(this.linkV != undefined){
-						console.log("Getting southern pos");
-						this.targetPos = this.pos.linkV.pos;
-					}
-				} else { //dir = 'E'
-					if(this.linkH != undefined){
-						console.log("Getting eastern pos");
-						this.targetPos = this.pos.linkH.pos;
-					}
-				}
+			if(this.dir == undefined){
+				this.dir = dir;
 			}
-			if(this.targetPos != undefined){			
+			this.linkArray = [];
+			this.targetPos = this.findEndLink(this.pos, this.dir);
+			
+			if(this.targetPos != undefined){
 				this.dx = this.targetPos.x;
 				this.dy = this.targetPos.y;
-				console.log("assigning move assignment from " + this.x + "," + this.y + " to " + this.dx + "," + this.dy);
-				this.dir = dir;
+				this.pos = this.targetPos;
+				this.targetPos = undefined;
+				this.moving = true;
 			} else {
-				this.dir = undefined;
 				this.moving = false;
 			}
 			
 		}
 
 		this.update = function(){
-			var invert = 1;
-			if(Math.abs(this.x-this.dx)>spacingX+2 || Math.abs(this.y-this.dy)>spacingY+2){
-				invert = -1;
-			}
-			if(this.x > this.dx){
-				this.x-= invert*this.moveSpeed;
-			} else if(this.x < this.dx){
-				this.x+= invert*this.moveSpeed;
-			} else if(this.y > this.dy){
-				this.y -= invert*this.moveSpeed;
-			} else if(this.y < this.dy){
-				this.y += invert*this.moveSpeed;
-			} else {
-				if(this.targetPos != undefined){
-					this.pos = this.targetPos;
-					this.targetPos = undefined;
-					if(this.dir != undefined){
-						console.log(this.pos);
-						this.move(this.dir);
-					} 
+			if(this.moving){
+				//Determine if we need to wrap move...
+				//Now that we set the end point of the move the direction will determine the wrap
+				var invert = 1;
+				if(this.checkWrap(this.dir,this.x,this.y,this.dx,this.dy)){
+					invert=-1;
 				}
-				if(this.dir == undefined && !this.moving){
-					if(this.targetPos == undefined){
-						if(this.pos.omega){
-							console.log("FIN");
+
+				if(Math.abs(this.x-this.dx) > 1){
+					if(this.x < this.dx){
+						this.x += this.moveSpeed*(Math.abs(this.x-this.dx)/10)*invert;
+					} else {
+						this.x -= this.moveSpeed*(Math.abs(this.x-this.dx)/10)*invert;
+					}
+				} else if(Math.abs(this.y-this.dy) > 1){
+					if(this.y < this.dy){ //SOUTH
+						this.y += this.moveSpeed*(Math.abs(this.y-this.dy)/10)*invert;
+					} else { //NORTH
+						this.y -= this.moveSpeed*(Math.abs(this.y-this.dy)/10)*invert;
+					}
+				} else {
+					console.log("TOTAL: " + this.linkArray.length);
+					for(var i =0; i < this.linkArray.length; i++){
+						if(this.dir == 'N' || this.dir == 'S'){
+							if(this.linkArray[i].linkV != undefined){
+								if(this.linkArray[i].linkV.type == 3){
+									this.linkArray[i].linkV.type = 9;
+								}
+							}
+						} else if(this.dir == 'W' || this.dir == 'E'){
+							if(this.linkArray[i].linkH != undefined){
+								if(this.linkArray[i].linkH.type == 3){
+									this.linkArray[i].linkH.type = 9;
+								}
+							}
 						}
 					}
+					this.move(this.dir);
 				}
+
+
+				//Horizontal Wrap Reset
+				if(this.x < -20){
+					this.x = innerWidth+10;
+				} else if(this.x > innerWidth+20){
+					this.x = -10;
+				}
+
+				//Vertical Wrap Reset
+				if(this.y < -20){
+					this.y = innerHeight+10;
+				} else if(this.y > innerHeight+20){
+					this.y = -10;
+				}
+			} else {
 				
-			}
-
-			if(this.x > innerWidth+20){
-				this.x = -10;
-			} else if(this.x < -20){
-				this.x = innerWidth+10;
-			}
-
-			if(this.y > innerHeight+20){
-				this.y = -10;
-			} else if(this.y < -20){
-				this.y = innerHeight+10;
+				this.dir = undefined;
+				if(this.pos.omega){
+					console.log("FIN");
+					creativemode = !creativemode;
+				}
 			}
 			this.draw();
 		}
-	}
 
-	function findLinkedPos(pos,dir){
-		if(dir == 'N'){
-			for(var i = 0; i < gridPos.length; i++){
-				if(gridPos[i].linkV != undefined && gridPos[i].linkV.pos == pos){
-					return gridPos[i];
+		this.checkWrap = function(dir,x1,y1,x2,y2){
+			if(dir == 'N'){
+				if(y2 > y1){
+					return true;
 				}
 			}
-		} else {
-			for(var i = 0; i < gridPos.length;i++){
-				if(gridPos[i].linkH != undefined && gridPos[i].linkH.pos == pos){
-					return gridPos[i];
+			if(dir == 'S'){
+				if(y2 < y1){
+					return true;
 				}
 			}
+			if(dir == 'W'){
+				if(x2 > x1){
+					return true;
+				}
+			}
+			if(dir == 'E'){
+				if(x2 < x1){
+					return true;
+				}
+			}
+			return false;
 		}
-		return undefined;
+
+		this.findLinkedPos = function(pos,dir){
+			if(dir == 'N'){
+				for(var i = 0; i < gridPos.length; i++){
+					if(gridPos[i].linkV != undefined && gridPos[i].linkV.pos == pos && gridPos[i].linkV.type != 9){
+						this.linkArray.push(gridPos[i]);
+						return gridPos[i];
+					}
+				}
+			} else if(dir == 'W'){
+				for(var i = 0; i < gridPos.length;i++){
+					if(gridPos[i].linkH != undefined && gridPos[i].linkH.pos == pos && gridPos[i].linkH.type != 9){
+						this.linkArray.push(gridPos[i]);
+						return gridPos[i];
+					}
+				}
+			} else if(dir == 'E'){
+				if(pos.linkH != undefined && pos.linkH.type != 9){
+					this.linkArray.push(pos);
+					return pos.linkH.pos;
+				}
+			} else {
+				if(pos.linkV != undefined && pos.linkV.type != 9){
+					this.linkArray.push(pos);
+					return pos.linkV.pos;
+				}
+			}
+			return undefined;
+		}
+
+		this.findEndLink = function(pos, dir){
+			var lk = this.findLinkedPos(pos,dir);
+			if(lk != undefined){
+
+				var next = this.findEndLink(lk,dir);
+				if(next != undefined){
+					return next;
+				} else {
+					return lk;
+				}
+			}
+			return undefined;
+		}
 	}
 
 	function GridPosition(x,y){
@@ -304,6 +365,15 @@
 	function Link(pos,type){
 		this.pos = pos;
 		this.type = type;
+	}
+
+	function getGridIndex(pos){
+		for(var i =0; i < gridPos.length; i++){
+			if(gridPos[i] == pos){
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	var gridPos = [];
@@ -335,7 +405,6 @@
 				bitArray.push(new Bit(gridPos[i]));
 			}
 		}
-		console.log("CREATED " + bitArray.length + " BITS");
 	}
 
 	function animate(){
@@ -344,7 +413,7 @@
 
 		for(var i =0; i < gridPos.length; i++){
 			if(creativemode){
-				ctx.fillStyle = mid;
+				ctx.fillStyle = color2;
 				ctx.fillRect(gridPos[i].x-2,gridPos[i].y-2,4,4);
 
 				if(gridPos[i].alpha){
@@ -357,24 +426,28 @@
 					ctx.fill();
 				}
 			} 
-
-			if(gridPos[i].omega){
-				ctx.lineWidth = 2;
-				ctx.beginPath();
-				ctx.moveTo(gridPos[i].x-10,gridPos[i].y);
-				ctx.lineTo(gridPos[i].x,gridPos[i].y-10);
-				ctx.lineTo(gridPos[i].x+10,gridPos[i].y);
-				ctx.lineTo(gridPos[i].x,gridPos[i].y+10);
-				ctx.closePath();
-				ctx.stroke();
-			}
-
 			if(gridPos[i].linkV != undefined){
 				drawLinkConnection(gridPos[i],gridPos[i].linkV);
 			}
 			if(gridPos[i].linkH != undefined){
 				drawLinkConnection(gridPos[i],gridPos[i].linkH);
 			}
+
+			if(gridPos[i].omega){
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.moveTo(gridPos[i].x-15,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y-15);
+				ctx.lineTo(gridPos[i].x+15,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y+15);
+				ctx.closePath();
+				ctx.fillStyle=color1;
+				ctx.strokeStyle=color2;
+				ctx.fill();
+				ctx.stroke();
+			}
+
+			
 
 		}
 
@@ -419,7 +492,7 @@
 	function drawLinkConnection(pos,link){
 		var m = link.type;
 		ctx.lineWidth = 2;
-		ctx.strokeStyle = lite;
+		ctx.strokeStyle = color2;
 		switch(m){
 			case 2: //Solid
 				ctx.setLineDash([]);
@@ -476,6 +549,11 @@
 						ctx.stroke();
 						ctx.closePath();
 					}
+				}
+				break;
+			case 9:
+				if(creativemode){
+					link.type =3;
 				}
 				break;
 			default:
@@ -551,7 +629,6 @@
 	function applyMove(dir){
 		if(checkMoving()){
 			for(var i = 0; i < bitArray.length; i++){
-				console.log("Issuing call to move " + dir);
 				bitArray[i].move(dir);
 			}
 		}
@@ -626,7 +703,7 @@
 	window.addEventListener('keydown',function(evt){
 	});
 	window.addEventListener('keyup',function(evt){
-		if(creativemode){
+		if(!creativemode){
 			switch(evt.keyCode){
 				case 80: //P
 					DEBUG = !DEBUG;
@@ -642,6 +719,44 @@
 					break;
 				case 40: //Dn-Arrow
 					applyMove('S');
+					break;
+				case 13: //G
+					makeMenuSelection(6);
+					creativemode = !creativemode;
+		  			break;
+				default:
+					break;
+			}
+		} else {
+			switch(evt.keyCode){
+				case 80: //P
+					DEBUG = !DEBUG;
+					break;
+				case 83: //S
+					makeMenuSelection(2);
+					break;
+				case 68: //D
+					makeMenuSelection(3);
+					break;
+				case 87: //W
+					makeMenuSelection(4);
+					break;
+				case 71: //G
+					makeMenuSelection(1);
+					break;
+				case 78: //N
+					clearMap();
+					makeMenuSelection(1);
+					break;	
+				case 70: //F
+					makeMenuSelection(5);
+					break;
+				case 13: //G
+					makeMenuSelection(6);
+					creativemode = !creativemode;
+		        	if(!creativemode){
+		        		makeBits();
+		        	}
 					break;
 				default:
 					break;
@@ -684,17 +799,21 @@
 		    		if(xdiff > ydiff){
 		    			if(sx < mx){
 		    				console.log("SWIPE RIGHT");
+		    				color1 = '#F00';
 		    				applyMove('E');
 		    			} else {
 		    				console.log("SWIPE LEFT");
+		    				color1 = '#00F';
 		    				applyMove('W');
 		    			}
 		    		} else {
 		    			if(sy < my){
 		    				console.log("SWIPE UP");
+		    				color1 = '#0F0';
 		    				applyMove('N');
 		    			} else {
 		    				console.log("SWIPE DOWN");
+		    				color1 = '#F0F';
 		    				applyMove('S');
 		    			}
 		    		}
@@ -732,7 +851,7 @@
 	        	if(!creativemode){
 	        		makeBits();
 	        	}
-	        } else if(mx > innerWidth/2+325 && mx < innerWidth/2+425){
+	        } else if(mx > innerWidth/2+325 && mx < innerWidth/2+425 && !creativemode){
 	        	makeMenuSelection(6);
 	        	var data = getMapData();
 	       		window.open('mailto:aa?subject=diamond_box&body='+data);
@@ -862,7 +981,7 @@
 			}
     	}
     }
-
+    makeMenuSelection(1);
 	scaleCanvas();
 	animate();
 </script>
