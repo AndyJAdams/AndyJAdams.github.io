@@ -875,6 +875,8 @@
 	        	creativemode = !creativemode;
 	        	if(!creativemode){
 	        		makeBits();
+	        	} else {
+	        		console.log(getMapData());
 	        	}
 	        } else if(mx > innerWidth/2+325 && mx < innerWidth/2+425 && !creativemode){
 	        	makeMenuSelection(6);
