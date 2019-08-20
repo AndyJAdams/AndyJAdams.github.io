@@ -1,0 +1,1016 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta lang="en/us"/>
+	<meta encoding="UTF-8">
+	<title>DB_Creative</title>
+	<style>
+		body{
+			margin: 0;
+			background-color: #D6D6D6;
+			touch-action: none;
+			position: fixed;
+		}
+		canvas{
+			background-color: #222;
+		}
+	</style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript'>
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+	
+	//GLOBAL VARIABLES
+	var DEBUG = false;
+	var creativemode=true;
+	var spacingX = 0,spacingY = 0;
+	var portrait = false;
+	var columns =0;
+	var rows = 0;
+	var selectedMode = 0;
+	var color1 = '#000000';
+	var color2 = '#DDD';
+	var startSpeed = 1;
+
+	function scaleCanvas(){
+		rows = 15;
+		columns = 25;
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight-4;
+		if(innerWidth < innerHeight){
+			portrait = true;
+			var r = rows;
+			rows = columns;
+			columns = r;
+		}
+		spacingY = (innerHeight-100)/(rows+1);
+		spacingX = innerWidth/(columns);
+		ctx.fillStyle=color1;
+		ctx.strokeStyle=color1;
+		buildGrid();
+		buildInterface();
+	}
+
+	//Menu display section
+	function Button(type,x,y,w,h){
+		this.type = type; this.x = x; this.y = y;
+		this.w = w; this.h = h;
+		this.selected = false;
+		var strokeFill = color2;
+
+		this.draw = function(){
+			if(this.selected){
+				ctx.fillStyle = color2;
+				strokeFill = color1;
+			} else {
+				ctx.fillStyle=color1;
+				strokeFill = color2;
+			}
+			ctx.fillRect(this.x, this.y, this.w, this.h);
+			switch(this.type){
+				case 0: //Clear all
+					ctx.strokeStyle=strokeFill;
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(this.x+35,this.y+15);
+					ctx.lineTo(this.x+65,this.y+45);
+					ctx.moveTo(this.x+65,this.y+15);
+					ctx.lineTo(this.x+35,this.y+45);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle=color1;
+					break;
+				case 1: //Start
+					ctx.fillStyle=strokeFill;
+					ctx.beginPath();
+					ctx.moveTo(this.x+35,this.y+30);
+					ctx.lineTo(this.x+50,this.y+15);
+					ctx.lineTo(this.x+65,this.y+30);
+					ctx.lineTo(this.x+50,this.y+45);
+					ctx.closePath();
+					ctx.fill();
+					ctx.fillStyle=color1;
+					break;
+				case 2: //Solid
+					ctx.strokeStyle=strokeFill;
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(this.x+20,this.y+30);
+					ctx.lineTo(this.x+80,this.y+30);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle=color1;
+					break;
+				case 3: //Dashed
+					ctx.strokeStyle=strokeFill;
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(this.x+20,this.y+30);
+					ctx.lineTo(this.x+30,this.y+30);
+					ctx.moveTo(this.x+35,this.y+30);
+					ctx.lineTo(this.x+45,this.y+30);
+					ctx.moveTo(this.x+50,this.y+30);
+					ctx.lineTo(this.x+60,this.y+30);
+					ctx.moveTo(this.x+65,this.y+30);
+					ctx.lineTo(this.x+75,this.y+30);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle=color1;
+					break;
+				case 4: //Wrap
+					ctx.strokeStyle=strokeFill;
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(this.x,this.y+30);
+					ctx.lineTo(this.x+25,this.y+30);
+					ctx.moveTo(this.x+75,this.y+30);
+					ctx.lineTo(this.x+100,this.y+30);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle=color1;
+					break;
+				case 5: //END
+					ctx.strokeStyle=strokeFill;
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(this.x+35,this.y+30);
+					ctx.lineTo(this.x+50,this.y+15);
+					ctx.lineTo(this.x+65,this.y+30);
+					ctx.lineTo(this.x+50,this.y+45);
+					ctx.lineTo(this.x+35,this.y+30);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle=color1;
+					break;
+				case 6: //Output
+					ctx.strokeStyle=strokeFill;
+					ctx.lineWidth=4;
+					ctx.beginPath();
+					//Draw a play button
+					ctx.moveTo(this.x+40,this.y+15);
+					ctx.lineTo(this.x+70,this.y+30);
+					ctx.lineTo(this.x+40,this.y+45);
+					ctx.closePath();
+					//ctx.stroke();
+					ctx.fillStyle=strokeFill;
+					ctx.fill();
+					ctx.strokeStyle=color1;
+					break;
+				case 7:
+					ctx.strokeStyle=strokeFill;
+					ctx.lineWidth=2;
+					ctx.beginPath();
+					ctx.moveTo(this.x+25,this.y+15);
+					ctx.lineTo(this.x+75,this.y+15);
+					ctx.lineTo(this.x+50,this.y+30);
+					ctx.lineTo(this.x+25,this.y+15);
+					ctx.lineTo(this.x+25,this.y+45);
+					ctx.lineTo(this.x+75,this.y+45);
+					ctx.lineTo(this.x+75,this.y+15);
+					ctx.stroke();
+					ctx.closePath();
+					ctx.strokeStyle=color1;
+					break;
+				default:
+					break;
+			}
+			ctx.strokeStyle=color1;
+			ctx.fillStyle=color1;
+		}
+	}
+
+	function Bit(pos){
+		this.pos = pos;
+		this.x = pos.x; this.y = pos.y;
+		this.moveSpeed = startSpeed;
+		this.dx = this.x; this.dy = this.y;
+		this.targetPos = undefined;
+		this.moving = false;
+		this.dir = undefined;
+		this.linkArray = [];
+		this.draw = function(){
+			ctx.fillStyle=color2;
+			ctx.beginPath();
+			ctx.moveTo(this.x-15,this.y);
+			ctx.lineTo(this.x,this.y-15);
+			ctx.lineTo(this.x+15,this.y);
+			ctx.lineTo(this.x,this.y+15);
+			ctx.closePath();
+			ctx.fill();
+		}
+
+		this.move = function(dir){
+			if(this.dir == undefined){
+				this.dir = dir;
+			}
+			this.linkArray = [];
+			this.targetPos = this.findEndLink(this.pos, this.dir);
+			
+			if(this.targetPos != undefined){
+				this.dx = this.targetPos.x;
+				this.dy = this.targetPos.y;
+				this.pos = this.targetPos;
+				this.targetPos = undefined;
+				this.moving = true;
+			} else {
+				this.moving = false;
+			}
+			
+		}
+
+		this.update = function(){
+			if(this.moving){
+				//Determine if we need to wrap move...
+				//Now that we set the end point of the move the direction will determine the wrap
+				var invert = 1;
+				if(this.checkWrap(this.dir,this.x,this.y,this.dx,this.dy)){
+					invert=-1;
+				}
+
+				if(Math.abs(this.x-this.dx) > 1){
+					if(this.x < this.dx){
+						this.x += this.moveSpeed*(Math.abs(this.x-this.dx)/10)*invert;
+					} else {
+						this.x -= this.moveSpeed*(Math.abs(this.x-this.dx)/10)*invert;
+					}
+				} else if(Math.abs(this.y-this.dy) > 1){
+					if(this.y < this.dy){ //SOUTH
+						this.y += this.moveSpeed*(Math.abs(this.y-this.dy)/10)*invert;
+					} else { //NORTH
+						this.y -= this.moveSpeed*(Math.abs(this.y-this.dy)/10)*invert;
+					}
+				} else {
+					console.log("TOTAL: " + this.linkArray.length);
+					for(var i =0; i < this.linkArray.length; i++){
+						if(this.dir == 'N' || this.dir == 'S'){
+							if(this.linkArray[i].linkV != undefined){
+								if(this.linkArray[i].linkV.type == 3){
+									this.linkArray[i].linkV.type = 9;
+								}
+							}
+						} else if(this.dir == 'W' || this.dir == 'E'){
+							if(this.linkArray[i].linkH != undefined){
+								if(this.linkArray[i].linkH.type == 3){
+									this.linkArray[i].linkH.type = 9;
+								}
+							}
+						}
+					}
+					this.move(this.dir);
+				}
+
+
+				//Horizontal Wrap Reset
+				if(this.x < -20){
+					this.x = innerWidth+10;
+				} else if(this.x > innerWidth+20){
+					this.x = -10;
+				}
+
+				//Vertical Wrap Reset
+				if(this.y < -20){
+					this.y = innerHeight+10;
+				} else if(this.y > innerHeight+20){
+					this.y = -10;
+				}
+			} else {
+				
+				this.dir = undefined;
+				if(this.pos.omega){
+					console.log("FIN");
+					return;
+				}
+			}
+			this.draw();
+		}
+
+		this.checkWrap = function(dir,x1,y1,x2,y2){
+			if(dir == 'N'){
+				if(y2 > y1){
+					return true;
+				}
+			}
+			if(dir == 'S'){
+				if(y2 < y1){
+					return true;
+				}
+			}
+			if(dir == 'W'){
+				if(x2 > x1){
+					return true;
+				}
+			}
+			if(dir == 'E'){
+				if(x2 < x1){
+					return true;
+				}
+			}
+			return false;
+		}
+
+		this.findLinkedPos = function(pos,dir){
+			if(dir == 'N'){
+				for(var i = 0; i < gridPos.length; i++){
+					if(gridPos[i].linkV != undefined && gridPos[i].linkV.pos == pos && gridPos[i].linkV.type != 9){
+						if(!this.contains(gridPos[i])){
+							this.linkArray.push(gridPos[i]);
+						} else {
+							return undefined;
+						}
+						return gridPos[i];
+					}
+				}
+			} else if(dir == 'W'){
+				for(var i = 0; i < gridPos.length;i++){
+					if(gridPos[i].linkH != undefined && gridPos[i].linkH.pos == pos && gridPos[i].linkH.type != 9){
+						if(!this.contains(gridPos[i])){
+							this.linkArray.push(gridPos[i]);
+						} else {
+							return undefined;
+						}
+						return gridPos[i];
+					}
+				}
+			} else if(dir == 'E'){
+				if(pos.linkH != undefined && pos.linkH.type != 9){
+					if(!this.contains(pos)){
+						this.linkArray.push(pos);
+					} else {
+						return undefined;
+					}
+					return pos.linkH.pos;
+				}
+			} else {
+				if(pos.linkV != undefined && pos.linkV.type != 9){
+					if(!this.contains(pos)){
+						this.linkArray.push(pos);
+					} else {
+						return undefined;
+					}
+					return pos.linkV.pos;
+				}
+			}
+			return undefined;
+		}
+
+		this.findEndLink = function(pos, dir){
+			var lk = this.findLinkedPos(pos,dir);
+			if(lk != undefined){
+
+				var next = this.findEndLink(lk,dir);
+				if(next != undefined){
+					return next;
+				} else {
+					return lk;
+				}
+			}
+			return undefined;
+		}
+
+		this.contains = function(pos){
+			for(var i =0; i < this.linkArray.length; i++){
+				if(this.linkArray[i] == pos){
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	function GridPosition(x,y){
+		this.x = x; this.y = y;
+		this.linkV = undefined;
+		this.linkH = undefined;
+		this.alpha = false;
+		this.omega = false;
+	}
+
+	function Link(pos,type){
+		this.pos = pos;
+		this.type = type;
+	}
+
+	function getGridIndex(pos){
+		for(var i =0; i < gridPos.length; i++){
+			if(gridPos[i] == pos){
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	var gridPos = [];
+	function buildGrid(){
+		gridPos = [];
+		for(var y = 0; y < rows; y++){
+			for(var x =0; x < columns; x++){
+				var posX = Math.floor((x*spacingX)+(spacingX/2));
+				var posY = Math.floor((y*spacingY)+(spacingY/2));
+				gridPos.push(new GridPosition(posX, posY));
+			}
+		}
+	}
+
+	var btnArray = [];
+	function buildInterface(){
+		btnArray = [];
+		for(var b = 0;b<8;b++){
+			btnArray.push(new Button(b,(innerWidth/2-425)+(b*110),innerHeight-100,100,60));
+		}
+		btnArray[1].selected = true;
+	}
+
+	var bitArray = [];
+	function makeBits(){
+		bitArray = [];
+		for(var i = 0; i < gridPos.length; i++){
+			if(gridPos[i].alpha){
+				bitArray.push(new Bit(gridPos[i]));
+			}
+		}
+	}
+
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		for(var i =0; i < gridPos.length; i++){
+			if(creativemode){
+				ctx.fillStyle = color2;
+				ctx.fillRect(gridPos[i].x-2,gridPos[i].y-2,4,4);
+
+				if(gridPos[i].alpha){
+					ctx.beginPath();
+					ctx.moveTo(gridPos[i].x-10,gridPos[i].y);
+					ctx.lineTo(gridPos[i].x,gridPos[i].y-10);
+					ctx.lineTo(gridPos[i].x+10,gridPos[i].y);
+					ctx.lineTo(gridPos[i].x,gridPos[i].y+10);
+					ctx.closePath();
+					ctx.fill();
+				}
+			} 
+			if(gridPos[i].linkV != undefined){
+				drawLinkConnection(gridPos[i],gridPos[i].linkV);
+			}
+			if(gridPos[i].linkH != undefined){
+				drawLinkConnection(gridPos[i],gridPos[i].linkH);
+			}
+
+			if(gridPos[i].omega){
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.moveTo(gridPos[i].x-15,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y-15);
+				ctx.lineTo(gridPos[i].x+15,gridPos[i].y);
+				ctx.lineTo(gridPos[i].x,gridPos[i].y+15);
+				ctx.closePath();
+				ctx.fillStyle=color1;
+				ctx.strokeStyle=color2;
+				ctx.fill();
+				ctx.stroke();
+			}
+
+			
+
+		}
+
+		if(creativemode){
+			var nearest = getNearestSnapPosition(mx,my);
+			if(nearest != undefined){
+				ctx.fillRect(nearest.x-4,nearest.y-4,8,8);
+			}
+
+			if(initialPos != undefined){
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.moveTo(initialPos.x-6,initialPos.y-6);
+				ctx.lineTo(initialPos.x+6,initialPos.y-6);
+				ctx.lineTo(initialPos.x+6,initialPos.y+6);
+				ctx.lineTo(initialPos.x-6,initialPos.y+6);
+				ctx.lineTo(initialPos.x-6,initialPos.y-6);
+				ctx.stroke();
+				ctx.closePath();
+			}
+		}
+
+		if(DEBUG){
+			ctx.textAlign = 'start';
+			ctx.fillText(rows+"x"+columns,5,innerHeight-10);
+			ctx.fillText("@"+mx+","+my,5,innerHeight-30);
+		}
+
+		if(creativemode){
+			for(var b = 0; b < btnArray.length-1;b++){
+				btnArray[b].draw();
+			}
+		} else {
+			btnArray[6].draw();
+			btnArray[7].draw();
+			for(var i =0; i < bitArray.length;i++){
+				bitArray[i].update();
+			}
+		}
+	}
+
+	function drawLinkConnection(pos,link){
+		var m = link.type;
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = color2;
+		switch(m){
+			case 2: //Solid
+				ctx.setLineDash([]);
+				ctx.beginPath();
+				ctx.moveTo(pos.x,pos.y);
+				ctx.lineTo(link.pos.x,link.pos.y);
+				ctx.stroke();
+				ctx.closePath();
+				break;
+			case 3: //Dashed
+				ctx.setLineDash([3,6]);
+				ctx.beginPath();
+				ctx.moveTo(pos.x,pos.y);
+				ctx.lineTo(link.pos.x,link.pos.y);
+				ctx.stroke();
+				ctx.closePath();
+				ctx.setLineDash([]);
+				break;
+			case 4: //Wrap
+				ctx.setLineDash([]);
+				if(Math.abs(pos.x-link.pos.x)>spacingX*2){ //Horizontal
+					if(pos.x < link.pos.x){ //LEFT
+						ctx.beginPath();
+						ctx.moveTo(pos.x,pos.y);
+						ctx.lineTo(-20,pos.y);
+						ctx.moveTo(link.pos.x,link.pos.y);
+						ctx.lineTo(innerWidth+20,link.pos.y);
+						ctx.stroke();
+						ctx.closePath();
+					} else { //RIGHT
+						ctx.beginPath();
+						ctx.moveTo(pos.x,pos.y);
+						ctx.lineTo(innerWidth+20,pos.y);
+						ctx.moveTo(link.pos.x,link.pos.y);
+						ctx.lineTo(-20,link.pos.y);
+						ctx.stroke();
+						ctx.closePath();
+					}
+				} else if(Math.abs(pos.y-link.pos.y)>spacingY*2){//Vertical
+					if(pos.y < link.pos.y){//UP
+						ctx.beginPath();
+						ctx.moveTo(pos.x,pos.y);
+						ctx.lineTo(pos.x,-20);
+						ctx.moveTo(link.pos.x,link.pos.y);
+						ctx.lineTo(link.pos.x,innerHeight+20);
+						ctx.stroke();
+						ctx.closePath();
+					} else {//DOWN
+						ctx.beginPath();
+						ctx.moveTo(pos.x,pos.y);
+						ctx.lineTo(pos.x,innerHeight+20);
+						ctx.moveTo(link.pos.x,link.pos.y);
+						ctx.lineTo(link.pos.x,-20);
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+				break;
+			case 9:
+				if(creativemode){
+					link.type =3;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
+	function getNearestSnapPosition(x,y){
+		var dist = innerWidth;
+		var retPos = undefined;
+		for(var i = 0; i < gridPos.length;i++){
+			if(gridPos[i] != undefined){
+				var d = Math.sqrt(Math.pow(Math.abs(gridPos[i].x-x),2)+Math.pow(Math.abs(gridPos[i].y-y),2));
+				if(d < spacingX && d < spacingY && d < dist){
+					retPos = gridPos[i];
+					dist = d;
+				}
+			}
+		}
+		return retPos;
+	}
+
+	function getMapData(){
+		var d = rows+'.'+columns+',';
+		for(var a = 0; a < gridPos.length; a++){ //Collect all starts
+			if(gridPos[a].alpha){
+				d += a+'.';
+			}
+		}
+		d += ',';
+		for(var b = 0; b < gridPos.length; b++){ //Collect all positions w/ links
+			if(gridPos[b].linkV != undefined){
+				var linkIndex = getGridIndex(gridPos[b].linkV.pos);
+				if(linkIndex > -1){
+					d+=b+'-'+linkIndex+'-'+gridPos[b].linkV.type+'.';
+				}
+			}
+			if(gridPos[b].linkH != undefined){
+				var linkIndex = getGridIndex(gridPos[b].linkH.pos);
+				if(linkIndex > -1){
+					d+=b+'-'+linkIndex+'-'+gridPos[b].linkH.type+'.';
+				}
+			}
+		}
+		d += ',';
+		for(var c = 0; c < gridPos.length; c++){
+			if(gridPos[c].omega){
+				d += c+'.';
+			}
+		}
+		return d;
+	}
+
+	function getGridIndex(pos){
+		for(var i =0; i < gridPos.length;i++){
+			if(pos == gridPos[i]){
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	function clearMap(){
+		for(var i =0; i < gridPos.length;i++){
+			gridPos[i].alpha = false;
+			gridPos[i].omega = false;
+			gridPos[i].linkV = undefined;
+			gridPos[i].linkH = undefined;
+			selectedMode = 1;
+		}
+	}
+
+	function applyMove(dir){
+		if(checkMoving()){
+			for(var i = 0; i < bitArray.length; i++){
+				bitArray[i].move(dir);
+			}
+		}
+	}
+
+	function checkMoving(){
+		for(var i = 0; i < bitArray.length; i++){
+			if(bitArray[i].moving){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	//------INPUT CONTROLS ---------------------------------------
+	//Input variables
+	var mx, my;
+	var sx, sy;
+	var initialPos = undefined;
+
+
+	window.addEventListener('resize', function(){
+		scaleCanvas();
+	});
+
+	//Mouse
+	window.addEventListener('mousedown', function(evt){
+    	evt.preventDefault();
+    	sx = evt.pageX;
+    	sy = evt.pageY;
+    },false);
+    window.addEventListener('mousemove', function(evt){
+    	evt.preventDefault();
+    	mx = evt.pageX;
+    	my = evt.pageY;
+    },false);
+    window.addEventListener('mouseup', function(evt){
+    	evt.preventDefault();
+    	if(my > innerHeight-100){
+    		dectectMenuInput();
+    	} else {
+    		if(creativemode){
+	    		detectGridInput();
+	    	} else {
+	    		//TODO: Determine swipe direction from SX,SY
+	    		var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
+	    		if(d > spacingX/2||d > spacingY/2){
+		    		var xdiff = Math.abs(sx-mx); var ydiff = Math.abs(sy-my);
+		    		if(xdiff > ydiff){
+		    			if(sx < mx){
+		    				console.log("SWIPE RIGHT");
+		    				applyMove('E');
+		    			} else {
+		    				console.log("SWIPE LEFT");
+		    				applyMove('W');
+		    			}
+		    		} else {
+		    			if(sy < my){
+		    				console.log("SWIPE DOWN");
+		    				applyMove('S');
+		    			} else {
+		    				console.log("SWIPE UP");
+		    				applyMove('N');
+		    			}
+		    		}
+		    	}
+	    	}
+    	}
+    },false);
+
+    //Keyboard
+	window.addEventListener('keydown',function(evt){
+	});
+	window.addEventListener('keyup',function(evt){
+		if(!creativemode){
+			switch(evt.keyCode){
+				case 80: //P
+					DEBUG = !DEBUG;
+					break;
+				case 37: //L-Arrow
+					applyMove('W');
+					break;
+				case 38: //Up-Arrow
+					applyMove('N');
+					break;
+				case 39: //R-Arrow
+					applyMove('E');
+					break;
+				case 40: //Dn-Arrow
+					applyMove('S');
+					break;
+				case 13: //G
+					makeMenuSelection(6);
+					creativemode = !creativemode;
+		  			break;
+				default:
+					break;
+			}
+		} else {
+			switch(evt.keyCode){
+				case 80: //P
+					DEBUG = !DEBUG;
+					break;
+				case 83: //S
+					makeMenuSelection(2);
+					break;
+				case 68: //D
+					makeMenuSelection(3);
+					break;
+				case 87: //W
+					makeMenuSelection(4);
+					break;
+				case 71: //G
+					makeMenuSelection(1);
+					break;
+				case 78: //N
+					clearMap();
+					makeMenuSelection(1);
+					break;	
+				case 70: //F
+					makeMenuSelection(5);
+					break;
+				case 13: //G
+					makeMenuSelection(6);
+					creativemode = !creativemode;
+		        	if(!creativemode){
+		        		makeBits();
+		        	}
+					break;
+				default:
+					break;
+			}
+		}
+	});
+
+	//Touch
+	window.addEventListener('touchstart', function(evt){
+        evt.preventDefault();
+		mx = evt.changedTouches[0].pageX;
+        my = evt.changedTouches[0].pageY;
+        sx = mx;
+        sy = my;
+    }, false);
+	
+    window.addEventListener('touchmove', function(evt){
+        evt.preventDefault();
+        mx = evt.changedTouches[0].pageX;
+        my = evt.changedTouches[0].pageY; 
+    }, false);
+	
+    window.addEventListener('touchcancel', function(evt){
+        evt.preventDefault();
+    }, false);
+	
+	//User has removed finger... let's figure out the desired action here. 
+    window.addEventListener('touchend', function(evt){
+        evt.preventDefault();
+        if(my > innerHeight-100){
+        	dectectMenuInput();
+        } else {
+        	if(creativemode){
+	        	detectGridInput();
+	        } else {
+	        	//TODO: DETERMINE SWIPE DIRECTION FROM SX,SY
+	        	var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
+	    		if(d > spacingX/2||d > spacingY/2){
+		    		var xdiff = Math.abs(sx-mx); var ydiff = Math.abs(sy-my);
+		    		if(xdiff > ydiff){
+		    			if(sx < mx){
+		    				console.log("SWIPE RIGHT");
+		    				//color1 = '#F00';
+		    				applyMove('E');
+		    			} else {
+		    				console.log("SWIPE LEFT");
+		    				//color1 = '#00F';
+		    				applyMove('W');
+		    			}
+		    		} else {
+		    			if(sy < my){
+		    				console.log("SWIPE UP");
+		    				//color1 = '#0F0';
+		    				applyMove('S');
+		    			} else {
+		    				console.log("SWIPE DOWN");
+		    				//color1 = '#F0F';
+		    				applyMove('N');
+		    			}
+		    		}
+		    	}
+	        }
+        }
+    }, false);
+
+ 	function makeMenuSelection(i){
+ 		for(var b = 0; b < btnArray.length; b++){
+ 			if(b == i){
+ 				btnArray[b].selected = true;
+ 			} else {
+ 				btnArray[b].selected = false;
+ 			}
+ 		}
+ 		selectedMode = i;
+ 	}
+
+    function dectectMenuInput(){
+    	if(my > innerHeight-100 && my < innerHeight-40){
+	        if(mx > innerWidth/2-325 && mx < innerWidth/2-225){
+	        	makeMenuSelection(1);
+	        } else if(mx > innerWidth/2-215 && mx < innerWidth/2-115){
+	        	makeMenuSelection(2);
+	        } else if(mx > innerWidth/2-105 && mx < innerWidth/2-5){
+	        	makeMenuSelection(3);
+	        } else if(mx > innerWidth/2+5 && mx < innerWidth/2+105){
+	        	makeMenuSelection(4);
+	        } else if(mx > innerWidth/2+115 && mx < innerWidth/2+215){
+	        	makeMenuSelection(5);
+	        } else if(mx > innerWidth/2+225 && mx < innerWidth/2+325){
+	        	makeMenuSelection(6);
+	        	creativemode = !creativemode;
+	        	if(!creativemode){
+	        		makeBits();
+	        	} else {
+	        		console.log(getMapData());
+	        	}
+	        } else if(mx > innerWidth/2+325 && mx < innerWidth/2+425 && !creativemode){
+	        	makeMenuSelection(6);
+	        	var data = getMapData();
+	       		window.open('mailto:aa?subject=diamond_box&body='+data);
+	        } else if(mx > innerWidth/2-425 && mx < innerWidth/2-325){
+	        	clearMap();
+	        	makeMenuSelection(1);
+	        }
+	    }
+    }
+
+    var initialPos = undefined;
+    function detectGridInput(){
+    	var near = getNearestSnapPosition(mx,my);
+    	if(near == undefined){
+    		return undefined;
+    	}
+    	switch(selectedMode){
+    		case 1:
+				near.alpha = !near.alpha;
+				initialPos = undefined;
+    			break;
+    		case 2:
+    			if(initialPos==undefined){
+    				initialPos = near;
+    			} else {
+    				if(initialPos.x != near.x && initialPos.y != near.y){
+    					initialPos = undefined;
+    					console.log("Points not in line");
+    					return;
+    				}
+    				if(Math.abs(initialPos.x-near.x)>spacingX+5 || Math.abs(initialPos.y-near.y)>spacingY+3){
+    					console.log("Points are not adjacent");
+    					initialPos = undefined;
+    					return;
+    				}
+    				if(initialPos.x < near.x){
+    					setLink(initialPos,near,0,selectedMode);
+    				} else if(initialPos.x > near.x){
+						setLink(near,initialPos,0,selectedMode);
+    				} else if(initialPos.y < near.y){
+    					setLink(initialPos,near,1,selectedMode);
+    				} else if(initialPos.y > near.y){
+						setLink(near,initialPos,1,selectedMode);
+    				}
+    				initialPos = near;
+    			}
+    			break;
+    		case 3: //Dashed
+    			if(initialPos==undefined){
+    				initialPos = near;
+    			} else {
+    				if(initialPos.x != near.x && initialPos.y != near.y){
+    					initialPos = undefined;
+    					console.log("Points not in line");
+    					return;
+    				}
+    				if(Math.abs(initialPos.x-near.x)>spacingX+5 && Math.abs(initialPos.y-near.y)>spacingY+3){
+    					initialPos = undefined;
+    					console.log("Points are not adjacent");
+    					return;
+    				}
+    				if(initialPos.x < near.x){
+    					setLink(initialPos,near,0,selectedMode);
+    				} else if(initialPos > near.x){
+    					setLink(near,initialPos,0,selectedMode);
+    				} else if(initialPos.y < near.y){
+    					setLink(initialPos,near,1,selectedMode);
+    				} else if(initialPos.y > near.y){
+    					setLink(near,initialPos,1,selectedMode);
+    				}
+    				initialPos = near;
+    			}
+    			break;
+    		case 4:
+    			if(initialPos==undefined){
+    				initialPos = near;
+    			} else {
+    				if(initialPos.x != near.x && initialPos.y != near.y){
+    					console.log("Points not in line");
+    					initialPos = undefined;
+    					return;
+    				}
+    				if(initialPos.x > near.x){
+    					setLink(initialPos,near,0,selectedMode);
+    				} else if(initialPos.x < near.x){
+    					setLink(near,initialPos,0,selectedMode);
+    				} else if(initialPos.y > near.y){
+    					setLink(initialPos,near,1,selectedMode);
+    				} else if(initialPos.x < near.y){
+    					setLink(near,initialPos,1,selectedMode);
+    				}
+    				initialPos = near;
+    			}
+    			break;
+    		case 5:
+    			near.omega = !near.omega;
+    			initialPos = undefined;
+    			break;
+    		default:
+    			break;
+    	}
+    }
+
+    function setLink(pos1,pos2,dir,mode){
+    	if(dir == 0){//Horizontal
+    		var nLink = new Link(pos2,mode);
+			if(pos1.linkH != undefined){
+				if(pos1.linkH.type != mode){
+					pos1.linkH = nLink;		
+				} else {
+					pos1.linkH = undefined;
+				}
+			} else {
+				pos1.linkH =nLink;		
+			}
+    					
+    	} else {//Vertical
+    		var nLink = new Link(pos2,mode);
+			if(pos1.linkV != undefined){
+				if(pos1.linkV.type != mode){
+					pos1.linkV = nLink;		
+				} else {
+					pos1.linkV = undefined;
+				}
+			} else {
+				pos1.linkV =nLink;		
+			}
+    	}
+    }
+    makeMenuSelection(1);
+	scaleCanvas();
+	animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>TIME</title>
+	<style type="text/css">
+		body, html{ 
+			margin: 5; 
+			background-color: #DDD;
+			position: fixed;
+		}
+		canvas{
+            touch-action: none;
+		}
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+
+	var canvas = document.getElementById('canvas');	
+	function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	scaleCanvas();
+	var ctx = canvas.getContext('2d');
+
+	ctx.fillStyle='#888';
+	function lerp (start, end, amt){
+  		return (1-amt)*start+amt*end
+	}
+	var startTime = new Date();
+	var birthDate = new Date("1984-09-29");
+	var timeOnWindow, points;
+	var spentPoints = 0;
+	
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+		timeOnWindow = new Date()-birthDate;
+		var hours = 1984.29;
+		points = Math.floor(timeOnWindow/hours);
+
+		//LABELS
+		ctx.font = "16px Helvetica";
+		ctx.fillText('milliseconds since birth:',20,110);
+		ctx.fillText('pts:',20,180);
+
+		//VALUES
+		ctx.font = "32px Helvetica";
+		ctx.fillText(new Date()-birthDate, 20,140);
+		ctx.fillText(points, 20, 210);
+
+
+	}
+
+	var mx = 0; //Touch || Mouse initial input position on x
+    var my = 0; //Touch || Mouse initial input position on y
+
+	window.addEventListener('touchstart', function(evt){
+        evt.preventDefault();
+		mx = evt.changedTouches[0].pageX;
+        my = evt.changedTouches[0].pageY; 
+    }, false);
+	
+    window.addEventListener('touchmove', function(evt){
+        evt.preventDefault();
+    }, false);
+	
+    window.addEventListener('touchcancel', function(evt){
+        evt.preventDefault();
+    }, false);
+	
+	//User has removed finger... let's figure out the desired action here. 
+    window.addEventListener('touchend', function(evt){
+        evt.preventDefault();
+    }, false);
+
+    window.addEventListener('mousedown', function(evt){
+    	evt.preventDefault();
+    },false);
+
+    window.addEventListener('mousemove', function(evt){
+    	evt.preventDefault();
+    },false);
+
+    window.addEventListener('mouseup', function(evt){
+    	evt.preventDefault();
+    },false);
+
+    window.addEventListener('resize', function(evt){
+    	scaleCanvas();
+    },false);
+
+	animate();
+	</script>
+</body>
+</html>
