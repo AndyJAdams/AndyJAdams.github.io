@@ -8,6 +8,31 @@ function scaleCanvas(){
 
 scaleCanvas();
 
+function Debug(x,y,size){
+	this.x = x;
+	this.y = y;
+	this.msg = [];
+	this.fontSize = size;
+	this.msg.push('');
+
+	this.draw = function(){
+		for(var i = 0; i < this.msg.length; i++){
+			ctx.font=this.fontSize+' sans-serif';
+			ctx.fillStyle='#000';
+			ctx.fillText(this.msg[i], this.x, this.y+(i*(this.fontSize+5)));
+			if(this.y+(i*(this.fonSize+5))>innerHeight){
+				this.msg.shift();
+			}
+		}
+	}
+
+	this.log = function(msg){
+		this.msg.push(msg);
+	}
+}
+
+var DEBUG = new Debug(10,30,15);
+
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth,innerHeight);
@@ -23,6 +48,9 @@ function animate(){
 
 	ctx.fillStyle='#CCC';
 	ctx.fillRect(10,innerHeight-20,10,10);
+
+	
+	DEBUG.draw();
 }
 
 var mx, my;
@@ -48,13 +76,13 @@ window.addEventListener('mousemove', function(evt){
 window.addEventListener('mouseup', function(evt){
 	evt.preventDefault();
 	var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
-	console.log("MOUSE DRAG " + d + "px");
+	DEBUG.log("MOUSE DRAG " + d + "px \n");
 },false);
 
 //Keyboard
 window.addEventListener('keyup',function(evt){
 	evt.preventDefault();
-	console.log(evt.keyCode);
+	DEBUG.log("KEY: " + evt.keyCode + " \n");
 });
 
 //Touch
@@ -80,7 +108,7 @@ window.addEventListener('touchcancel', function(evt){
 window.addEventListener('touchend', function(evt){
     evt.preventDefault();
 	var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
-	console.log("TOUCH DRAG " + d + "px");
+	console.log("TOUCH DRAG " + d + "px \n");
 }, false);
 
 
