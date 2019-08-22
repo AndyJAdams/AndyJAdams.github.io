@@ -1,12 +1,20 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
+var portrait = false;
+var prevPortrait = portrait;
+
 function scaleCanvas(){
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight-4;
+    portrait = innerHeight > innerWidth;
+    DEBUG.log("Scale Change");
+    if(portrait != prevPortrait){
+        orientBits();
+        prevPortrait = portrait;
+        DEBUG.log("Orientation Adjusted:: Portrait: "+ portrait);
+    }
 }
-
-scaleCanvas();
 
 function Debug(x,y,size){
 	this.x = x;
@@ -19,43 +27,71 @@ function Debug(x,y,size){
 		for(var i = 0; i < this.msg.length; i++){
 			ctx.font=this.fontSize+' sans-serif';
 			ctx.fillStyle='#000';
-			ctx.fillText(this.msg[i], this.x, this.y+(i*(this.fontSize+5)));
-			if(this.y+(i*(this.fonSize+5))>innerHeight){
-				this.msg.shift();
-			}
+            var newY = this.y + (i*(this.fontSize+5));
+            if(newY<this.y+200){
+                ctx.fillText(this.msg[i], this.x, newY);
+            }
 		}
 	}
 
 	this.log = function(msg){
-		this.msg.push(msg);
+		this.msg.unshift(msg);
 	}
 }
 
-var DEBUG = new Debug(10,30,15);
+var DEBUG = new Debug(10,50,15);
+
+function Bit(x,y,color){
+    this.x = x;
+    this.y = y;
+    this.color= color;
+    this.port = false;
+    
+    this.draw = function(){
+        ctx.fillStyle= this.color;
+        ctx.fillRect((innerWidth/2)+this.x, (innerHeight/2)+this.y, 10,10);
+    }
+    
+    this.update = function(){
+        this.draw();
+    }
+    
+    this.orient = function(){
+        var w = this.x;
+        this.x = this.y;
+        this.y = w;
+    }
+}
+
+function updateBits(){
+    for(var i =0; i < bits.length; i++){
+        bits[i].update();
+    }
+}
+
+function orientBits(){
+    for(var i = 0; i < bits.length;i++){
+        bits[i].orient();
+    }
+}
+
+var bits = [];
+bits.push(new Bit(-30,0));
+bits.push(new Bit(30,0));
 
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth,innerHeight);
-
-	ctx.fillStyle='#000';
-	ctx.fillRect(10,10,10,10);
-
-	ctx.fillStyle='#444';
-	ctx.fillRect(innerWidth-20,10,10,10);
-
-	ctx.fillStyle='#888';
-	ctx.fillRect(innerWidth-20,innerHeight-20,10,10);
-
-	ctx.fillStyle='#CCC';
-	ctx.fillRect(10,innerHeight-20,10,10);
-
+    
+    updateBits();
 	
 	DEBUG.draw();
 }
 
-var mx, my;
-var sx, sy;
 
+var sx, sy; //Start Input
+var cx, cy; //Current Input
+var ex, ey; //Ending Input
 
 window.addEventListener('resize', function(){
 	scaleCanvas();
@@ -69,13 +105,15 @@ window.addEventListener('mousedown', function(evt){
 },false);
 window.addEventListener('mousemove', function(evt){
 	evt.preventDefault();
-	mx = evt.pageX;
-	my = evt.pageY;
+	cx = evt.pageX;
+	cy = evt.pageY;
 },false);
 
 window.addEventListener('mouseup', function(evt){
 	evt.preventDefault();
-	var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
+    ex = evt.pageX;
+	ey = evt.pageY;
+	var d = Math.sqrt(Math.pow(Math.abs(sx-ex),2)+Math.pow(Math.abs(sy-ey),2));
 	DEBUG.log("MOUSE DRAG " + d + "px \n");
 },false);
 
@@ -88,28 +126,30 @@ window.addEventListener('keyup',function(evt){
 //Touch
 window.addEventListener('touchstart', function(evt){
     evt.preventDefault();
-	mx = evt.changedTouches[0].pageX;
-    my = evt.changedTouches[0].pageY;
-    sx = mx;
-    sy = my;
+	sx = evt.changedTouches[0].pageX;
+    sy = evt.changedTouches[0].pageY;
 }, false);
 
 window.addEventListener('touchmove', function(evt){
     evt.preventDefault();
-    mx = evt.changedTouches[0].pageX;
-    my = evt.changedTouches[0].pageY; 
+    cx = evt.changedTouches[0].pageX;
+    cy = evt.changedTouches[0].pageY; 
 }, false);
 
 window.addEventListener('touchcancel', function(evt){
     evt.preventDefault();
+    sx = sy = cx = cy = ex = ey = -1;
+    DEBUG.log("Touch Event Cancelled " + sx);
 }, false);
 
 //User has removed finger... let's figure out the desired action here. 
 window.addEventListener('touchend', function(evt){
     evt.preventDefault();
-	var d = Math.sqrt(Math.pow(Math.abs(sx-mx),2)+Math.pow(Math.abs(sy-my),2));
-	console.log("TOUCH DRAG " + d + "px \n");
+    ex = evt.changedTouches[0].pageX;
+    ey = evt.changedTouches[0].pageY; 
+	var d = Math.sqrt(Math.pow(Math.abs(sx-ex),2)+Math.pow(Math.abs(sy-ey),2));
+	DEBUG.log("TOUCH DRAG " + d + "px \n");
 }, false);
 
-
+scaleCanvas();
 animate();
