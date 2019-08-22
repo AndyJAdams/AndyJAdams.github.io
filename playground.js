@@ -111,10 +111,9 @@ window.addEventListener('mousemove', function(evt){
 
 window.addEventListener('mouseup', function(evt){
 	evt.preventDefault();
-    ex = evt.pageX;
+    	ex = evt.pageX;
 	ey = evt.pageY;
-	var d = Math.sqrt(Math.pow(Math.abs(sx-ex),2)+Math.pow(Math.abs(sy-ey),2));
-	DEBUG.log("MOUSE DRAG " + d + "px \n");
+	HandleDrag(sx,sy,ex,ey);
 },false);
 
 //Keyboard
@@ -147,9 +146,36 @@ window.addEventListener('touchend', function(evt){
     evt.preventDefault();
     ex = evt.changedTouches[0].pageX;
     ey = evt.changedTouches[0].pageY; 
-	var d = Math.sqrt(Math.pow(Math.abs(sx-ex),2)+Math.pow(Math.abs(sy-ey),2));
-	DEBUG.log("TOUCH DRAG " + d + "px \n");
+	HandleDrag(sx,sy,ex,ey);
 }, false);
+
+var lastInputCall = 0;
+function HandleDrag(sx,sy,ex,ey){
+	var d = Math.sqrt(Math.pow(Math.abs(sx-ex),2)+Math.pow(Math.abs(sy-ey),2));
+	if(d > 50){
+		var horz = Math.abs(sx-ex);
+		var vert = Math.abs(sy-ey);
+		if(horz > vert){
+			if(sx < ex){ //LEFT
+				DEBUG.log("LEFT SWIPE " + (ex-sx));	
+			} else { //RIGHT
+				DEBUG.log("RIGHT SWIPE " + (sx-ex));
+			}
+		} else {
+			if(sy < ey){ //DOWN
+				DEBUG.log("DOWN SWIPE " + (ey-sy));
+			} else { //UP
+				DEBUG.log("UP SWIPE " + (sy-ey));	
+			}
+		}
+	} else {
+		var now = Date.now();
+		if(now-lastInputCall < 60){
+			DEBUG.log("DOUBLE TAP + (now-lastInputCall));
+		}
+		lastInputCall = now;
+	}
+}
 
 scaleCanvas();
 animate();
