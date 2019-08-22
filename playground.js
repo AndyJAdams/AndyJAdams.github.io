@@ -3,10 +3,12 @@ var ctx = canvas.getContext('2d');
 
 var portrait = false;
 var prevPortrait = portrait;
+var displayDebug = false;
 
 function scaleCanvas(){
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight-4;
+
     portrait = innerHeight > innerWidth;
     DEBUG.log("Scale Change");
     if(portrait != prevPortrait){
@@ -26,7 +28,7 @@ function Debug(x,y,size){
 	this.draw = function(){
 		for(var i = 0; i < this.msg.length; i++){
 			ctx.font=this.fontSize+' sans-serif';
-			ctx.fillStyle='#000';
+			ctx.fillStyle='#DDD';
             var newY = this.y + (i*(this.fontSize+5));
             if(newY<this.y+200){
                 ctx.fillText(this.msg[i], this.x, newY);
@@ -49,7 +51,7 @@ function Bit(x,y,color){
     
     this.draw = function(){
         ctx.fillStyle= this.color;
-        ctx.fillRect((innerWidth/2)+this.x, (innerHeight/2)+this.y, 10,10);
+	    ctx.fillRect((innerWidth/2)+this.x, (innerHeight/2)+this.y, 4,4);
     }
     
     this.update = function(){
@@ -63,10 +65,44 @@ function Bit(x,y,color){
     }
 }
 
+var bits = [];
+bits.push(new Bit(-30,0,'#DDD'));
+bits.push(new Bit(30,0,'#DDD'));
+
+function Link(startBit,endBit, mode){
+	this.start = startBit;
+	this.end = endBit;
+	this.mode = mode;
+
+	this.draw = function(){
+		ctx.lineWidth = 1;
+		ctx.strokeStyle='#DDD';
+		ctx.beginPath();
+		ctx.moveTo((innerWidth/2)+this.start.x+2, (innerHeight/2)+this.start.y+2);
+		ctx.lineTo((innerWidth/2)+this.end.x+2, (innerHeight/2)+this.end.y+2);
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	this.update = function(){
+		this.draw();
+	}
+}
+
+var links = [];
+links.push(new Link(bits[0],bits[1],0));
+links.push(new Link(bits[1],bits[0],0));
+
 function updateBits(){
     for(var i =0; i < bits.length; i++){
         bits[i].update();
     }
+}
+
+function updateLinks(){
+	for(var i = 0; i < links.length; i++){
+		links[i].update();
+	}
 }
 
 function orientBits(){
@@ -75,17 +111,20 @@ function orientBits(){
     }
 }
 
-var bits = [];
-bits.push(new Bit(-30,0));
-bits.push(new Bit(30,0));
+
 
 function animate(){
 	window.requestAnimationFrame(animate);
 	ctx.clearRect(0,0,innerWidth,innerHeight);
+	ctx.fillStyle='#222';
+	ctx.fillRect(0,0,innerWidth,innerHeight);
     
     updateBits();
-	
-	DEBUG.draw();
+    updateLinks();
+
+    if(displayDebug){
+		DEBUG.draw();
+	}
 }
 
 
@@ -156,26 +195,25 @@ function HandleDrag(sx,sy,ex,ey){
 		var horz = Math.abs(sx-ex);
 		var vert = Math.abs(sy-ey);
 		if(horz > vert){
-			if(sx < ex){ //LEFT
-				DEBUG.log("LEFT SWIPE " + (ex-sx));	
-			} else { //RIGHT
-				DEBUG.log("RIGHT SWIPE " + (sx-ex));
+			if(sx < ex){ //RIGHT	
+				DEBUG.log("RIGHT");
+			} else { //LEFT
+				DEBUG.log("LEFT");
 			}
 		} else {
 			if(sy < ey){ //DOWN
-				DEBUG.log("DOWN SWIPE " + (ey-sy));
+				DEBUG.log("DOWN");
 			} else { //UP
-				DEBUG.log("UP SWIPE " + (sy-ey));	
+				DEBUG.log("UP");
 			}
 		}
 	} else {
 		var now = Date.now();
-		if(now-lastInputCall < 60){
-			DEBUG.log("DOUBLE TAP + (now-lastInputCall));
+		if(now-lastInputCall < 250){
+			displayDebug = !displayDebug;
 		}
 		lastInputCall = now;
 	}
 }
-
 scaleCanvas();
 animate();
