@@ -56,7 +56,14 @@
 			//ctx.fillRect(this.x,this.y,this.scale,this.scale);	
 			ctx.strokeRect(this.x, this.y, this.scale, this.scale);
 			if(this.status == 'blocked'){
-				ctx.fillRect(this.x+20,this.y+20,this.scale-40,this.scale-40);
+				ctx.beginPath();
+				ctx.moveTo(this.x+(tileScale/4),this.y+(tileScale/4));
+				ctx.lineTo(this.x+tileScale,this.y+tileScale);
+				ctx.moveTo(this.x+tileScale,this.y);
+				ctx.lineTo(this.x,this.y+tileScale);
+				ctx.stroke();
+				ctx.closePath();
+				ctx.fillRect(this.x+(tileScale/3),this.y+(tileScale/3),this.scale/3,this.scale/3);
 			}
 			ctx.fillText(this.r + "," + this.c, this.x+2, this.y+10);
 		}
@@ -291,6 +298,8 @@
 					ctx.lineTo(this.x+(tileScale/4),this.y+tileScale-(tileScale/4));
 					ctx.stroke();
 					ctx.closePath();
+				} else {
+					ctx.fill();
 				}
 			}
 		}
@@ -331,6 +340,9 @@
 									this.r = this.lastTile.r;
 								}
 							} else {
+								if(this.breakable){
+									this.broken = true;
+								}
 								this.lastDir = this.dir;
 								this.dir = 0;
 
@@ -359,6 +371,9 @@
 									this.c = this.lastTile.c;
 								}
 							} else {
+								if(this.breakable){
+									this.broken = true;
+								}
 								this.lastDir = this.dir;
 								this.dir = 0;
 							}
@@ -386,6 +401,9 @@
 									this.r = this.lastTile.r;
 								}
 							} else {
+								if(this.breakable){
+									this.broken = true;
+								}
 								this.lastDir = this.dir;
 								this.dir = 0;
 							}
@@ -404,7 +422,6 @@
 							}
 							if(this.lastTile != undefined){
 								if(this.lastTile.r == this.r && this.lastTile.c == this.c){
-									//We didn't move... are we breakable?
 									if(this.breakable){
 										this.broken = true;
 									} 
@@ -413,6 +430,9 @@
 									this.c = this.lastTile.c;
 								}
 							} else {
+								if(this.breakable){
+									this.broken = true;
+								}
 								this.lastDir = this.dir;
 								this.dir = 0;
 							}
