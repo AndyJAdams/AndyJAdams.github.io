@@ -1,292 +1,372 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
-<head>
-	<meta lang="en/us"/>
-	<meta encoding="UTF-8">
-	<title>4-OUT</title>
+	<head>
+	<meta encoding="utf-8">
+	<title>4OUT</title>
 	<style>
-		body{
-			margin: 0;
-		}
+	html, body{
+		overflow: hidden;
+		margin:0;
+		touch-action: none;
+	}
+
+	canvas{
+		background-color: #404040;
+	}
+	
 	</style>
-</head>
-<body>
-<canvas id='canvas'></canvas>
-<script type='text/javascript'>
-	var canvas = document.getElementById('canvas');
-	var ctx = canvas.getContext('2d');
-	//Global Variables
-	var DEBUG = true;
-	var drag = false;
-	var colorArray = ['#f19066','#574b90','#f5cd79','#f78fb3','#546de5','#303952','#3dc1d3','#c44569'];
-	var speedDampner = 1;
-	var rows = 10;
-	var columns = 7;
-	var tileScale = 0;
-	var affectedRow = [];
-	var affectedColumn = [];
-	var closestTile = undefined;
-	var mouseDownX = -1, mouseDownY = -1;
-	var currentMouseX = -1, currentMouseY = -1;
-	var horzvert = undefined;
-	scaleCanvas();
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+	<script>
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
 
-	//OBJECT DEFINITIONS
-
-	function Tile(x,y,r,value,row,column){
-		this.x = x;
-		this.y = y;
-		this.r = r/2;
-		this.value = value;
-		this.tx = this.x;
-		this.ty = this.y;
-		this.row = row;
-		this.column = column;
-		this.spacing = 10;
-		this.targetSpacing = this.spacing;
-
-		this.draw = function(){
-			ctx.fillStyle= this.value;
-			//ctx.fillRect(this.x,this.y,this.r,this.r);
-			ctx.beginPath();
-			ctx.arc(this.x+this.r, this.y+this.r,this.r-this.spacing,0,2*Math.PI);
-			ctx.fill();
-			ctx.closePath();
-
-			if(DEBUG){
-				ctx.fillStyle='#000';
-				ctx.font = "20px helvetica";
-				ctx.fillText(this.row+","+this.column,this.x,this.y);
-			}
+		var DEBUG = false;
+		var moveDampner = 6.5; //Higher means slower.
+		var gridX = 6;
+		var gridY = 6;
+		var colorArray = ['#F16745','#FFC65D','#7BC8A4','#4CC3D9','#93648D','#828282'];
+		var tileScaleX = 0; var tileScaleY = 0;
+		var tiles = [];
+		function scaleCanvas(){
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+			tileScaleX = innerWidth/gridX;
+			tileScaleY = innerHeight/gridY;
 		}
 
-		this.update = function(){
-			if(this.spacing > this.targetSpacing){
-				this.spacing-= Math.abs(this.spacing-this.targetSpacing)/2;
-			} else if(this.spacing < this.targetSpacing){
-				this.spacing+= Math.abs(this.spacing-this.targetSpacing)/2;
-			}
-			if(this.x < this.tx){
-				this.x += Math.abs((this.tx-this.x)/speedDampner);
-			} else if(this.x > this.tx){
-				this.x -= Math.abs((this.x-this.tx)/speedDampner);
-			}
-
-			if(this.y < this.ty){
-				this.y += Math.abs((this.ty-this.y)/speedDampner);
-			} else if(this.y > this.ty){
-				this.y -= Math.abs((this.y-this.ty)/speedDampner);
-			}
-
-			this.draw();
-		}
-	}
-
-	//Object containers
-	var tiles = [];
-	for(var r = 0; r < rows; r++){
-		var col = [];
-		for(var c = 0; c < columns; c++){
-			var randValue = Math.floor(Math.random()*colorArray.length);
-			var xOffset = (innerWidth-(columns*tileScale))/2;
-			var yOffset = (innerHeight-(rows*tileScale))/2;
-			col.push(new Tile(c*tileScale+xOffset,r*tileScale+yOffset,tileScale,colorArray[randValue],r,c));
-		}
-		tiles.push(col);
-	}
-
-	//Animate and render
-	function animate(){
-		window.requestAnimationFrame(animate);
-		ctx.clearRect(0,0,innerWidth,innerHeight);
-
-		if(drag){
-			//Determine the drag direction from the starting mousedown position
-			//The drag direction needs to exceed a minimum distance before we can start moving... 
-			var horzDist = Math.abs(currentMouseX-mouseDownX);
-			var vertDist = Math.abs(currentMouseY-mouseDownY);
-			if(getDistance(currentMouseX,currentMouseY,mouseDownX,mouseDownY) > tileScale/2 && horzvert == undefined){
-				//Now we need to determine direction
-				if(horzDist > vertDist && affectedRow.length > 0){
-					horzvert = 'horz';
-				} else if(vertDist > horzDist && affectedColumn.length > 0){
-					horzvert = 'vert';
-				}
-			}
-			if(horzvert != undefined){
-				if(horzvert == 'horz'){
-					//HORIZONTAL MOVEMENT-
-					resetAffectedColumn();
-					if(horzDist > tileScale){
-						if(currentMouseX < mouseDownX){ //LEFT
-							cycle(-1,affectedRow);
-						} else if(currentMouseX > mouseDownX){ //RIGHT
-							cycle(1,affectedRow);
-						}
-					}
-					resetAffectedRow();
-				} else if(horzvert == 'vert'){
-					//VERTICAL MOVEMENT- 
-					resetAffectedRow();
-					if(vertDist > tileScale){
-						if(currentMouseY < mouseDownY){ //UP
-							cycle(-1,affectedColumn);
-						} else if(currentMouseY > mouseDownY){//DOWN
-							cycle(1,affectedColumn);
-						}
-					}
-					resetAffectedColumn();
-				}
-			}
-		}
-
-		//Alter affected row
-		for(var i = 0; i < affectedRow.length;i++){
-			affectedRow[i].targetSpacing = 30;
-		}
-
-		//Alter affected column
-		for(var i = 0; i < affectedColumn.length;i++){
-			affectedColumn[i].targetSpacing = 30;
-		}
-		if(closestTile != undefined){
-			closestTile.targetSpacing = 30;
-		}
-
-		//Update tiles
-		for(var a = 0; a < rows; a++){
-			for(var b = 0; b < columns; b++){
-					tiles[a][b].update();
-			}
-		}
-
-	}
-
-	function cycleRow(amt,group){
-		//Carousel row here
-	}
-
-	function cycleColumn(amt,group){
-		//Carousel column here
-	}
-
-	function scaleCanvas(){
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight-4;
-		tileScale = (innerWidth*0.9)/columns;
-		if(innerWidth>innerHeight){
-			var temp = columns;
-			columns = rows;
-			rows = temp;
-			tileScale = (innerHeight*0.8)/rows;
-		}
-	}	
-
-	function getClosestTile(x,y){
-		var close = undefined;
-		for(var a = 0; a < rows; a++){
-			if(close == undefined){
-				for(var b = 0; b < columns; b++){
-					if(tiles[a][b].x < x 
-						&& tiles[a][b].x+tileScale > x
-						&& tiles[a][b].y < y
-						&& tiles[a][b].y+tileScale > y){
-						if(getDistance(x,y,tiles[a][b].x+(tileScale/2),tiles[a][b].y+(tileScale/2))<tileScale/2){
-							close = tiles[a][b];
-						}
-						break;
+		function Tile(x,y,w,h,r,c,col){
+			this.x = x; this.y = y; this.w = w; this.h = h; this.r = r; this.c = c;
+			this.col = col; this.dx = this.x; this.dy = this.y;
+			this.moveX = false; this.moveY = false;
+			this.affected = -1;
+			this.paired = undefined;
+			this.draw = function(){
+				ctx.fillStyle= this.col;
+				ctx.fillRect(this.x, this.y, this.w+1, this.h+1);
+				if(DEBUG){
+					ctx.fillStyle='#FFF';
+					ctx.fillText(this.r+","+this.c,this.x+5,this.y+10);
+					if(this.affected){
+						ctx.fillText(this.affected,this.x+5,this.y+25);
 					}
 				}
 			}
-		}
-		return close;
-	}
 
-	function highlightRow(selected){
-		for(var a = 0; a < rows; a++){
-			for(var b = 0; b < columns; b++){
-				if(Math.abs(tiles[a][b].y-selected.y)<tileScale/2){
-					affectedRow.push(tiles[a][b]);
+			this.update = function(){
+				if(this.x-this.dx<-0.5){
+					this.x += Math.abs(this.dx-this.x)/moveDampner;
+					this.moveX = true;
+				} else if(this.x-this.dx>0.5){
+					this.x -= Math.abs(this.x-this.dx)/moveDampner;
+					this.moveX = true;
+				} else {
+					this.moveX = false;
 				}
-			} 
-		}
-	}
 
-	function highlightColumn(selected){
-		for(var a = 0; a < rows; a++){
-			for(var b = 0; b < columns; b++){
-				if(Math.abs(tiles[a][b].x-selected.x)<tileScale/2){
-					affectedColumn.push(tiles[a][b]);
+				if(this.y-this.dy>0.5){
+					this.y -= Math.abs(this.y-this.dy)/moveDampner;
+					this.moveY = true;
+				} else if(this.y-this.dy<-0.5){
+					this.y += Math.abs(this.dy-this.y)/moveDampner;
+					this.moveY = true;
+				} else {
+					this.moveY = false;
+				}
+				this.draw();
+			}
+
+		}
+
+		function tilesMoving(){
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					if(tiles[i][j].moveX || tiles[i][j].moveY){
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+
+
+		function getNeighbors(x,y){
+			var neighbors = [];
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					if(tiles[i][j].x > x+tileScaleX-5 && tiles[i][j].x < x+(tileScaleX*2)-5){ //RIGHT
+						if(tiles[i][j].y < y+5 && tiles[i][j].y > y-5){
+							neighbors.push(tiles[i][j]);
+						}
+					}
+					if(tiles[i][j].x < x+5 && tiles[i][j].x > x-5){
+						if(tiles[i][j].y > y+tileScaleY-5 && tiles[i][j].y < y+(tileScaleY*2)-5){ //DOWN
+							neighbors.push(tiles[i][j]);
+						}
+					}
+				}
+			}
+			return neighbors;
+		}
+
+		function getRow(t){
+			var arow = [];
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					if(tiles[i][j].y > t.y-5 && tiles[i][j].y < t.y+5){
+						arow.push(tiles[i][j]);
+					}
+				}
+			}
+			arow.sort(function(a,b){
+				return a.x-b.x;
+			});
+			return arow;
+		}
+
+		function getCol(t){
+			var acol = [];
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					if(tiles[i][j].x > t.x-5 && tiles[i][j].x < t.x+5){
+						acol.push(tiles[i][j]);
+					}
+				}
+			}
+			acol.sort(function(a,b){
+				return a.y-b.y;
+			});
+			return acol;
+		}
+
+		function buildGrid(){
+			tiles = [];
+			for(var y = 0; y < gridY; y++){
+				var row = [];
+				for(var x =0; x < gridX; x++){
+					var color = colorArray[Math.floor(Math.random()*colorArray.length)];
+					row.push(new Tile(x*tileScaleX,y*tileScaleY,tileScaleX,tileScaleY,x,y,color));
+				}
+				tiles.push(row);
+			}
+		}
+
+		function scaleGrid(){
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					tiles[i][j].x = tiles[i][j].dx = i*tileScaleX;
+					tiles[i][j].y = tiles[i][j].dy = j*tileScaleY;
+					tiles[i][j].w = tileScaleX;
+					tiles[i][j].h = tileScaleY;
 				}
 			}
 		}
-	}
 
-	function getDistance(x1,y1,x2,y2){
-		return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
-	}
+		function animate(){
+			window.requestAnimationFrame(animate);
+			ctx.clearRect(0,0,innerWidth,innerHeight);
 
-	function resetAffectedRow(){
-		for(var i = 0; i < affectedRow.length; i++){
-			if(affectedRow[i] != closestTile){
-				affectedRow[i].targetSpacing = 10;
+			for(var i = 0; i < tiles.length; i++){
+				for(var j = 0; j < tiles[i].length; j++){
+					tiles[i][j].update();
+				}
+			}
+
+			if(drag){
+				if(dir != 0){
+					if(dir == -1){ //Horizontal
+						var arow = getRow(selected);
+						for(var i = 0; i < arow.length; i++){
+							arow[i].affected = i;
+						}
+						if(!tilesMoving()){
+							if(Math.abs(mx-cx) > tileScaleX/2){
+								if(mx-cx > 0){
+									arow.push(arow[0]);
+									arow.shift();
+									for(var i = 0; i < arow.length; i++){
+										arow[i].dx = i*tileScaleX;
+									}
+								} else {
+									arow.unshift(arow[arow.length-1]);
+									arow.length = arow.length-1;
+									for(var i = 0; i < arow.length; i++){
+										arow[i].dx = i*tileScaleX;
+									}
+								}
+							}
+						}
+					} else if(dir == 1){ //Vertical
+						var acol = getCol(selected);
+						for(var i =0; i < acol.length; i++){
+							acol[i].affected = i;
+						}
+						if(!tilesMoving()){
+							if(Math.abs(my-cy)>tileScaleY/2){
+								if(my-cy > 0){
+									acol.push(acol[0]);
+									acol.shift();
+									for(var i = 0; i < acol.length; i++){
+										acol[i].dy = i*tileScaleY;
+									}
+								} else {
+									acol.unshift(acol[acol.length-1]);
+									acol.length = acol.length-1;
+									for(var i = 0; i < acol.length; i++){
+										acol[i].dy = i*tileScaleY;
+									}
+								}
+							}
+						}
+					}
+				}
+			} else {
+				validateGrid();
+			}
+
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					if(tiles[i][j].paired){
+						ctx.beginPath();
+						ctx.moveTo(tiles[i][j].x+(tileScaleX/2), tiles[i][j].y+(tileScaleY/2));
+						ctx.lineTo(tiles[i][j].paired.x+(tileScaleX/2), tiles[i][j].paired.y+(tileScaleY/2));
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
 			}
 		}
-		affectedRow = [];
-	}
 
-	function resetAffectedColumn(){
-		for(var i = 0; i < affectedColumn.length; i++){
-			if(affectedColumn[i]  != closestTile){
-				affectedColumn[i].targetSpacing = 10;
-			}
-		}
-		affectedColumn = [];
-	}
-
-	//Input
-	var closestOffsetX = -1, closestOffsetY = -1;
-	var resetX = -1, resetY = -1;
-	window.addEventListener('mousedown',function(evt){MOUSEDOWNEVENT(evt);});
-	window.addEventListener('mousemove',function(evt){MOUSEMOVEEVENT(evt);});
-	window.addEventListener('mouseup',function(evt){MOUSEUPEVENT(evt);});
 		
 
-	function MOUSEDOWNEVENT(evt){
-		closestTile = getClosestTile(evt.pageX,evt.pageY);
-		if(closestTile != undefined){
-			//Let's highlight the row and column for the selected tile
-			resetX = closestTile.x;
-			resetY = closestTile.y;
-			highlightRow(closestTile);
-			highlightColumn(closestTile);
-			mouseDownX = evt.pageX;
-			mouseDownY = evt.pageY;
+		var selected = undefined;
+		function grabSelected(x,y){
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					if(x < tiles[i][j].x+tileScaleX && x > tiles[i][j].x && y < tiles[i][j].y+tileScaleY && y > tiles[i][j].y){
+						//tiles[i][j] is the tile we clicked on. let's now scan the rows/columns for pieces to impact
+						selected = tiles[i][j];
+						
+					}
+				}
+			}
+		}
+
+		//Control variables
+		var mx =-1,my=-1;
+		var drag = false;
+		var dir = 0;
+		var cx = -1, cy = -1;
+
+		function inputStart(evt){
+			clearPairing();
+			if(evt.changedTouches != undefined){
+				var touches = evt.changedTouches;
+				if(touches.length > 0){
+					mx = touches[0].pageX;
+					my = touches[0].pageY;
+				} 
+			} else {
+				mx = evt.pageX;
+				my = evt.pageY;
+			}
+			grabSelected(mx,my);
 			drag = true;
 		}
-	}
 
-	
-	function MOUSEUPEVENT(evt){
-		//TODO: Set the new positions of the altered tiles. 
-		resetAffectedRow();
-		resetAffectedColumn();
-		if(closestTile != undefined){
-			resetX = -1;
-			resetY = -1;
-			closestTile.targetSpacing = 10;
-			closestTile = undefined;
+		function inputMove(evt){
+			if(drag){
+				if(evt.changedTouches != undefined){
+					var touches = evt.changedTouches;
+					if(touches.length > 0){
+						cx = touches[0].pageX;
+						cy = touches[0].pageY;
+					}
+				} else {
+					cx = evt.pageX;
+					cy = evt.pageY;
+				}
+
+				if(dir == 0){
+					if(Math.abs(cx-mx) > tileScaleX/4 || Math.abs(cy-my) > tileScaleY/4){
+						if(Math.abs(cx-mx) > Math.abs(cy-my)){ //Horizontal
+							dir = -1;
+						} else {
+							dir = 1;
+						}
+					}
+				}
+			}
 		}
-		drag = false;
-		horzvert= undefined;
-	}
 
-	
-	function MOUSEMOVEEVENT(evt){
-		currentMouseX = evt.pageX;
-		currentMouseY = evt.pageY;
-	};
-	animate();
-</script>
-</body>
+		function inputCancel(evt){
+			inputEnd();
+		}
+
+		function inputEnd(){
+			dir = 0;
+			drag = false;
+			selected = undefined;
+			clearAffected();
+		}
+
+		window.addEventListener('touchstart', inputStart, false);
+		window.addEventListener('touchmove',inputMove,false);
+		window.addEventListener('touchcancel',inputCancel,false);
+		window.addEventListener('touchend',inputEnd,false);
+
+		window.addEventListener('mousedown',inputStart,false);
+		window.addEventListener('mousemove',inputMove,false);
+		window.addEventListener('mouseup',inputEnd,false);
+
+		window.addEventListener('resize',function(){
+			scaleCanvas();
+			scaleGrid();
+		});
+
+		function clearAffected(){
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					tiles[i][j].affected = -1;
+				}
+			}
+		}
+
+		function clearPairing(){
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					tiles[i][j].paired = undefined;
+				}
+			}
+		}
+
+
+		function validateGrid(){
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					var n = getNeighbors(tiles[i][j].x, tiles[i][j].y);
+					for(var a = 0; a < n.length; a++){ //iterate through tile neighbors
+						if(n[a].col == tiles[i][j].col){ //MATCHIE BESTIES
+							if(n[a].paired == undefined){
+								if(tiles[i][j].paired == undefined){
+									n[a].paired = tiles[i][j];
+								} else {
+									n[a].paired = tiles[i][j].paired;
+								}
+							} else {
+								tiles[i][j].paired = n[a].paired;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		scaleCanvas();
+		buildGrid();
+		animate();
+	</script>
+	</body>
 </html>
