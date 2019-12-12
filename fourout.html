@@ -22,7 +22,7 @@
 		var canvas = document.getElementById('canvas');
 		var ctx = canvas.getContext('2d');
 
-		var DEBUG = false;
+		var DEBUG = true;
 		var moveDampner = 6.5; //Higher means slower.
 		var gridX = 6;
 		var gridY = 6;
@@ -42,14 +42,16 @@
 			this.moveX = false; this.moveY = false;
 			this.affected = -1;
 			this.paired = undefined;
+			this.owned = [];
 			this.draw = function(){
 				ctx.fillStyle= this.col;
 				ctx.fillRect(this.x, this.y, this.w+1, this.h+1);
 				if(DEBUG){
 					ctx.fillStyle='#FFF';
 					ctx.fillText(this.r+","+this.c,this.x+5,this.y+10);
-					if(this.affected){
-						ctx.fillText(this.affected,this.x+5,this.y+25);
+					ctx.fillText(this.owned.length,this.x+5,this.y+20);
+					if(this.affected > -1){
+						ctx.fillText(this.affected,this.x+5,this.y+30);
 					}
 				}
 			}
@@ -226,14 +228,18 @@
 				validateGrid();
 			}
 
-			for(var i = 0;i < tiles.length; i++){
-				for(var j = 0;j< tiles[i].length;j++){
-					if(tiles[i][j].paired){
-						ctx.beginPath();
-						ctx.moveTo(tiles[i][j].x+(tileScaleX/2), tiles[i][j].y+(tileScaleY/2));
-						ctx.lineTo(tiles[i][j].paired.x+(tileScaleX/2), tiles[i][j].paired.y+(tileScaleY/2));
-						ctx.stroke();
-						ctx.closePath();
+			if(DEBUG){
+				for(var i = 0;i < tiles.length; i++){
+					for(var j = 0;j< tiles[i].length;j++){
+						if(tiles[i][j].owned.length > 0){
+							for(var o = 0; o < tiles[i][j].owned.length; o++){
+								ctx.beginPath();
+								ctx.moveTo(tiles[i][j].x+(tileScaleX/2), tiles[i][j].y+(tileScaleY/2));
+								ctx.lineTo(tiles[i][j].owned[o].x+(tileScaleX/2), tiles[i][j].owned[o].y+(tileScaleY/2));
+								ctx.stroke();
+								ctx.closePath();
+							}
+						}
 					}
 				}
 			}
@@ -264,10 +270,12 @@
 			clearPairing();
 			if(evt.changedTouches != undefined){
 				var touches = evt.changedTouches;
-				if(touches.length > 0){
+				if(touches.length > 0 && touches.length < 2){
 					mx = touches[0].pageX;
 					my = touches[0].pageY;
-				} 
+				} else {
+					DEBUG = !DEBUG;
+				}
 			} else {
 				mx = evt.pageX;
 				my = evt.pageY;
@@ -324,6 +332,7 @@
 		window.addEventListener('resize',function(){
 			scaleCanvas();
 			scaleGrid();
+			clearPairing();
 		});
 
 		function clearAffected(){
@@ -338,30 +347,47 @@
 			for(var i = 0;i < tiles.length; i++){
 				for(var j = 0;j< tiles[i].length;j++){
 					tiles[i][j].paired = undefined;
+					tiles[i][j].owned = [];
 				}
 			}
 		}
 
 
 		function validateGrid(){
-			for(var i = 0;i < tiles.length; i++){
-				for(var j = 0;j< tiles[i].length;j++){
+			clearPairing();
+			for(var i = tiles.length-1; i > -1; i--){
+				for(var j = tiles[i].length-1; j > -1; j--){
 					var n = getNeighbors(tiles[i][j].x, tiles[i][j].y);
 					for(var a = 0; a < n.length; a++){ //iterate through tile neighbors
 						if(n[a].col == tiles[i][j].col){ //MATCHIE BESTIES
-							if(n[a].paired == undefined){
-								if(tiles[i][j].paired == undefined){
-									n[a].paired = tiles[i][j];
-								} else {
-									n[a].paired = tiles[i][j].paired;
-								}
-							} else {
-								tiles[i][j].paired = n[a].paired;
+							//We need all the matches to link back to a single tile
+							
+						}
+					}
+				}
+			}
+		}
+
+		function findOwner(tile){
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0;j< tiles[i].length;j++){
+					if(tiles[i][j].owned.length > 0){
+						for(var a = 0; a < tiles[i][j].owned.length; a++){
+							if(tiles[i][j].owned[a] == tile){
+								return tiles[i][j];
 							}
 						}
 					}
 				}
 			}
+			return undefined;
+		}
+
+		function transferOwner(to, from){
+			for(var a = 0; a < from.owned.length;a++){
+				to.owned.push(from.owned[a]);
+			}
+			to.owned.push(from);
 		}
 
 		scaleCanvas();
