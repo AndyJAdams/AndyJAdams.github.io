@@ -45,7 +45,23 @@
 			this.owned = [];
 			this.draw = function(){
 				ctx.fillStyle= this.col;
-				ctx.fillRect(this.x, this.y, this.w+1, this.h+1);
+				ctx.beginPath();
+				ctx.arc(this.x+tileScaleX/2,this.y+tileScaleY/2,(tileScaleX+tileScaleY)/8,0,2*Math.PI);
+				ctx.fill();
+				ctx.closePath();
+				var n = getNeighbors(this.x,this.y);
+				for(var i = 0; i < n.length; i++){
+					if(n[i].col == this.col){
+						ctx.strokeStyle=this.col;
+						ctx.lineWidth=(tileScaleX+tileScaleY)/4;
+						ctx.beginPath();
+						ctx.moveTo(this.x+tileScaleX/2,this.y+tileScaleY/2);
+						ctx.lineTo(n[i].x+tileScaleX/2, n[i].y+tileScaleY/2);
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+				//ctx.fillRect(this.x, this.y, this.w+1, this.h+1);
 				if(DEBUG){
 					ctx.fillStyle='#FFF';
 					ctx.fillText(this.r+","+this.c,this.x+5,this.y+10);
