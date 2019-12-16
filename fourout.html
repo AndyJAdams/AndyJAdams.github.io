@@ -176,7 +176,7 @@
 				tiles.push(row);
 			}
 
-			lockTiles(Math.floor(Math.random()*10));
+			lockTiles(Math.floor(Math.random()*5));
 		}
 
 		function lockTiles(count){
@@ -188,15 +188,24 @@
 		}
 
 		function drawLocks(){
+			var interior = (tileScaleX+tileScaleY)/18;
 			for(var i = 0;i < tiles.length; i++){
 				for(var j = 0;j< tiles[i].length;j++){
 					if(tiles[i][j].locked){
-						ctx.fillStyle='#FFF';
+						ctx.strokeStyle='#FFF';
+						ctx.lineCap = "round";
+						ctx.lineWidth = interior/2;
 						var t = tiles[i][j];
 						ctx.beginPath();
-						ctx.arc(t.x+(tileScaleX/2),t.y+(tileScaleY/2),(tileScaleX+tileScaleY)/12,0,2*Math.PI);
-						ctx.fill();
+						ctx.moveTo(t.x+(tileScaleX/2)-interior,t.y+(tileScaleY/2)-interior);
+						ctx.lineTo(t.x+(tileScaleX/2)+interior,t.y+(tileScaleY/2)+interior);
+						ctx.moveTo(t.x+(tileScaleX/2)+interior,t.y+(tileScaleY/2)-interior);
+						ctx.lineTo(t.x+(tileScaleX/2)-interior,t.y+(tileScaleY/2)+interior);
+						ctx.stroke();
 						ctx.closePath();
+						// ctx.arc(t.x+(tileScaleX/2),t.y+(tileScaleY/2),(tileScaleX+tileScaleY)/12,0,2*Math.PI);
+						// ctx.fill();
+						// ctx.closePath();
 					}
 				}
 			}
