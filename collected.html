@@ -10,7 +10,6 @@
 			touch-action: none;
 			position: fixed;
 		}
-
 		canvas{
 			touch-action: none;
 		}
@@ -21,10 +20,11 @@
 <script type='text/javascript'>
     const DEBUG = true;
     var colorArray = ['#000','#55415F','#646964','#D77355','#508CD7','#64B964','#E6C86E','#CCC'];
-    
+    var whiteList = [];
+
     var tiles = [];
     var positions = [];
-    var grid = {col: 3,row: 5};
+    var grid = {col: 5,row: 9};
     var tileScale = {x:0,y:0};
     var selected = undefined;
     var start = {x:-1,y:-1};
@@ -62,13 +62,20 @@
         this.x = x; this.y = y; this.w = w; this.h = h; this.row = row; this.column = column;
         this.dx = this.x; this.dy = this.y;
         this.value = value;
-        
+        this.lastCollected = undefined;
         this.draw = function(){
             ctx.fillStyle= colorArray[this.value];
             ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
             if(DEBUG){
                 ctx.fillStyle='#FFF';
                 ctx.fillText(this.column+","+this.row,this.x+2,this.y+20);
+                if(this.lastCollected != undefined){
+                    ctx.beginPath();
+                    ctx.moveTo(this.x+30,this.y+50);
+                    ctx.lineTo(this.lastCollected.x+30,this.lastCollected.y+50);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
             }
         }
         
@@ -216,17 +223,96 @@
         return count;
     }
     
+
     function validateGrid(){
+        var blacklist = [];
+        var collections = [];
         for(var i = 0; i < tiles.length; i++){
             for(var j = 0; j < tiles[i].length; j++){
                 var t = tiles[i][j];
-                if(!checkNeigbors(t)){
-                    console.log("FAILBOAT");
+                // if(!checkNeigbors(t)){
+                //     console.log("FAILBOAT");
+                //     return false;
+                // }
+
+                if(!blacklist.includes(t)){
+                    var res = recursiveCheck(t);
+                    console.log(i+","+j+" " + res.length);
+                    for(var k = 0; k < res.length; k++){
+                        blacklist.push(res[k]);
+                    }
+                    collections.push(res);
+                }
+                whiteList = [];
+            }
+
+        }
+
+        //Now we check if any of the collections have values that match other collections
+        //This would mean that we have two groups of the same value
+        for(var i = 0; i < collections.length; i++){
+            var checkVal = collections[i][0].value;
+            for(var j = 0; j < collections.length; j++){
+                if(collections[j][0].value == checkVal && j != i){
+                    console.log(i + " v " + j + " " + collections[i].length + "/" + collections[j].length);
                     return false;
                 }
             }
         }
-        console.log("WINNER???");
+        console.log("WINNER!");
+        buildGrid();
+        return true;
+    }
+
+    function recursiveCheck(tile, calling=undefined){
+        var result = []; var res = [];
+        result.push(tile);
+        whiteList.push(tile);
+        if(tile.column+1 < grid.col){ //RIGHT
+            if(tiles[tile.column+1][tile.row].value == tile.value && tiles[tile.column+1][tile.row] != calling){
+                if(!whiteList.includes(tiles[tile.column+1][tile.row])){
+                    tiles[tile.column+1][tile.row].lastCollected = tile;
+                    res = recursiveCheck(tiles[tile.column+1][tile.row],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            } 
+        }
+        if(tile.row+1<grid.row){ //DOWN
+            if(tiles[tile.column][tile.row+1].value == tile.value && tiles[tile.column][tile.row+1] != calling){
+                if(!whiteList.includes(tiles[tile.column][tile.row+1])){
+                    tiles[tile.column][tile.row+1].lastCollected = tile;
+                    res = recursiveCheck(tiles[tile.column][tile.row+1],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            } 
+        }
+        if(tile.column-1 > -1){ //LEFT
+            if(tiles[tile.column-1][tile.row].value == tile.value && tiles[tile.column-1][tile.row] != calling){
+                if(!whiteList.includes(tiles[tile.column-1][tile.row])){
+                    tiles[tile.column-1][tile.row].lastCollected = tile;
+                    res = recursiveCheck(tiles[tile.column-1][tile.row],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            }
+        }
+        if(tile.row-1 > -1){ //UP
+            if(tiles[tile.column][tile.row-1].value == tile.value && tiles[tile.column][tile.row-1] != calling){
+                if(!whiteList.includes(tiles[tile.column][tile.row-1])){
+                    tiles[tile.column][tile.row-1].lastCollected = tile;
+                    res = recursiveCheck(tiles[tile.column][tile.row-1],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            }  
+        }
+        return result;
     }
     
     //*** INPUT SECTION **//
@@ -337,3 +423,4 @@
 </script>
 </body>
 </html>
+About
