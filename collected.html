@@ -19,7 +19,7 @@
 <body>
 <canvas id='canvas'></canvas>
 <script type='text/javascript'>
-    const DEBUG = true;
+    const DEBUG = false;
     var colorArray = ['#000','#55415F','#646964','#D77355','#508CD7','#64B964','#E6C86E','#CCC'];
     var whiteList = [];
 
@@ -27,6 +27,7 @@
     var positions = [];
     var grid = {col: 4,row: 6};
     var tileScale = {x:0,y:0};
+    var tileRadius = 0;
     var selected = undefined;
     var start = {x:-1,y:-1};
     var offset = {x:-1,y:-1};
@@ -42,6 +43,10 @@
         tileScale.y = innerHeight/grid.row;
         moveSpeed.x = tileScale.x/4;
         moveSpeed.y = tileScale.y/4;
+        tileRadius = tileScale.x*0.25;
+        if(tileScale.y < tileScale.x){
+            tileRadius = tileScale.y*0.25;
+        }
     }
     
     function scaleGrid(){
@@ -53,6 +58,12 @@
                  t.h = tileScale.y;
              })
         });
+        for(var i =0; i < positions.length; i++){
+            for(var j = 0; j < positions[i].length; j++){
+                positions[i][j].x = i*tileScale.x;
+                positions[i][j].y = j*tileScale.y; 
+            }
+        }
     }
     
     function Position(x,y){
@@ -67,9 +78,14 @@
         this.draw = function(){
             if(this.value > -1){ //EMPTY TILES DO NOT RENDER
                 ctx.fillStyle= colorArray[this.value];
-                ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
+                //ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
+                ctx.beginPath();
+                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),tileRadius,0,2*Math.PI);
+                ctx.fill();
+                ctx.closePath();
                 if(this.locked){
                     ctx.strokeStyle='#FFF';
+                    ctx.lineWidth = 4;
                     ctx.beginPath();
                     ctx.moveTo(this.x,this.y);
                     ctx.lineTo(this.x+this.w, this.y+this.h);
@@ -154,18 +170,17 @@
             if(tiles[tcol][i].value > -1 && !tiles[tcol][i].locked){
                 retCol.unshift(tiles[tcol][i]);
             } else {
-                console.log("A");
+                
                 i = -1;
             }
         }
- console.log(trow+1 + " "+grid.y);
+ 
         //Add tiles from below
         for(var j = trow+1; j < grid.row; j++){
-           
             if(tiles[tcol][j].value > -1 && !tiles[tcol][j].locked){
                 retCol.push(tiles[tcol][j]);
             } else {
-                console.log("B");
+                
                 break;
             }
         }
@@ -270,12 +285,13 @@
             var checkVal = collections[i][0].value;
             for(var j = 0; j < collections.length; j++){
                 if(collections[j][0].value == checkVal && j != i){
-                    console.log(i + " v " + j + " " + collections[i].length + "/" + collections[j].length);
                     return false;
                 }
             }
         }
         console.log("WINNER!");
+        grid.row = Math.floor(Math.random()*4)+3;
+        grid.col = Math.floor(Math.random()*6)+3;
         buildGrid();
         return true;
     }
@@ -439,4 +455,3 @@
 </script>
 </body>
 </html>
-About
