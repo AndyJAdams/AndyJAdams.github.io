@@ -3,6 +3,7 @@
 <head>
 	<meta lang="en/us"/>
 	<meta encoding="UTF-8">
+    <meta charset="UTF-8">
 	<title>TEST_BED</title>
 	<style>
 		body{
@@ -24,7 +25,7 @@
 
     var tiles = [];
     var positions = [];
-    var grid = {col: 5,row: 9};
+    var grid = {col: 4,row: 6};
     var tileScale = {x:0,y:0};
     var selected = undefined;
     var start = {x:-1,y:-1};
@@ -61,22 +62,35 @@
     function Tile(x,y,w,h,row,column, value){
         this.x = x; this.y = y; this.w = w; this.h = h; this.row = row; this.column = column;
         this.dx = this.x; this.dy = this.y;
-        this.value = value;
+        this.value = value; this.locked = false;
         this.lastCollected = undefined;
         this.draw = function(){
-            ctx.fillStyle= colorArray[this.value];
-            ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
-            if(DEBUG){
-                ctx.fillStyle='#FFF';
-                ctx.fillText(this.column+","+this.row,this.x+2,this.y+20);
-                if(this.lastCollected != undefined){
+            if(this.value > -1){ //EMPTY TILES DO NOT RENDER
+                ctx.fillStyle= colorArray[this.value];
+                ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
+                if(this.locked){
+                    ctx.strokeStyle='#FFF';
                     ctx.beginPath();
-                    ctx.moveTo(this.x+30,this.y+50);
-                    ctx.lineTo(this.lastCollected.x+30,this.lastCollected.y+50);
+                    ctx.moveTo(this.x,this.y);
+                    ctx.lineTo(this.x+this.w, this.y+this.h);
+                    ctx.moveTo(this.x+this.w,this.y);
+                    ctx.lineTo(this.x,this.y+this.h);
                     ctx.stroke();
                     ctx.closePath();
                 }
-            }
+                if(DEBUG){
+                    ctx.fillStyle='#FFF';
+                    ctx.fillText(this.column+","+this.row,this.x+2,this.y+20);
+                    if(this.lastCollected != undefined){
+                        ctx.beginPath();
+                        ctx.moveTo(this.x+30,this.y+50);
+                        ctx.lineTo(this.lastCollected.x+30,this.lastCollected.y+50);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                }
+
+            } 
         }
         
         this.update = function(){
@@ -92,36 +106,70 @@
             var vert = [];
             for(var k = 0; k < grid.row; k++){
                 var randColor = Math.floor(Math.random()*colorArray.length);
-                row.push(new Tile(i*tileScale.x,k*tileScale.y,tileScale.x,tileScale.y,k,i,randColor));
+                var randVal = Math.random();
+                if(randVal < 0.05){
+                    randColor = -1;
+                }
+                var nt = new Tile(i*tileScale.x,k*tileScale.y,tileScale.x,tileScale.y,k,i,randColor);
+                row.push(nt);
                 vert.push(new Position(i*tileScale.x, k*tileScale.y));
+                if(randVal > 0.95){
+                    nt.locked = true;
+                }
             }
             tiles.push(row);
             positions.push(vert);
         }
     }
-    
-    function getColumn(c){
-        var retColumn = [];
-        tiles.forEach(function(r){
-            r.forEach(function(t){
-                if(t.column == c){
-                    retColumn.push(t);
-                }
-            })
-        });
-        return retColumn;
-    }
-    
-    function getRow(r){
+
+    function getRowFromPoint(t){
         var retRow = [];
-         tiles.forEach(function(a){
-             a.forEach(function(t){
-                 if(t.row == r){
-                     retRow.push(t);
-                 }
-             })
-        });
+        retRow.push(t);
+        var trow = t.row; var tcol = t.column;
+        //Add tiles to left
+        for(var i = tcol-1; i > -1; i--){
+            if(tiles[i][trow].value > -1 && !tiles[i][trow].locked){
+                retRow.unshift(tiles[i][trow]);
+            } else {
+                break;
+            }
+        }
+        //Add tiles to right
+        for(var j = tcol+1; j < grid.col; j++){
+            if(tiles[j][trow].value > -1 && !tiles[j][trow].locked){
+                retRow.push(tiles[j][trow]);
+            } else {
+                break;
+            }
+        }
         return retRow;
+    }
+
+    function getColumnFromPoint(t){
+        var retCol = [];
+        retCol.push(t);
+        var trow = t.row; var tcol = t.column;
+        //Add tiles from above
+        for(var i = trow-1; i > -1; i--){
+            if(tiles[tcol][i].value > -1 && !tiles[tcol][i].locked){
+                retCol.unshift(tiles[tcol][i]);
+            } else {
+                console.log("A");
+                i = -1;
+            }
+        }
+ console.log(trow+1 + " "+grid.y);
+        //Add tiles from below
+        for(var j = trow+1; j < grid.row; j++){
+           
+            if(tiles[tcol][j].value > -1 && !tiles[tcol][j].locked){
+                retCol.push(tiles[tcol][j]);
+            } else {
+                console.log("B");
+                break;
+            }
+        }
+        return retCol;
     }
     
     function cycle(arr,dir=-1){
@@ -161,7 +209,7 @@
         window.requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
         
-        ctx.fillStyle='#404040';
+        ctx.fillStyle='#FFF';
         ctx.fillRect(0,0,innerWidth,innerHeight);
         
         tiles.forEach(function(r){
@@ -180,35 +228,6 @@
                 }
             }
         }
-    }
-    
-    function checkNeigbors(tile){
-        if(tile.column+1 < grid.col){
-            if(tiles[tile.column+1][tile.row].value == tile.value){
-                return true;
-            } 
-        }
-        if(tile.row+1<grid.row){
-            if(tiles[tile.column][tile.row+1].value == tile.value){
-                return true;
-            } 
-        }
-        if(tile.column-1 > -1){
-            if(tiles[tile.column-1][tile.row].value == tile.value){
-                return true;
-            }
-        }
-        if(tile.row-1 > -1){
-            if(tiles[tile.column][tile.row-1].value == tile.value){
-                return true;
-            }  
-        }
-        //We need to make sure this isn't the only one... 
-        if(valueCount(tile.value) < 2){
-            return true;
-        }
-        console.log(tile.column + "," + tile.row + " no matches found?");
-        return false;
     }
     
     function valueCount(val){
@@ -230,18 +249,15 @@
         for(var i = 0; i < tiles.length; i++){
             for(var j = 0; j < tiles[i].length; j++){
                 var t = tiles[i][j];
-                // if(!checkNeigbors(t)){
-                //     console.log("FAILBOAT");
-                //     return false;
-                // }
 
                 if(!blacklist.includes(t)){
-                    var res = recursiveCheck(t);
-                    console.log(i+","+j+" " + res.length);
-                    for(var k = 0; k < res.length; k++){
-                        blacklist.push(res[k]);
+                    if(t.value > -1){
+                        var res = recursiveCheck(t);
+                        for(var k = 0; k < res.length; k++){
+                            blacklist.push(res[k]);
+                        }
+                        collections.push(res);
                     }
-                    collections.push(res);
                 }
                 whiteList = [];
             }
@@ -358,7 +374,7 @@
                         //Horizontal
                         selected.x = x+offset.x;
                         selected.y = positions[selected.column][selected.row].y;
-                        var srow = getRow(selected.row);
+                        var srow = getRowFromPoint(selected);
                        
                         if(Math.abs(x-start.x) > tileScale.x*0.5){
                             if(x > start.x){
@@ -375,7 +391,7 @@
                         //Vertical
                         selected.y = y+offset.y;
                         selected.x = positions[selected.column][selected.row].x;
-                        var scol = getColumn(selected.column);
+                        var scol = getColumnFromPoint(selected);
                         
                         if(Math.abs(y-start.y) > tileScale.y*0.5){
                             if(y > start.y){
