@@ -19,12 +19,14 @@
 <body>
 <canvas id='canvas'></canvas>
 <script type='text/javascript'>
-    const DEBUG = false;
+    const DEBUG = true;
+    var gameover = false;
     var colorArray = ['#000','#55415F','#646964','#D77355','#508CD7','#64B964','#E6C86E','#CCC'];
     var whiteList = [];
 
     var tiles = [];
     var positions = [];
+    var links = [];
     var grid = {col: 4,row: 6};
     var tileScale = {x:0,y:0};
     var tileRadius = 0;
@@ -72,51 +74,76 @@
     
     function Tile(x,y,w,h,row,column, value){
         this.x = x; this.y = y; this.w = w; this.h = h; this.row = row; this.column = column;
-        this.dx = this.x; this.dy = this.y;
+        this.dx = this.x; this.dy = this.y; this.radius = 0; this.growRate = 2;
         this.value = value; this.locked = false;
-        this.lastCollected = undefined;
         this.draw = function(){
             if(this.value > -1){ //EMPTY TILES DO NOT RENDER
                 ctx.fillStyle= colorArray[this.value];
                 //ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
                 ctx.beginPath();
-                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),tileRadius,0,2*Math.PI);
+                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),this.radius,0,2*Math.PI);
                 ctx.fill();
                 ctx.closePath();
-                if(this.locked){
-                    ctx.strokeStyle='#FFF';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.moveTo(this.x,this.y);
-                    ctx.lineTo(this.x+this.w, this.y+this.h);
-                    ctx.moveTo(this.x+this.w,this.y);
-                    ctx.lineTo(this.x,this.y+this.h);
-                    ctx.stroke();
-                    ctx.closePath();
-                }
                 if(DEBUG){
-                    ctx.fillStyle='#FFF';
-                    ctx.fillText(this.column+","+this.row,this.x+2,this.y+20);
-                    if(this.lastCollected != undefined){
-                        ctx.beginPath();
-                        ctx.moveTo(this.x+30,this.y+50);
-                        ctx.lineTo(this.lastCollected.x+30,this.lastCollected.y+50);
-                        ctx.stroke();
-                        ctx.closePath();
-                    }
+                    ctx.fillStyle='#222';
+                    ctx.fillText(this.column+","+this.row + " " + this.value,this.x+2,this.y+20);
                 }
 
             } 
         }
         
         this.update = function(){
-            
+            if(!gameover && this.value > -1){
+                if(this.radius < tileRadius){
+                    this.radius += this.growRate;
+                }
+            } else {
+                if(this.radius > 0){
+                    this.radius -= this.growRate;
+                }
+            }
             this.draw();
         }
     }
+
+    function Link(start, end){
+        this.start = start; this.end = end;
+        this.draw = function(){
+            if(start != undefined && end != undefined){
+                var a = Math.pow(Math.abs(start.x-end.x),2);
+                var b = Math.pow(Math.abs(start.y-end.y),2);
+                var dist = Math.sqrt(a+b);
+                var limit = Math.sqrt(Math.pow(tileScale.x,2)+Math.pow(tileScale.y,2));
+                if(dist < limit){
+                    ctx.strokeStyle = colorArray[start.value];
+                    ctx.lineWidth = start.radius*2;
+                    ctx.beginPath();
+                    ctx.moveTo(start.x+(tileScale.x/2),start.y+(tileScale.y/2));
+                    ctx.lineTo(end.x+(tileScale.x/2),end.y+(tileScale.y/2));
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+            }
+        }
+    }
+
+    function drawLocks(){
+         tiles.forEach(function(r){
+             r.forEach(function(t){
+                if(t.locked && t.value > -1){
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(t.x+(tileScale.x/2),t.y+(tileScale.y/2),t.radius+6,0,2*Math.PI);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+             })
+        });
+    }
     
     function buildGrid(){
-        tiles = [];
+        tiles = []; positions = []; links = [];
         for(var i = 0; i < grid.col; i++){
             var row = [];
             var vert = [];
@@ -219,6 +246,11 @@
             }
         }    
     }
+
+    //*****************************************************************
+    //*****************************************************************
+
+
     
     function animate(){
         window.requestAnimationFrame(animate);
@@ -232,13 +264,50 @@
                 t.update();
              })
         });
+
+        if(gameover){
+            if(boardClearCheck()){
+                //Restart the map
+                newPuzzle();
+                gameover = false;
+            }
+        } else {
+            links.forEach(function(l){
+                l.draw();
+            });
+            drawLocks();
+        }
+    }
+
+    //*****************************************************************
+    //*****************************************************************
+
+    function newPuzzle(){
+        start.x = -1;
+        start.y = -1;
+        grid.row = Math.floor(Math.random()*4)+3;
+        grid.col = Math.floor(Math.random()*6)+3;
+        scaleCanvas();
+        buildGrid();
+        validateGrid();
+    }
+
+    function boardClearCheck(){
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                if(tiles[i][j].radius > 0){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     function getSelected(x,y){
         for(var i = 0; i < tiles.length; i++){
             for(var j = 0; j < tiles[i].length; j++){
                 var t = tiles[i][j];
-                if(t.x < x && t.x+t.w > x && t.y < y && t.y+t.h > y){
+                if(t.x < x && t.x+t.w > x && t.y < y && t.y+t.h > y && t.value > -1 && !t.locked){
                     return t;
                 }
             }
@@ -261,6 +330,7 @@
     function validateGrid(){
         var blacklist = [];
         var collections = [];
+        links = [];
         for(var i = 0; i < tiles.length; i++){
             for(var j = 0; j < tiles[i].length; j++){
                 var t = tiles[i][j];
@@ -279,8 +349,6 @@
 
         }
 
-        //Now we check if any of the collections have values that match other collections
-        //This would mean that we have two groups of the same value
         for(var i = 0; i < collections.length; i++){
             var checkVal = collections[i][0].value;
             for(var j = 0; j < collections.length; j++){
@@ -289,10 +357,6 @@
                 }
             }
         }
-        console.log("WINNER!");
-        grid.row = Math.floor(Math.random()*4)+3;
-        grid.col = Math.floor(Math.random()*6)+3;
-        buildGrid();
         return true;
     }
 
@@ -302,8 +366,8 @@
         whiteList.push(tile);
         if(tile.column+1 < grid.col){ //RIGHT
             if(tiles[tile.column+1][tile.row].value == tile.value && tiles[tile.column+1][tile.row] != calling){
+                links.push(new Link(tile,tiles[tile.column+1][tile.row]));
                 if(!whiteList.includes(tiles[tile.column+1][tile.row])){
-                    tiles[tile.column+1][tile.row].lastCollected = tile;
                     res = recursiveCheck(tiles[tile.column+1][tile.row],tile);
                     for(var i = 0; i < res.length; i++){
                         result.push(res[i]);
@@ -313,8 +377,8 @@
         }
         if(tile.row+1<grid.row){ //DOWN
             if(tiles[tile.column][tile.row+1].value == tile.value && tiles[tile.column][tile.row+1] != calling){
+                links.push(new Link(tile,tiles[tile.column][tile.row+1]));
                 if(!whiteList.includes(tiles[tile.column][tile.row+1])){
-                    tiles[tile.column][tile.row+1].lastCollected = tile;
                     res = recursiveCheck(tiles[tile.column][tile.row+1],tile);
                     for(var i = 0; i < res.length; i++){
                         result.push(res[i]);
@@ -324,8 +388,8 @@
         }
         if(tile.column-1 > -1){ //LEFT
             if(tiles[tile.column-1][tile.row].value == tile.value && tiles[tile.column-1][tile.row] != calling){
+                links.push(new Link(tile,tiles[tile.column-1][tile.row]));
                 if(!whiteList.includes(tiles[tile.column-1][tile.row])){
-                    tiles[tile.column-1][tile.row].lastCollected = tile;
                     res = recursiveCheck(tiles[tile.column-1][tile.row],tile);
                     for(var i = 0; i < res.length; i++){
                         result.push(res[i]);
@@ -335,8 +399,8 @@
         }
         if(tile.row-1 > -1){ //UP
             if(tiles[tile.column][tile.row-1].value == tile.value && tiles[tile.column][tile.row-1] != calling){
+                links.push(new Link(tile,tiles[tile.column][tile.row-1]));
                 if(!whiteList.includes(tiles[tile.column][tile.row-1])){
-                    tiles[tile.column][tile.row-1].lastCollected = tile;
                     res = recursiveCheck(tiles[tile.column][tile.row-1],tile);
                     for(var i = 0; i < res.length; i++){
                         result.push(res[i]);
@@ -370,6 +434,11 @@
         evt.preventDefault();
         inputEnd();
     });
+
+    window.addEventListener('touchstart', inputStart, false);
+    window.addEventListener('touchmove',inputMove,false);
+    window.addEventListener('touchcancel',inputCancel,false);
+    window.addEventListener('touchend',inputEnd,false);
     
     function inputStart(x,y){
         start.x = x;
@@ -379,6 +448,10 @@
         if(selected != undefined){
             offset.x = selected.x-x;
             offset.y = selected.y-y;
+        }
+
+        if(gameover){
+            start.x = -1;
         }
     }
     
@@ -433,7 +506,7 @@
         snapToPositions();
         selected = undefined;
         start.x = -1;
-        validateGrid();
+        gameover = validateGrid();
     }
     
     function snapToPositions(exc=undefined){
@@ -451,6 +524,7 @@
     scaleCanvas();
     buildGrid();
     animate();
+    validateGrid();
     
 </script>
 </body>
