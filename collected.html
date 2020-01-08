@@ -19,7 +19,7 @@
 <body>
 <canvas id='canvas'></canvas>
 <script type='text/javascript'>
-    const DEBUG = true;
+    const DEBUG = false;
     var gameover = false;
     var colorArray = ['#000','#55415F','#646964','#D77355','#508CD7','#64B964','#E6C86E','#CCC'];
     var whiteList = [];
@@ -27,7 +27,7 @@
     var tiles = [];
     var positions = [];
     var links = [];
-    var grid = {col: 4,row: 6};
+    var grid = {col: Math.floor(Math.random()*5)+3,row: Math.floor(Math.random()*9)+3};
     var tileScale = {x:0,y:0};
     var tileRadius = 0;
     var selected = undefined;
@@ -285,8 +285,8 @@
     function newPuzzle(){
         start.x = -1;
         start.y = -1;
-        grid.row = Math.floor(Math.random()*4)+3;
-        grid.col = Math.floor(Math.random()*6)+3;
+        grid.row = Math.floor(Math.random()*5)+3;
+        grid.col = Math.floor(Math.random()*9)+3;
         scaleCanvas();
         buildGrid();
         validateGrid();
@@ -435,9 +435,23 @@
         inputEnd();
     });
 
-    window.addEventListener('touchstart', inputStart, false);
-    window.addEventListener('touchmove',inputMove,false);
-    window.addEventListener('touchcancel',inputCancel,false);
+    window.addEventListener('touchstart', function(evt){
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                inputStart(touches[0].pageX,touches[0].pageY);
+            }
+        }
+    }, false);
+    window.addEventListener('touchmove', function(evt){
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                inputStart(touches[0].pageX,touches[0].pageY);
+            }
+        }
+    },false);
+    window.addEventListener('touchcancel',inputEnd,false);
     window.addEventListener('touchend',inputEnd,false);
     
     function inputStart(x,y){
