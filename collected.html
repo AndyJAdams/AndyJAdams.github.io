@@ -131,11 +131,10 @@
          tiles.forEach(function(r){
              r.forEach(function(t){
                 if(t.locked && t.value > -1){
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 4;
+                    ctx.fillStyle='#FFF';
                     ctx.beginPath();
-                    ctx.arc(t.x+(tileScale.x/2),t.y+(tileScale.y/2),t.radius+6,0,2*Math.PI);
-                    ctx.stroke();
+                    ctx.arc(t.x+(tileScale.x/2),t.y+(tileScale.y/2),t.radius/2,0,2*Math.PI);
+                    ctx.fill();
                     ctx.closePath();
                 }
              })
