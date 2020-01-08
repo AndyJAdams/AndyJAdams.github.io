@@ -45,9 +45,9 @@
         tileScale.y = innerHeight/grid.row;
         moveSpeed.x = tileScale.x/4;
         moveSpeed.y = tileScale.y/4;
-        tileRadius = tileScale.x*0.25;
+        tileRadius = tileScale.x*0.35;
         if(tileScale.y < tileScale.x){
-            tileRadius = tileScale.y*0.25;
+            tileRadius = tileScale.y*0.35;
         }
     }
     
@@ -420,43 +420,27 @@
     });
     
     
-    window.addEventListener('mousedown',function(evt){
-        evt.preventDefault();
-        inputStart(evt.pageX,evt.pageY);
-    });
-    
-    window.addEventListener('mousemove',function(evt){
-        evt.preventDefault();
-        inputMove(evt.pageX,evt.pageY);
-    });
-    
-    window.addEventListener('mouseup', function(evt){
-        evt.preventDefault();
-        inputEnd();
-    });
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
 
-    window.addEventListener('touchstart', function(evt){
-        if(evt.changedTouches != undefined){
-            var touches = evt.changedTouches;
-            if(touches.length > 0){
-                inputStart(touches[0].pageX,touches[0].pageY);
-            }
-        }
-    }, false);
-    window.addEventListener('touchmove', function(evt){
-        if(evt.changedTouches != undefined){
-            var touches = evt.changedTouches;
-            if(touches.length > 0){
-                inputStart(touches[0].pageX,touches[0].pageY);
-            }
-        }
-    },false);
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
     window.addEventListener('touchcancel',inputEnd,false);
     window.addEventListener('touchend',inputEnd,false);
     
-    function inputStart(x,y){
-        start.x = x;
-        start.y = y;
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
         
         selected = getSelected(x,y);
         if(selected != undefined){
@@ -469,8 +453,21 @@
         }
     }
     
-    function inputMove(x,y){
+    function inputMove(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
         if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        
             if(selected != undefined){
                 if(Math.abs(x-start.x) > tileScale.x/8 || Math.abs(y-start.y) > tileScale.y/8){
                     if(Math.abs(x-start.x) > Math.abs(y-start.y)){
@@ -515,8 +512,6 @@
     }
     
     function inputEnd(){
-//        selected.x = positions[selected.column][selected.row].x;
-//        selected.y = positions[selected.column][selected.row].y;
         snapToPositions();
         selected = undefined;
         start.x = -1;
