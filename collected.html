@@ -442,10 +442,10 @@
             start.y = evt.pageY;
         }
         
-        selected = getSelected(x,y);
+        selected = getSelected(start.x,start.y);
         if(selected != undefined){
-            offset.x = selected.x-x;
-            offset.y = selected.y-y;
+            offset.x = selected.x-start.x;
+            offset.y = selected.y-start.y;
         }
 
         if(gameover){
