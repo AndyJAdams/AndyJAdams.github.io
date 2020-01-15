@@ -76,7 +76,7 @@
     
     function Tile(x,y,w,h,row,column, value){
         this.x = x; this.y = y; this.w = w; this.h = h; this.row = row; this.column = column;
-        this.dx = this.x; this.dy = this.y; this.radius = 0; this.growRate = 2;
+        this.dx = this.x; this.dy = this.y; this.radius = 0; this.growRate = Math.floor(Math.random()*2)+0.2;
         this.value = value; this.locked = false;
         this.draw = function(){
             if(this.value > -1){ //EMPTY TILES DO NOT RENDER
@@ -101,7 +101,7 @@
                 }
             } else {
                 if(this.radius > 0){
-                    this.radius -= this.growRate;
+                    this.radius -= this.growRate/4;
                 }
             }
             this.draw();
