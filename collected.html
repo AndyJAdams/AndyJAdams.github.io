@@ -4,7 +4,7 @@
     <meta lang="en/us"/>
     <meta encoding="UTF-8">
     <meta charset="UTF-8">
-    <title>TEST_BED</title>
+    <title>COLLECTED</title>
     <style>
         body{
             margin: 0;
@@ -81,11 +81,11 @@
         this.draw = function(){
             if(this.value > -1){ //EMPTY TILES DO NOT RENDER
                 ctx.fillStyle= colorArray[this.value];
-                //ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
-                ctx.beginPath();
-                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),this.radius,0,2*Math.PI);
-                ctx.fill();
-                ctx.closePath();
+                ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
+//                ctx.beginPath();
+//                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),this.radius,0,2*Math.PI);
+//                ctx.fill();
+//                ctx.closePath();
                 if(DEBUG){
                     ctx.fillStyle='#222';
                     ctx.fillText(this.column+","+this.row + " " + this.value,this.x+2,this.y+20);
@@ -274,7 +274,7 @@
             }
         } else {
             links.forEach(function(l){
-                l.draw();
+                //l.draw();
             });
             drawLocks();
         }
