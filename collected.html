@@ -95,15 +95,15 @@
         }
         
         this.update = function(){
-            if(!gameover && this.value > -1){
-                if(this.radius < tileRadius){
-                    this.radius += this.growRate;
-                }
-            } else {
-                if(this.radius > 0){
-                    this.radius -= this.growRate/4;
-                }
-            }
+//            if(!gameover && this.value > -1){
+//                if(this.radius < tileRadius){
+//                    this.radius += this.growRate;
+//                }
+//            } else {
+//                if(this.radius > 0){
+//                    this.radius -= this.growRate/4;
+//                }
+//            }
             this.draw();
         }
     }
@@ -133,10 +133,16 @@
          tiles.forEach(function(r){
              r.forEach(function(t){
                 if(t.locked && t.value > -1){
-                    ctx.fillStyle='#FFF';
+                    ctx.strokeStyle='#FFF';
+                    ctx.lineWidth = 10;
+                    ctx.lineCap = 'round';
                     ctx.beginPath();
-                    ctx.arc(t.x+(tileScale.x/2),t.y+(tileScale.y/2),t.radius/2,0,2*Math.PI);
-                    ctx.fill();
+                    //ctx.arc(t.x+(tileScale.x/2),t.y+(tileScale.y/2),t.radius/2,0,2*Math.PI);
+                    ctx.moveTo(t.x+20,t.y+20);
+                    ctx.lineTo(t.x+tileScale.x-20,t.y+tileScale.y-20);
+                    ctx.moveTo(t.x+tileScale.x-20,t.y+20);
+                    ctx.lineTo(t.x+20,t.y+tileScale.y-20);
+                    ctx.stroke();
                     ctx.closePath();
                 }
              })
@@ -259,6 +265,16 @@
         
         ctx.fillStyle='#FFF';
         ctx.fillRect(0,0,innerWidth,innerHeight);
+        var slice = innerHeight/200;
+        for(var i = 0; i < 200; i++){
+            ctx.strokeStyle='#333';
+            ctx.stroke
+            ctx.beginPath();
+            ctx.moveTo(0,innerHeight-(slice*i));
+            ctx.lineTo(innerWidth,innerHeight-(slice*i));
+            ctx.stroke();
+            ctx.closePath();
+        }
         
         tiles.forEach(function(r){
              r.forEach(function(t){
