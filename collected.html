@@ -23,7 +23,7 @@
 <script type='text/javascript'>
     const DEBUG = false;
     var gameover = false;
-    var colorArray = ['#000','#55415F','#646964','#D77355','#508CD7','#64B964','#E6C86E','#CCC'];
+    var colorArray = ['#FFF','#55415F','#646964','#D77355','#508CD7','#64B964','#E6C86E','#CCC'];
     var whiteList = [];
 
     var tiles = [];
@@ -76,16 +76,16 @@
     
     function Tile(x,y,w,h,row,column, value){
         this.x = x; this.y = y; this.w = w; this.h = h; this.row = row; this.column = column;
-        this.dx = this.x; this.dy = this.y; this.radius = 0; this.growRate = (Math.random()/2)+0.4;
+        this.dx = this.x; this.dy = this.y; this.radius = 0; this.growRate = 1.5;
         this.value = value; this.locked = false;
         this.draw = function(){
             if(this.value > -1){ //EMPTY TILES DO NOT RENDER
                 ctx.fillStyle= colorArray[this.value];
-                ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
-//                ctx.beginPath();
-//                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),this.radius,0,2*Math.PI);
-//                ctx.fill();
-//                ctx.closePath();
+                //ctx.fillRect(this.x+4,this.y-4,this.w-8,this.h-8);
+                ctx.beginPath();
+                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),this.radius,0,2*Math.PI);
+                ctx.fill();
+                ctx.closePath();
                 if(DEBUG){
                     ctx.fillStyle='#222';
                     ctx.fillText(this.column+","+this.row + " " + this.value,this.x+2,this.y+20);
@@ -95,15 +95,18 @@
         }
         
         this.update = function(){
-//            if(!gameover && this.value > -1){
-//                if(this.radius < tileRadius){
-//                    this.radius += this.growRate;
-//                }
-//            } else {
-//                if(this.radius > 0){
-//                    this.radius -= this.growRate/4;
-//                }
-//            }
+            if(!gameover && this.value > -1){
+                if(this.radius < tileRadius){
+                    this.radius += this.growRate;
+                }
+            } else {
+                if(this.radius > 0.1){
+                    this.radius -= this.growRate;
+                }
+            }
+            if(this.radius <= 0){
+                this.radius = 0;
+            }
             this.draw();
         }
     }
@@ -115,7 +118,7 @@
                 var a = Math.pow(Math.abs(start.x-end.x),2);
                 var b = Math.pow(Math.abs(start.y-end.y),2);
                 var dist = Math.sqrt(a+b);
-                var limit = Math.sqrt(Math.pow(tileScale.x,2)+Math.pow(tileScale.y,2));
+                var limit = Math.sqrt(Math.pow(tileScale.x,2)+Math.pow(tileScale.y,2))+10;
                 if(dist < limit){
                     ctx.strokeStyle = colorArray[start.value];
                     ctx.lineWidth = start.radius*2;
@@ -133,15 +136,16 @@
          tiles.forEach(function(r){
              r.forEach(function(t){
                 if(t.locked && t.value > -1){
-                    ctx.strokeStyle='#FFF';
+                    ctx.strokeStyle='#000';
                     ctx.lineWidth = 10;
                     ctx.lineCap = 'round';
                     ctx.beginPath();
                     //ctx.arc(t.x+(tileScale.x/2),t.y+(tileScale.y/2),t.radius/2,0,2*Math.PI);
-                    ctx.moveTo(t.x+20,t.y+20);
-                    ctx.lineTo(t.x+tileScale.x-20,t.y+tileScale.y-20);
-                    ctx.moveTo(t.x+tileScale.x-20,t.y+20);
-                    ctx.lineTo(t.x+20,t.y+tileScale.y-20);
+                    ctx.moveTo(t.x+(tileScale.x/2)-(t.radius/2),t.y+(tileScale.y/2)-(t.radius/2));
+                    ctx.lineTo(t.x+(tileScale.x/2)+(t.radius/2),t.y+(tileScale.y/2)+(t.radius/2));
+                    ctx.moveTo(t.x+(tileScale.x/2)-(t.radius/2),t.y+(tileScale.y/2)+(t.radius/2));
+                    ctx.lineTo(t.x+(tileScale.x/2)+(t.radius/2),t.y+(tileScale.y/2)-(t.radius/2));
+                   
                     ctx.stroke();
                     ctx.closePath();
                 }
@@ -263,18 +267,9 @@
         window.requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
         
-        ctx.fillStyle='#FFF';
+        ctx.fillStyle='#000';
         ctx.fillRect(0,0,innerWidth,innerHeight);
-        var slice = innerHeight/200;
-        for(var i = 0; i < 200; i++){
-            ctx.strokeStyle='#333';
-            ctx.stroke
-            ctx.beginPath();
-            ctx.moveTo(0,innerHeight-(slice*i));
-            ctx.lineTo(innerWidth,innerHeight-(slice*i));
-            ctx.stroke();
-            ctx.closePath();
-        }
+        
         
         tiles.forEach(function(r){
              r.forEach(function(t){
@@ -290,7 +285,7 @@
             }
         } else {
             links.forEach(function(l){
-                //l.draw();
+                l.draw();
             });
             drawLocks();
         }
@@ -302,8 +297,8 @@
     function newPuzzle(){
         start.x = -1;
         start.y = -1;
-        grid.row = Math.floor(Math.random()*15)+3;
-        grid.col = Math.floor(Math.random()*21)+3;
+        grid.row = Math.floor(Math.random()*5)+3;
+        grid.col = Math.floor(Math.random()*8)+3;
         scaleCanvas();
         buildGrid();
         validateGrid();
@@ -312,7 +307,7 @@
     function boardClearCheck(){
         for(var i = 0; i < tiles.length; i++){
             for(var j = 0; j < tiles[i].length; j++){
-                if(tiles[i][j].radius > 0){
+                if(tiles[i][j].radius > 1){
                     return false;
                 }
             }
