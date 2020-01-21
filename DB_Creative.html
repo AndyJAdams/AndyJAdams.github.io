@@ -881,7 +881,7 @@
 	        } else if(mx > innerWidth/2+325 && mx < innerWidth/2+425 && !creativemode){
 	        	makeMenuSelection(6);
 	        	var data = getMapData();
-	       		window.open('mailto:aa?subject=diamond_box&body='+data);
+	       		console.log(data);
 	        } else if(mx > innerWidth/2-425 && mx < innerWidth/2-325){
 	        	clearMap();
 	        	makeMenuSelection(1);
