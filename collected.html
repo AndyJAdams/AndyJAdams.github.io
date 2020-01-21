@@ -115,18 +115,20 @@
         this.start = start; this.end = end;
         this.draw = function(){
             if(start != undefined && end != undefined){
-                var a = Math.pow(Math.abs(start.x-end.x),2);
-                var b = Math.pow(Math.abs(start.y-end.y),2);
-                var dist = Math.sqrt(a+b);
-                var limit = Math.sqrt(Math.pow(tileScale.x,2)+Math.pow(tileScale.y,2))+10;
-                if(dist < limit){
-                    ctx.strokeStyle = colorArray[start.value];
-                    ctx.lineWidth = start.radius*2;
-                    ctx.beginPath();
-                    ctx.moveTo(start.x+(tileScale.x/2),start.y+(tileScale.y/2));
-                    ctx.lineTo(end.x+(tileScale.x/2),end.y+(tileScale.y/2));
-                    ctx.stroke();
-                    ctx.closePath();
+                if(!srow.includes(start) && !srow.includes(end) && !scol.includes(start) && !scol.includes(end)){
+                    var a = Math.pow(Math.abs(start.x-end.x),2);
+                    var b = Math.pow(Math.abs(start.y-end.y),2);
+                    var dist = Math.sqrt(a+b);
+                    var limit = Math.sqrt(Math.pow(tileScale.x,2)+Math.pow(tileScale.y,2))+tileScale.x/2;
+                    if(dist < limit){
+                        ctx.strokeStyle = colorArray[start.value];
+                        ctx.lineWidth = start.radius*2;
+                        ctx.beginPath();
+                        ctx.moveTo(start.x+(tileScale.x/2),start.y+(tileScale.y/2));
+                        ctx.lineTo(end.x+(tileScale.x/2),end.y+(tileScale.y/2));
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
                 }
             }
         }
@@ -160,16 +162,11 @@
             var vert = [];
             for(var k = 0; k < grid.row; k++){
                 var randColor = Math.floor(Math.random()*colorArray.length);
-                var randVal = Math.random();
-                if(randVal < 0.05){
-                    randColor = -1;
-                }
+                
                 var nt = new Tile(i*tileScale.x,k*tileScale.y,tileScale.x,tileScale.y,k,i,randColor);
                 row.push(nt);
                 vert.push(new Position(i*tileScale.x, k*tileScale.y));
-                if(randVal > 0.95){
-                    nt.locked = true;
-                }
+                
             }
             tiles.push(row);
             positions.push(vert);
@@ -465,6 +462,7 @@
         }
     }
     
+    var srow = []; var scol = [];
     function inputMove(evt){
         evt.preventDefault();
         var x = -1; var y = -1;
@@ -486,7 +484,7 @@
                         //Horizontal
                         selected.x = x+offset.x;
                         selected.y = positions[selected.column][selected.row].y;
-                        var srow = getRowFromPoint(selected);
+                        srow = getRowFromPoint(selected);
                        
                         if(Math.abs(x-start.x) > tileScale.x*0.5){
                             if(x > start.x){
@@ -503,7 +501,7 @@
                         //Vertical
                         selected.y = y+offset.y;
                         selected.x = positions[selected.column][selected.row].x;
-                        var scol = getColumnFromPoint(selected);
+                        scol = getColumnFromPoint(selected);
                         
                         if(Math.abs(y-start.y) > tileScale.y*0.5){
                             if(y > start.y){
@@ -527,6 +525,8 @@
         snapToPositions();
         selected = undefined;
         start.x = -1;
+        srow.length = 0;
+        scol.length = 0;
         gameover = validateGrid();
     }
     
