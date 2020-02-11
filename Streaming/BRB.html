@@ -57,7 +57,11 @@
         //BRB Text
         ctx.font = '70px sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText("BRB",center.x-200,center.y-90);
+        var outtext = "BRB";
+        if(timeRemaining < 0){
+            outtext = "DED";
+        }
+        ctx.fillText(outtext,center.x-200,center.y-90);
         
         //Loading Box
         ctx.strokeRect(center.x-200,center.y-80,400,40);
@@ -68,7 +72,7 @@
         timeElapsed = Date.now()-startTime;
         timeRemaining = (minuteBreak*60000)-timeElapsed;
         
-        var sign = "";
+        var sign = "t- ";
         var minutes = Math.floor(timeRemaining/60000);
         var seconds = Math.floor((timeRemaining-(minutes*60000))/1000);
         var remainder = ""+((timeRemaining-(minutes*60000))-(seconds*1000));
@@ -82,7 +86,7 @@
             minutes = Math.floor(rn/60000);
             seconds = Math.floor((rn-(minutes*60000))/1000);
             remainder = (rn-(minutes*60000))-(seconds*1000);  
-            sign = "-";
+            sign = "t+ ";
         }
         if(minutes < 1){
             minutes = "0";
