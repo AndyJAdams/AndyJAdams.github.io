@@ -1,0 +1,303 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta lang="en/us"/>
+    <meta encoding="UTF-8">
+    <meta charset="UTF-8">
+    <title>TOPO</title>
+    <style>
+        body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+    </style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript'>
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    
+    var maxRadius = 0;
+    var growthRate = 0.015;
+    var selected = undefined;
+    var newNode = undefined;
+    var pressTime = -1;
+    var longPress = false;
+    var moveNode = false;
+    
+    function scaleCanvas(){
+        canvas.width=window.innerWidth;
+        canvas.height = window.innerHeight;
+        maxRadius = Math.floor(innerWidth/40);
+        if(innerHeight < innerWidth){
+            maxRadius = Math.floor(innerHeight/40);
+        }
+        
+    }
+    scaleCanvas();
+    
+    function Enemy(x,y,r){
+        this.x = x; this.y = y; this.r = r;
+        this.target = undefined;
+        
+        this.draw = function(){
+            ctx.fillStyle='#F00';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r,0,2*Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        }
+        
+        this.update = function(){
+            if(nodes.length > 0 && this.target == undefined){
+                console.log(nodes.length);
+                var t = nodes[Math.floor(Math.random()*nodes.length)];
+                if(!t.orphaned){
+                    this.target = t;
+                }
+            } else {
+                if(nodes.length <=0){
+                    this.target = undefined;
+                }
+            }
+            
+            if(this.target != undefined){
+                
+                if(this.x > this.target.x){
+                    this.x--;
+                } else if(this.x < this.target.x){
+                    this.x++;
+                }
+
+                if(this.y > this.target.y){
+                    this.y--;
+                } else if(this.y < this.target.y){
+                    this.y++;
+                }
+                
+                for(var i = 0; i < nodes.length; i++){
+                    var dif = GetDistance(this.x, this.y,nodes[i].x, nodes[i].y);
+                    if(dif < nodes[i].radius+this.r){
+                        
+                        nodes[i].radius -= this.r;
+                        this.target = undefined;
+                        this.x += Math.floor(Math.random()*(innerWidth*3));
+                        this.y += Math.floor(Math.random()*(innerHeight*3));
+                        enemies.push(new Enemy(Math.floor((Math.random()-0.5)*(innerWidth*3)),Math.floor((Math.random()-0.5)*(innerHeight*3)),Math.floor(Math.random()*(maxRadius/2))));
+                    }
+                }
+            }
+            
+            this.draw();
+        }
+    }
+    
+    var enemies = [];
+    
+    function Node(x,y,startRadius = 0){
+        this.x = x;
+        this.y = y;
+        this.radius = startRadius;
+        this.children = [];
+        this.orphaned = false;
+        this.doomed = false;
+        
+        this.draw = function(){
+            for(var i= 0; i < this.children.length; i++){
+                if(this.children[i].radius > 0){
+                    ctx.beginPath();
+                    ctx.moveTo(this.x,this.y);
+                    ctx.lineTo(this.children[i].x, this.children[i].y);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+            }
+               
+            if(this.radius > 0){
+                //Boundary circle
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, maxRadius+6,0,((this.radius/maxRadius)*2)*Math.PI);
+                ctx.stroke();
+                ctx.closePath();
+
+                //Node body
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius,0,2*Math.PI);
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+        
+        this.update = function(){
+            if(this.radius <= 0){
+                //This node is dead. All subsequent nodes should be orphaned and begin death sequence.
+                for(var i = 0; i < this.children.length;i++){
+                    this.children[i].orphaned= true;
+                }
+                removeNode(this);
+            }
+            
+            if(!this.orphaned && !this.doomed){
+                if(this.radius < maxRadius){
+                    this.radius += growthRate;
+                } else if(this.radius > maxRadius){
+                    this.radius -= growthRate;
+                }
+                ctx.fillStyle='#000';
+                ctx.strokeStyle='#000';
+            } else {
+                if(this.children.length > 0){
+                    for(var i = 0; i  <this.children.length; i++){
+                        this.children[i].doomed = true;
+                    }
+                }
+                ctx.fillStyle='#888';
+                ctx.strokeStyle='#888';
+                if(this.orphaned){
+                    this.radius -= growthRate/2;
+                }
+            }
+            
+            this.draw();
+        }
+        
+        this.addChild = function(n){
+            this.children.push(n);
+        }
+    }
+    
+    function removeNode(n){
+        nodes.splice(getIndex(n,nodes),1);
+    }
+    
+    function getIndex(item, array){
+        for(var i = 0; i < array.length; i++){
+            if(array[i] == item){
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    var nodes = [];
+    nodes.push(new Node(innerWidth/2, innerHeight/2, maxRadius,'origin'));
+    
+    enemies.push(new Enemy(Math.floor((Math.random()-0.5)*(innerWidth*3)),Math.floor((Math.random()-0.5)*(innerHeight*3)),Math.floor(Math.random()*(maxRadius/2))));
+    
+    //===========================================================================
+    //===========================================================================
+    
+    function animate(){
+        window.requestAnimationFrame(animate);
+        ctx.clearRect(0,0,innerWidth,innerHeight);
+        if(nodes.length > 0){
+           for(let i = 0; i < nodes.length; i++){
+                nodes[i].update();
+            }
+        } else {
+            console.log("FAIL BOAT");
+        }
+        
+        for(let e = 0; e < enemies.length; e++){
+            enemies[e].update();
+        }
+        
+    }
+    
+    //===========================================================================
+    
+    function GetDistance(x1,y1,x2,y2){
+        var xsqr = Math.pow(Math.abs(x1-x2),2);
+        var ysqr = Math.pow(Math.abs(y1-y2),2);
+        return Math.sqrt(xsqr+ysqr);
+    }
+    
+    window.addEventListener('resize',scaleCanvas());
+    window.addEventListener('mousedown',function(evt){evt.preventDefault();inputStart(evt);});
+    window.addEventListener('mousemove',function(evt){evt.preventDefault();inputMove(evt);});
+    window.addEventListener('mouseup',function(evt){evt.preventDefault();inputEnd(evt);});
+    
+    var start = {x: -1,y: -1};
+    var offset = {x: -1, y:-1};
+    
+    function inputStart(evt){
+        start.x = evt.pageX;
+        start.y = evt.pageY;
+        pressTime = Date.now();
+        
+        for(let i = 0; i < nodes.length; i++){
+            if(GetDistance(nodes[i].x, nodes[i].y,start.x,start.y)<maxRadius){
+                //We are inside the bounds of this node. Set selected
+                selected = nodes[i];
+                if(selected.radius >= maxRadius-1){
+                    newNode = new Node(selected.x,selected.y,1);
+                    selected.addChild(newNode);
+                    nodes.push(newNode);
+                    selected.radius /= 2;
+                }
+                break;
+            }
+        }
+    }
+    
+    var prev = {x:-1,y:-1};
+    function inputMove(evt){
+        if(start.x > -1){
+            if(selected != undefined){
+                    if(newNode != undefined){
+                        if(GetDistance(evt.pageX, evt.pageY,selected.x,selected.y) < maxRadius*7.5){
+                            newNode.x = evt.pageX;
+                            newNode.y = evt.pageY;
+                        }
+                    }
+            } else {
+                //They have not selected a node, so we need to move the canvas
+                if(prev.x < 0){
+                    shiftCanvas(evt.pageX-start.x,evt.pageY-start.y);
+                } else {
+                    shiftCanvas(evt.pageX-prev.x, evt.pageY-prev.y);
+                }
+                prev.x = evt.pageX; prev.y = evt.pageY;
+            }
+        }
+    }
+    
+    function inputEnd(evt){
+        start.x = -1;
+        pressTime = -1;
+        prev.x = -1;
+        selected = undefined;
+        moveNode = false;
+        longPress = false;
+        for(var i = 0; i < nodes.length; i++){
+            nodes[i].longPress = 0;
+        }
+        newNode = undefined;
+    }
+    
+    function shiftCanvas(x,y){
+        //The user want's to move the view, so we emulate this by moving everything else
+        for(let i =0; i < nodes.length;i++){
+            nodes[i].x+=x;
+            nodes[i].y+=y;
+        }
+        
+        for(let i=0; i < enemies.length; i++){
+            enemies[i].x+=x;
+            enemies[i].y+=y;
+        }
+    }
+    
+    animate();
+</script>
+</body>
+</html>
