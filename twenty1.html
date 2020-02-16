@@ -92,12 +92,16 @@
 
 		this.label = function(){
 			ctx.font = 'bold 42px Tahoma';
+            if(blockScale < 100){
+                ctx.font = 'bold 24px Tahoma';
+            }
             if(this.w > inset){
 			 ctx.fillStyle=this.col;
                 if(failboat){
                     ctx.fillStyle='#FFF';
                 }
-			 ctx.fillText(this.value +'', this.x+15, this.y+50);
+                var fontOffset = blockScale/2;
+			 ctx.fillText(this.value +'', this.x+15, this.y+fontOffset);
 			 	if(DebugDisplay){
 			 		//Row & Column [BOTTOM RIGHT]
             		ctx.font ='28px Arial';
@@ -153,7 +157,12 @@
 		this.y = y;
 		this.draw = function(){
 			var reset = document.getElementById('reset');
-			ctx.drawImage(reset,this.x,this.y);
+            if(blockScale < 100){
+                ctx.drawImage(reset,this.x+64,this.y+60,64,64);
+            } else {
+                ctx.drawImage(reset,this.x,this.y,128,128);
+            }
+			
 			//ctx.drawImage(reset,(innerWidth/2)-gridWidth/2+gridWidth-120,(innerHeight/2)-gridHeight/2-150);
 		}
 	}
@@ -179,7 +188,10 @@
 
 	
 
-	var blockScale = ((innerWidth*0.75)/gridCols); //Since this is mobile centric... we base our scale of overall width or number of columns
+	var blockScale = ((innerWidth*0.9)/gridCols); //Since this is mobile centric... we base our scale of overall width or number of columns
+        if(innerWidth > innerHeight){
+            blockScale = ((innerHeight*0.6)/gridCols);
+        }
 	var blockArray = Array.matrix(gridRows,gridCols); //Make the array
 
 	var gridHeight = (blockScale * gridRows); //Height of grid used for centering
@@ -232,6 +244,9 @@
 		resetBTN.draw();
 
 		ctx.font = 'bold 128px Tahoma';
+        if(blockScale < 100){
+            ctx.font = 'bold 64px Tahoma';
+        }
 		ctx.fillStyle = '#000';
 		ctx.fillText(score + '',(innerWidth/2-gridWidth/2),(innerHeight/2-gridHeight/2)-40);
 		
