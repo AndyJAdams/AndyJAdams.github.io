@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta lang="en/us"/>
+    <meta encoding="UTF-8">
+    <meta charset="UTF-8">
+    <title>END</title>
+    <style>
+        body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript' src='./thanks.js'></script>
+<script type='text/javascript'>
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    
+    function scaleCanvas(){
+        canvas.width=window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    scaleCanvas();
+        
+    var count = 0; 
+    var displayTime = 3000;
+    function animate(){
+        window.requestAnimationFrame(animate);
+        ctx.clearRect(0,0,innerWidth,innerHeight);
+
+        ctx.textAlign = "center";
+        ctx.font='bold 64px sans-serif';
+        ctx.fillStyle='#FFF';
+        ctx.fillText("FIN",innerWidth/2,innerHeight/2);
+        
+        ctx.strokeStyle='#FFF';
+        ctx.lineWidth=4;
+        ctx.beginPath();
+        ctx.moveTo(innerWidth/2-120,innerHeight/2+20);
+        ctx.lineTo(innerWidth/2+120,innerHeight/2+20);
+        ctx.stroke();
+        ctx.closePath();
+        
+        ctx.font='bold 50px sans-serif';
+        ctx.fillText(peeps[count],innerWidth/2, innerHeight/2+90);
+        
+        if(Date.now() > displayTime){
+           count++;
+            displayTime = Date.now()+3000;
+            if(count > peeps.length-1){
+                count = 0;
+            }
+        }
+    }
+    
+    animate();
+</script>
+</body>
+</html>
