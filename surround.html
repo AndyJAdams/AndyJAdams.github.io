@@ -19,6 +19,7 @@
     </style>
 </head>
 <body>
+<button id='allow' onclick='onClick()'>Allow Orientation Control</button>
 <canvas id='canvas'></canvas>
 <script type='text/javascript'>
      var canvas = document.getElementById('canvas');
@@ -49,17 +50,19 @@
         ctx.fillText('G: '+g,10,130);
 
     }
-
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-      DeviceOrientationEvent.requestPermission()
-        .then(permissionState => {
-          if (permissionState === 'granted') {
-            window.addEventListener('deviceorientation',handleOrientation);
-          }
-        })
-        .catch(console.error);
-    } else {
-      window.addEventListener('deviceOrientation', handleOrientation);
+    function onClick(){
+        console.log("allowing control");
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+              if (permissionState === 'granted') {
+                window.addEventListener('deviceorientation',handleOrientation);
+              }
+            })
+            .catch(console.error);
+        } else {
+          window.addEventListener('deviceOrientation', handleOrientation);
+        }
     }
 
     animate();
