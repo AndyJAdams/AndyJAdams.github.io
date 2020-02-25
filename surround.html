@@ -54,12 +54,12 @@
       DeviceOrientationEvent.requestPermission()
         .then(permissionState => {
           if (permissionState === 'granted') {
-            window.addEventListener('deviceorientation', () => {});
+            window.addEventListener('deviceorientation',handleOrientation);
           }
         })
         .catch(console.error);
     } else {
-      // handle regular non iOS 13+ devices
+      window.addEventListener('deviceOrientation', handleOrientation);
     }
 
     animate();
@@ -70,7 +70,7 @@
         g = evt.gamma;
     }
 
-    window.addEventListener('deviceOrientation', handleOrientation);
+    
 </script>
 </body>
 </html>
