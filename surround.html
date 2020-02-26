@@ -27,6 +27,9 @@
     var a = 0;
     var b = 0;
     var g = 0;
+
+    var pb = 0;
+    var pg = 0; 
     
     function scaleCanvas(){
         canvas.width = window.innerWidth;
@@ -34,13 +37,38 @@
     }
     scaleCanvas();
 
+    function Crosshair(x,y){
+        this.x = x;
+        this.y = y;
+        this.draw = function(){
+            ctx.strokeStyle='#0F0';
+            ctx.beginPath();
+            ctx.moveTo(this.x-100,this.y);
+            ctx.lineTo(this.x+100,this.y);
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.strokeStyle='#FFF';
+            ctx.beginPath();
+            ctx.moveTo(this.x,this.y-100);
+            ctx.lineTo(this.x,this.y+100);
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        this.update = function(){
+            this.x += b-pb;
+           this.draw(); 
+        }
+    }
+
+    var ch = new Crosshair(innerWidth/2,innerHeight/2);
+
     
     function animate(){
         window.requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
         ctx.font='bold 32px sans-serif';
-        
-        ctx.strokeStyle='#FFF';
 
         ctx.fillStyle='#F00';
         ctx.fillText("A: "+a,10,30);
@@ -49,7 +77,9 @@
         ctx.fillStyle='#FFF';
         ctx.fillText('G: '+g,10,130);
 
+        ch.update();
     }
+
     function onClick(){
         console.log("allowing control");
         if (typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -65,14 +95,15 @@
         }
     }
 
-    animate();
-
     function handleOrientation(evt){
-        a = evt.alpha;
-        b = evt.beta;
-        g = evt.gamma;
+        pb = b;
+        pg = g;
+        a = Math.round(evt.alpha);
+        b = Math.round(evt.beta);
+        g = Math.round(evt.gamma);
     }
 
+    animate();
     
 </script>
 </body>
