@@ -19,20 +19,25 @@
     </style>
 </head>
 <body>
+<table><tr><td>
+<canvas id='canvas'></canvas></td><td>
 <button id='allow' onclick='onClick()'>Allow Orientation Control</button>
-<canvas id='canvas'></canvas>
+<p id='alpha'>A:</p>
+<p id='beta'>B:</p>
+<p id='gamma'>G:</p>
+</td></tr></table>
 <script type='text/javascript'>
      var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
     var a = 0;
     var b = 0;
     var g = 0;
-
+    var pa = 0;
     var pb = 0;
     var pg = 0; 
     
     function scaleCanvas(){
-        canvas.width = window.innerWidth;
+        canvas.width = window.innerWidth/2;
         canvas.height = window.innerHeight;
     }
     scaleCanvas();
@@ -57,25 +62,31 @@
         }
 
         this.update = function(){
-            this.x += b-pb;
+            this.x += a-pa;
            this.draw(); 
         }
     }
 
-    var ch = new Crosshair(innerWidth/2,innerHeight/2);
-
+    var ch = new Crosshair(innerWidth/4,innerHeight/2);
+    var at = document.getElementById('alpha');
+    var bt = document.getElementById('beta');
+    var gt = document.getElementById('gamma');
     
     function animate(){
         window.requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
         ctx.font='bold 32px sans-serif';
 
-        ctx.fillStyle='#F00';
-        ctx.fillText("A: "+a,10,30);
-        ctx.fillStyle='#0F0';
-        ctx.fillText('B: '+b,10,80);
-        ctx.fillStyle='#FFF';
-        ctx.fillText('G: '+g,10,130);
+        // ctx.fillStyle='#F00';
+        // ctx.fillText("A: "+a,10,30);
+        // ctx.fillStyle='#0F0';
+        // ctx.fillText('B: '+b,10,80);
+        // ctx.fillStyle='#FFF';
+        // ctx.fillText('G: '+g,10,130);
+
+        at.innerHTML=("A: " + a);
+        bt.innerHTML=("B: " + b);
+        gt.innerHTML=("G: " + g);
 
         ch.update();
     }
@@ -96,6 +107,7 @@
     }
 
     function handleOrientation(evt){
+        pa = a;
         pb = b;
         pg = g;
         a = Math.round(evt.alpha);
