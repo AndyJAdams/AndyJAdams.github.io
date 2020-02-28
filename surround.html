@@ -116,6 +116,15 @@
         a = Math.round(evt.alpha);
         b = Math.round(evt.beta);
         g = Math.round(evt.gamma);
+        
+        if((pg < 0 && g > 0)||(pg > 0 && g < 0)){
+            //We have crossed the horizon
+            if(pa > 180){
+                pa -= 180;
+            } else if(pa < 180){
+                pa += 180;   
+            }
+        }
     }
 
     animate();
