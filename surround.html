@@ -27,7 +27,7 @@
 <p id='gamma'>G:</p>
 </td></tr></table>
 <script type='text/javascript'>
-    var version = "P 0.0002";
+    var version = "P 0.0003";
      var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
     var a = 0;
@@ -64,6 +64,11 @@
 
         this.update = function(){
             this.x += (a-pa);
+            if((g > 0 && pg > 0)||(g<0&&pg<0)){
+                this.y += (g-pg);   
+            } else {
+                this.y += (g+pg);   
+            }
            this.draw(); 
         }
     }
