@@ -19,6 +19,16 @@
 </head>
 <body>
 <canvas id='canvas'></canvas>
-<script type='text/javascript' src='./playground.js'></script>
+<script type='text/javascript'>
+	var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d');
+
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+
+	ctx.fillStyle='#F00';
+	ctx.fillRect(50,50,200,200);
+
+</script>
 </body>
 </html>
