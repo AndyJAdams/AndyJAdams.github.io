@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>BlankTouchCanvas</title>
+	<title>4OUT</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -19,18 +19,73 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
+    //Global Variables Here
+    var grid = {x:6,y:9};
+    var tileScale = {x:0,y:0};
+    
+    var tiles = [];
+        
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
+        tileScale.x = innerWidth/grid.x;
+        tileScale.y = innerHeight/grid.y;
+        scaleGrid();
 	}
 	var ctx = canvas.getContext('2d');
 
-	
+    var colorArray = ["#000","#F00","#F0F","#00F"];
+        
+	function Tile(x,y,w,h,gx,gy,t){
+        this.x = x; this.y = y;
+        this.w = w; this.h = h;
+        this.gx = gx; this.gy = gy; this.t = t;
+        this.draw=function(){
+            ctx.fillStyle=colorArray[this.t];
+            ctx.fillRect(this.x,this.y,this.w,this.h);
+        }
+        
+        this.update = function(){
+            this.draw();
+        }
+    }
+        
+    function buildGrid(){
+        for(let i=0; i < grid.x; i++){
+            var column = [];
+            for(let j = 0; j < grid.y; j++){
+                column.push(new Tile(i*tileScale.x,j*tileScale.y,tileScale.x,tileScale.y,i,j,Math.floor(Math.random()*colorArray.length)));
+            }
+            tiles.push(column);
+        }
+    }
+    
+    function scaleGrid(){
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j<tiles[i].length; j++){
+                var t = tiles[i][j];
+                t.x = t.gx*tileScale.x;
+                t.y = t.gy*tileScale.y;
+                t.w = tileScale.x;
+                t.h = tileScale.y;
+            }
+        }
+    }
 
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
+		
+        if(tiles.length > 1){
+            for(var i = 0; i < tiles.length; i++){
+                for(var j = 0; j < tiles[i].length; j++){
+                    tiles[i][j].update();
+                }
+            }
+        } else {
+            buildGrid();
+        }
 	}
 
 	//*** INPUT SECTION **//
