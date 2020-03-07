@@ -26,6 +26,7 @@
     var tileScale = {x:0,y:0};
     
     var tiles = [];
+    var selected = [];
         
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
@@ -43,6 +44,7 @@
         this.x = x; this.y = y;
         this.w = w; this.h = h;
         this.gx = gx; this.gy = gy; this.t = t;
+        this.owner = undefined;
         this.draw=function(){
             ctx.fillStyle=colorArray[this.t];
             ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
@@ -51,10 +53,20 @@
                 ctx.fillStyle='#FFF';
                 ctx.font = '14px sans-serif';
                 ctx.fillText(this.gx+","+this.gy + " " + this.t,this.x+5,this.y+16);
+                
+                if(this.owner != undefined){
+                    ctx.strokeStyle='#FFF';
+                    ctx.beginPath();
+                    ctx.moveTo(this.x+this.w/2,this.y+this.h/2);
+                    ctx.lineTo(this.owner.x+this.w/2,this.owner.y+this.h/2);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
             }
         }
         
         this.update = function(){
+            getConnected(this);
             this.draw();
         }
     }
@@ -80,14 +92,42 @@
             }
         }
     }
+        
+    function getConnected(a){
+        var n = getNeighbors(a);
+        var r = []; r.push(a);
+        if(n.length > 0){
+            for(var i = 0; i < n.length; i++){
+                if(n[i].t == a.t){
+                    if(n[i].owner == undefined){
+                        var d = getConnected(n[i]);
+                        for(var j = 0; j<d.length;j++){
+                            r.push(d[j]);
+                            d[j].owner = a;
+                        }
+                    } else {
+                        a.owner = n[i].owner;
+                        return r;
+                    }
+                }
+            }
+        } 
+        return r;
+    }
 
 	function animate(){
 		window.requestAnimationFrame(animate);
+        ctx.clearRect(0,0,innerWidth,innerHeight);
         if(start.x > -1 || tiles.length > 1){
-            ctx.clearRect(0,0,innerWidth,innerHeight);
             for(var i = 0; i < tiles.length; i++){
                 for(var j = 0; j < tiles[i].length; j++){
                     tiles[i][j].update();
+                }
+            }
+            
+            if(selected.length > 0){
+                for(var i= 0; i < selected.length;i++){
+               ctx.fillStyle='#FFF'; ctx.fillRect(selected[i].x+5,selected[i].y+50,20,20);
                 }
             }
         } else {
@@ -98,19 +138,49 @@
     //*** GAMEPLAY HELPERS ***//
     function getNeighbors(t){
         var n = [];
-        if(t.gx-1 > 0){ //LEFT
-            n.push(tiles[t.gx-1][t.gy]);
-        }
         if(t.gx+1 < grid.x){//RIGHT
             n.push(tiles[t.gx+1][t.gy]);
         }
-        if(t.gy-1 > 0){//UP
-            n.push(tiles[t.gx][t.gy-1]);
-        }
-        if(t.gy+1 < grid.y){
+        if(t.gy+1 < grid.y){ //DOWN
             n.push(tiles[t.gx][t.gy+1]);
         }
         return n;
+    }
+        
+    function getSelected(x,y){
+        for(var i = 0; i < tiles.length;i++){
+            for(var j = 0; j < tiles[i].length;j++){
+                 var t = tiles[i][j];
+                if(x > t.x && x < t.x+t.w && y > t.y && y < t.y+t.h){
+                    return getOwned(t);
+                }
+            }
+        }
+        console.log(x+"-"+y);
+        return [];
+    }
+        
+    function getOwned(a){
+        if(a.owner != undefined){
+            a = a.owner;
+        }
+        var o = []; o.push(a);
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                if(tiles[i][j].owner == a){
+                   o.push(tiles[i][j]); 
+                }
+            }
+        }
+        return o;
+    }
+        
+    function getRowFromPoint(){
+        //Grab the affected row(s)
+    }
+    
+    function getColumnFromPoint(){
+        //Grab the affected column(s)
     }
 
 	//*** INPUT SECTION **//
@@ -119,8 +189,6 @@
         evt.preventDefault();
         scaleCanvas();
     });
-    
-    
     window.addEventListener('mousedown',inputStart,false);
     window.addEventListener('mousemove',inputMove,false);
     window.addEventListener('mouseup',inputEnd,false);
@@ -142,6 +210,7 @@
             start.x = evt.pageX;
             start.y = evt.pageY;
         }
+        selected = getSelected(start.x,start.y);
     }
     
     function inputMove(evt){
@@ -163,23 +232,22 @@
     
     function inputEnd(){
         start.x = -1;
+        selected = [];
     }
     
     scaleCanvas();
 	animate();
         
     /*TODO LIST
-    1. Collect tiles of touching similar type
-    2. Detect tile selection
+    1. Get affected column and row after selection
+    2. Detect movement direction
     3. Move tile(s) accordingly
         3.a Single tiles can wrap, larger groups cannot
         3.b Tiles should slide together as one unit, and follow the input pointer on the selected axis of movement
         3.c larger groups will need to move the entire collection accross all rows or columns. **THIS WILL BE PARTICULARLY TRICKY**
     4. Detect tile collections of 4 or more
     5. Remove tile collections of 4 or more
-    6. Drop tiles appropriately, but do NOT break apart larger groups... this leaves space for empty areas. 
-    7. Empty areas will also terminate a cycling
-    8. 
+    6. Drop tiles appropriately, but do NOT break apart larger groups??
     */
 	</script>
 </body>
