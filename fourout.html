@@ -20,7 +20,9 @@
 	<canvas id='canvas'></canvas>
 	<script>
     //Global Variables Here
-    var grid = {x:6,y:9};
+    var DEBUG = true;
+    var version = 0.0001;
+    var grid = {x:4,y:6};
     var tileScale = {x:0,y:0};
     
     var tiles = [];
@@ -35,7 +37,7 @@
 	}
 	var ctx = canvas.getContext('2d');
 
-    var colorArray = ["#000","#F00","#F0F","#00F"];
+    var colorArray = ["#F8B195","#F67280","#C06C84","#6C5B7B","#355C7D","#2A363B","#A8A7A7"];
         
 	function Tile(x,y,w,h,gx,gy,t){
         this.x = x; this.y = y;
@@ -43,7 +45,13 @@
         this.gx = gx; this.gy = gy; this.t = t;
         this.draw=function(){
             ctx.fillStyle=colorArray[this.t];
-            ctx.fillRect(this.x,this.y,this.w,this.h);
+            ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
+            
+            if(DEBUG){
+                ctx.fillStyle='#FFF';
+                ctx.font = '14px sans-serif';
+                ctx.fillText(this.gx+","+this.gy + " " + this.t,this.x+5,this.y+16);
+            }
         }
         
         this.update = function(){
@@ -75,9 +83,8 @@
 
 	function animate(){
 		window.requestAnimationFrame(animate);
-		ctx.clearRect(0,0,innerWidth,innerHeight);
-		
-        if(tiles.length > 1){
+        if(start.x > -1 || tiles.length > 1){
+            ctx.clearRect(0,0,innerWidth,innerHeight);
             for(var i = 0; i < tiles.length; i++){
                 for(var j = 0; j < tiles[i].length; j++){
                     tiles[i][j].update();
@@ -87,6 +94,24 @@
             buildGrid();
         }
 	}
+        
+    //*** GAMEPLAY HELPERS ***//
+    function getNeighbors(t){
+        var n = [];
+        if(t.gx-1 > 0){ //LEFT
+            n.push(tiles[t.gx-1][t.gy]);
+        }
+        if(t.gx+1 < grid.x){//RIGHT
+            n.push(tiles[t.gx+1][t.gy]);
+        }
+        if(t.gy-1 > 0){//UP
+            n.push(tiles[t.gx][t.gy-1]);
+        }
+        if(t.gy+1 < grid.y){
+            n.push(tiles[t.gx][t.gy+1]);
+        }
+        return n;
+    }
 
 	//*** INPUT SECTION **//
     var start = {x:-1,y:-1};
@@ -142,6 +167,20 @@
     
     scaleCanvas();
 	animate();
+        
+    /*TODO LIST
+    1. Collect tiles of touching similar type
+    2. Detect tile selection
+    3. Move tile(s) accordingly
+        3.a Single tiles can wrap, larger groups cannot
+        3.b Tiles should slide together as one unit, and follow the input pointer on the selected axis of movement
+        3.c larger groups will need to move the entire collection accross all rows or columns. **THIS WILL BE PARTICULARLY TRICKY**
+    4. Detect tile collections of 4 or more
+    5. Remove tile collections of 4 or more
+    6. Drop tiles appropriately, but do NOT break apart larger groups... this leaves space for empty areas. 
+    7. Empty areas will also terminate a cycling
+    8. 
+    */
 	</script>
 </body>
 </html>
