@@ -27,7 +27,7 @@
     
     var tiles = [];
     var selected = [];
-    var arow = []; var acol = [];
+    var collections = [];
 
 
 	var canvas = document.getElementById('canvas');	
@@ -120,31 +120,25 @@
 	function animate(){
 		window.requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
-        if(start.x > -1 || tiles.length > 1){
+        if(tiles.length > 1){
             for(var i = 0; i < tiles.length; i++){
                 for(var j = 0; j < tiles[i].length; j++){
                     tiles[i][j].update();
                 }
             }
             
+            
             if(selected.length > 0){
                 for(var i= 0; i < selected.length;i++){
                ctx.fillStyle='#FFF'; ctx.fillRect(selected[i].x+tileScale.x-30,selected[i].y+5,10,10);
                 }
-
-                if(arow.length > 0 && acol.length > 0){
-                    for(var i = 0; i < tiles.length; i++){
-                        for(var j = 0; j < tiles[i].length; j++){
-                            if(contains(arow,i) || contains(acol,j)){
-                                ctx.fillStyle='#000';
-                                ctx.fillRect(tiles[i][j].x+tileScale.x-15,tiles[i][j].y+5,10,10);
-                            }
-                        }
-                    }
-                }
             }
         } else {
             buildGrid();
+        }
+        
+        if(start.x < 0){
+            makeCollections();
         }
 	}
         
@@ -160,6 +154,31 @@
         return n;
     }
         
+    function makeCollections(){
+        collections = [];
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                if(getCollection(tiles[i][j]) < 0){
+                    var o = getOwned(tiles[i][j]);
+                    if(o.length > 1){
+                        collections.push(o);
+                    }
+                }
+            }
+        }
+    }
+        
+    function getCollection(t){
+        for(var i = 0; i < collections.length; i++){
+            for(var j = 0; j < collections[i].length; j++){
+                if(collections[i][j] == t){
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+        
     function getSelected(x,y){
         for(var i = 0; i < tiles.length;i++){
             for(var j = 0; j < tiles[i].length;j++){
@@ -169,8 +188,17 @@
                 }
             }
         }
-        console.log(x+"-"+y);
         return [];
+    }
+        
+    function getAffected(){
+        var row = {max:grid.x,min:-1};
+        var col = {max:grid.y,min:-1};
+        //Stretch out from each of the selected tiles.
+        for(var i = 0; i < selected.length; i++){
+            //Check to the right
+            
+        }
     }
         
     function getOwned(a){
@@ -186,20 +214,6 @@
             }
         }
         return o;
-    }
-
-    function getAffected(){
-        arow = []; acol = [];
-        for(var i = 0; i < selected.length; i++){
-            if(!contains(arow,selected[i].gx)){
-                arow.push(selected[i].gx);
-            }
-            if(!contains(acol,selected[i].gy)){
-                acol.push(selected[i].gy);
-            }
-
-        }
-
     }
 
 	//*** INPUT SECTION **//
@@ -230,7 +244,6 @@
             start.y = evt.pageY;
         }
         selected = getSelected(start.x,start.y);
-        getAffected();
     }
     
     function inputMove(evt){
