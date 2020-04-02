@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>TITLE</title>
+	<title>Parry Parry</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -26,9 +26,77 @@
 	}
 	var ctx = canvas.getContext('2d');
 
+	function Projectile(x,y,r, tx, ty, speed){
+        this.x = x; this.y = y; this.r = r;
+        this.targetX = tx; this.targetY = ty; this.s = speed;
+        this.h = 0; this.v = 0; this.kill = false;
+        
+        this.target = function(){
+            var xd = Math.abs(this.x-this.targetX);
+            var yd = Math.abs(this.y-this.targetY);
+            var hype = Math.sqrt(Math.pow(xd,2)+Math.pow(yd,2));
+            this.h = xd/hype;
+            this.v = yd/hype;
+            if(this.x > this.targetX){
+                this.h *= -1;
+            }
+            if(this.y > this.targetY){
+                this.v *= -1;
+            }
+            console.log(this.h + "," + this.v);
+        }
+        this.target();
+        
+        this.draw = function(){
+            ctx.fillStyle='#F00';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        
+        this.update = function(){
+            this.x += this.h*this.s;
+            this.y += this.v*this.s;
+            
+            if(this.x < -100 || this.x > innerWidth + 100 || this.y < -100 || this.y > innerHeight+100){
+                this.kill = true;
+            }
+            
+            this.draw();
+        }
+    }
+        
+    var projArr = [];
+    var randProj = Math.floor(Math.random()*300);
+    for(var i = 0; i < randProj; i++){
+        var randX = Math.random()*innerWidth;
+        var randY = Math.random()*innerHeight;
+        var tx = Math.random()*innerWidth;
+        var ty = Math.random()*innerHeight;
+        projArr.push(new Projectile(randX, randY, 5, tx,ty, 5));
+    }
+        
+    function updateProjectiles(){
+        var limit = projArr.length;
+        for(var i =0; i < limit; i++){
+            if(projArr[i] && projArr[i].kill){
+                console.log('removed ' + i);
+                projArr.splice(i,1);
+                limit--;
+                i--;
+            }
+        }
+        console.log("PROJ: " + projArr.length);
+    }
+
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        updateProjectiles();
+        for(var i = 0; i < projArr.length; i++){
+            projArr[i].update();
+        }
 	}
 
 	//*** INPUT SECTION **//
