@@ -1,0 +1,562 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta lang="en/us"/>
+    <meta encoding="UTF-8">
+    <meta charset="UTF-8">
+    <title>COLLECTED</title>
+    <style>
+        body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript'>
+    const DEBUG = false;
+    var gameover = false;
+    var colorArray = ['#FFF','#55415F','#646964','#D77355','#508CD7','#64B964','#E6C86E','#F3428E'];
+    var whiteList = [];
+
+    var sizePairs = [{x:3,y:5},{x:4,y:6},{x:5,y:7},{x:6,y:8},{x:7,y:10}];
+    
+    var tiles = [];
+    var positions = [];
+    var links = [];
+    var randSize = Math.floor(Math.random()*sizePairs.length);
+    var grid = {col: sizePairs[randSize].x,row: sizePairs[randSize].y};
+    var tileScale = {x:0,y:0};
+    var tileRadius = 0;
+    var selected = undefined;
+    var start = {x:-1,y:-1};
+    var offset = {x:-1,y:-1};
+    var moveSpeed = {x:0,y:0};
+    
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    
+    function scaleCanvas(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        tileScale.x = innerWidth/grid.col;
+        tileScale.y = innerHeight/grid.row;
+        moveSpeed.x = tileScale.x/4;
+        moveSpeed.y = tileScale.y/4;
+        tileRadius = tileScale.x*0.35;
+        if(tileScale.y < tileScale.x){
+            tileRadius = tileScale.y*0.35;
+        }
+    }
+    
+    function scaleGrid(){
+         tiles.forEach(function(r){
+             r.forEach(function(t){
+                 t.x = t.column*tileScale.x;
+                 t.y = t.row*tileScale.y;
+                 t.w = tileScale.x;
+                 t.h = tileScale.y;
+             })
+        });
+        for(var i =0; i < positions.length; i++){
+            for(var j = 0; j < positions[i].length; j++){
+                positions[i][j].x = i*tileScale.x;
+                positions[i][j].y = j*tileScale.y; 
+            }
+        }
+    }
+    
+    function Position(x,y){
+        this.x = x; this.y = y;
+    }
+    
+    function Tile(x,y,w,h,row,column, value){
+        this.x = x; this.y = y; this.w = w; this.h = h; this.row = row; this.column = column;
+        this.dx = this.x; this.dy = this.y; this.radius = 0; this.growRate = 1.5;
+        this.value = value; this.locked = false;
+        this.draw = function(){
+            if(this.value > -1){ //EMPTY TILES DO NOT RENDER
+                ctx.fillStyle= colorArray[this.value];
+                //ctx.fillRect(this.x+4,this.y-4,this.w-8,this.h-8);
+                ctx.beginPath();
+                ctx.arc(this.x+(tileScale.x/2),this.y+(tileScale.y/2),this.radius,0,2*Math.PI);
+                ctx.fill();
+                ctx.closePath();
+                if(DEBUG){
+                    ctx.fillStyle='#222';
+                    ctx.fillText(this.column+","+this.row + " " + this.value,this.x+2,this.y+20);
+                }
+
+            } 
+        }
+        
+        this.update = function(){
+            if(!gameover && this.value > -1){
+                if(this.radius < tileRadius){
+                    this.radius += this.growRate;
+                }
+            } else {
+                if(this.radius > 0.1){
+                    this.radius -= this.growRate;
+                }
+            }
+            if(this.radius <= 0){
+                this.radius = 0;
+            }
+            this.draw();
+        }
+    }
+
+    function Link(start, end){
+        this.start = start; this.end = end;
+        this.draw = function(){
+            if(start != undefined && end != undefined){
+                if(!srow.includes(start) && !srow.includes(end) && !scol.includes(start) && !scol.includes(end)){
+                    var a = Math.pow(Math.abs(start.x-end.x),2);
+                    var b = Math.pow(Math.abs(start.y-end.y),2);
+                    var dist = Math.sqrt(a+b);
+                    var limit = Math.sqrt(Math.pow(tileScale.x,2)+Math.pow(tileScale.y,2))+tileScale.x/2;
+                    if(dist < limit){
+                        ctx.strokeStyle = colorArray[start.value];
+                        ctx.lineWidth = start.radius*2;
+                        ctx.beginPath();
+                        ctx.moveTo(start.x+(tileScale.x/2),start.y+(tileScale.y/2));
+                        ctx.lineTo(end.x+(tileScale.x/2),end.y+(tileScale.y/2));
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+    }
+
+    function drawLocks(){
+         tiles.forEach(function(r){
+             r.forEach(function(t){
+                if(t.locked && t.value > -1){
+                    ctx.strokeStyle='#000';
+                    ctx.lineWidth = 10;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    //ctx.arc(t.x+(tileScale.x/2),t.y+(tileScale.y/2),t.radius/2,0,2*Math.PI);
+                    ctx.moveTo(t.x+(tileScale.x/2)-(t.radius/2),t.y+(tileScale.y/2)-(t.radius/2));
+                    ctx.lineTo(t.x+(tileScale.x/2)+(t.radius/2),t.y+(tileScale.y/2)+(t.radius/2));
+                    ctx.moveTo(t.x+(tileScale.x/2)-(t.radius/2),t.y+(tileScale.y/2)+(t.radius/2));
+                    ctx.lineTo(t.x+(tileScale.x/2)+(t.radius/2),t.y+(tileScale.y/2)-(t.radius/2));
+                   
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+             })
+        });
+    }
+    
+    function buildGrid(){
+        tiles = []; positions = []; links = [];
+        for(var i = 0; i < grid.col; i++){
+            var row = [];
+            var vert = [];
+            for(var k = 0; k < grid.row; k++){
+                var randColor = Math.floor(Math.random()*colorArray.length);
+                
+                var nt = new Tile(i*tileScale.x,k*tileScale.y,tileScale.x,tileScale.y,k,i,randColor);
+                row.push(nt);
+                vert.push(new Position(i*tileScale.x, k*tileScale.y));
+                if(i > 0 && i < grid.col-1 && k > 0 && k < grid.row-1){
+                    if(Math.random()<0.05){
+                        nt.value = -1;
+                    } else if(Math.random()<0.1){
+                        nt.locked = true;
+                    }
+                }
+            }
+            tiles.push(row);
+            positions.push(vert);
+        }
+    }
+
+    function getRowFromPoint(t){
+        var retRow = [];
+        retRow.push(t);
+        var trow = t.row; var tcol = t.column;
+        //Add tiles to left
+        for(var i = tcol-1; i > -1; i--){
+            if(tiles[i][trow].value > -1 && !tiles[i][trow].locked){
+                retRow.unshift(tiles[i][trow]);
+            } else {
+                break;
+            }
+        }
+        //Add tiles to right
+        for(var j = tcol+1; j < grid.col; j++){
+            if(tiles[j][trow].value > -1 && !tiles[j][trow].locked){
+                retRow.push(tiles[j][trow]);
+            } else {
+                break;
+            }
+        }
+        return retRow;
+    }
+
+    function getColumnFromPoint(t){
+        var retCol = [];
+        retCol.push(t);
+        var trow = t.row; var tcol = t.column;
+        //Add tiles from above
+        for(var i = trow-1; i > -1; i--){
+            if(tiles[tcol][i].value > -1 && !tiles[tcol][i].locked){
+                retCol.unshift(tiles[tcol][i]);
+            } else {
+                
+                i = -1;
+            }
+        }
+ 
+        //Add tiles from below
+        for(var j = trow+1; j < grid.row; j++){
+            if(tiles[tcol][j].value > -1 && !tiles[tcol][j].locked){
+                retCol.push(tiles[tcol][j]);
+            } else {
+                
+                break;
+            }
+        }
+        return retCol;
+    }
+    
+    function cycle(arr,dir=-1){
+        if(dir < 0){ //Removes from end and adds to start
+            //Update the tiles array with the new row and column coordinates
+            var srow = arr[0].row; var scol = arr[0].column;
+            for(let i = 0; i < arr.length-1; i++){
+                tiles[arr[i+1].column][arr[i+1].row] = arr[i];
+            }
+            tiles[scol][srow] = arr[arr.length-1];
+            updateGridAssignments();
+            arr.unshift(arr.pop());
+        } else if(dir > 0){ //Removes from start and adds at end
+            var lrow = arr[arr.length-1].row; var lcol = arr[arr.length-1].column;
+            for(let i = arr.length-1; i > 0; i--){
+                tiles[arr[i-1].column][arr[i-1].row] = arr[i];
+            }
+            tiles[lcol][lrow] = arr[0];
+            updateGridAssignments();
+            arr.push(arr.shift());
+        } else {
+            console.log("NO CYCLE ON ZERO DIRECTION");
+        }
+        return arr;
+    }
+                  
+    function updateGridAssignments(){
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                tiles[i][j].column = i;
+                tiles[i][j].row = j;
+            }
+        }    
+    }
+
+    //*****************************************************************
+    //*****************************************************************
+
+
+    
+    function animate(){
+        window.requestAnimationFrame(animate);
+        ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        ctx.fillStyle='#000';
+        ctx.fillRect(0,0,innerWidth,innerHeight);
+        
+        
+        tiles.forEach(function(r){
+             r.forEach(function(t){
+                t.update();
+             })
+        });
+
+        if(gameover){
+            if(boardClearCheck()){
+                //Restart the map
+                newPuzzle();
+                gameover = false;
+            }
+        } else {
+            links.forEach(function(l){
+                l.draw();
+            });
+            drawLocks();
+        }
+    }
+
+    //*****************************************************************
+    //*****************************************************************
+
+    function newPuzzle(){
+        start.x = -1;
+        start.y = -1;
+        var randSize = Math.floor(Math.random()*sizePairs.length);
+        grid.row = sizePairs[randSize].x;
+        grid.col = sizePairs[randSize].y;
+        scaleCanvas();
+        buildGrid();
+        validateGrid();
+    }
+
+    function boardClearCheck(){
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                if(tiles[i][j].radius > 1){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    function getSelected(x,y){
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                var t = tiles[i][j];
+                if(t.x < x && t.x+t.w > x && t.y < y && t.y+t.h > y && t.value > -1 && !t.locked){
+                    return t;
+                }
+            }
+        }
+    }
+    
+    function valueCount(val){
+        var count = 0;
+        tiles.forEach(function(a){
+             a.forEach(function(t){
+                 if(t.value == val){
+                        count++;
+                 }
+             })
+        });
+        return count;
+    }
+    
+
+    function validateGrid(){
+        var blacklist = [];
+        var collections = [];
+        links = [];
+        for(var i = 0; i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                var t = tiles[i][j];
+
+                if(!blacklist.includes(t)){
+                    if(t.value > -1){
+                        var res = recursiveCheck(t);
+                        for(var k = 0; k < res.length; k++){
+                            blacklist.push(res[k]);
+                        }
+                        collections.push(res);
+                    }
+                }
+                whiteList = [];
+            }
+
+        }
+
+        for(var i = 0; i < collections.length; i++){
+            var checkVal = collections[i][0].value;
+            for(var j = 0; j < collections.length; j++){
+                if(collections[j][0].value == checkVal && j != i){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function recursiveCheck(tile, calling=undefined){
+        var result = []; var res = [];
+        result.push(tile);
+        whiteList.push(tile);
+        if(tile.column+1 < grid.col){ //RIGHT
+            if(tiles[tile.column+1][tile.row].value == tile.value && tiles[tile.column+1][tile.row] != calling){
+                links.push(new Link(tile,tiles[tile.column+1][tile.row]));
+                if(!whiteList.includes(tiles[tile.column+1][tile.row])){
+                    res = recursiveCheck(tiles[tile.column+1][tile.row],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            } 
+        }
+        if(tile.row+1<grid.row){ //DOWN
+            if(tiles[tile.column][tile.row+1].value == tile.value && tiles[tile.column][tile.row+1] != calling){
+                links.push(new Link(tile,tiles[tile.column][tile.row+1]));
+                if(!whiteList.includes(tiles[tile.column][tile.row+1])){
+                    res = recursiveCheck(tiles[tile.column][tile.row+1],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            } 
+        }
+        if(tile.column-1 > -1){ //LEFT
+            if(tiles[tile.column-1][tile.row].value == tile.value && tiles[tile.column-1][tile.row] != calling){
+                links.push(new Link(tile,tiles[tile.column-1][tile.row]));
+                if(!whiteList.includes(tiles[tile.column-1][tile.row])){
+                    res = recursiveCheck(tiles[tile.column-1][tile.row],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            }
+        }
+        if(tile.row-1 > -1){ //UP
+            if(tiles[tile.column][tile.row-1].value == tile.value && tiles[tile.column][tile.row-1] != calling){
+                links.push(new Link(tile,tiles[tile.column][tile.row-1]));
+                if(!whiteList.includes(tiles[tile.column][tile.row-1])){
+                    res = recursiveCheck(tiles[tile.column][tile.row-1],tile);
+                    for(var i = 0; i < res.length; i++){
+                        result.push(res[i]);
+                    }
+                }
+            }  
+        }
+        return result;
+    }
+    
+    //*** INPUT SECTION **//
+    
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+        scaleGrid();
+    });
+    
+    
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+    
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+        
+        selected = getSelected(start.x,start.y);
+        if(selected != undefined){
+            offset.x = selected.x-start.x;
+            offset.y = selected.y-start.y;
+        }
+
+        if(gameover){
+            start.x = -1;
+        }
+    }
+    
+    var srow = []; var scol = [];
+    function inputMove(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        
+            if(selected != undefined){
+                if(Math.abs(x-start.x) > tileScale.x/8 || Math.abs(y-start.y) > tileScale.y/8){
+                    if(Math.abs(x-start.x) > Math.abs(y-start.y)){
+                        //Horizontal
+                        selected.x = x+offset.x;
+                        selected.y = positions[selected.column][selected.row].y;
+                        srow = getRowFromPoint(selected);
+                       
+                        if(Math.abs(x-start.x) > tileScale.x*0.5){
+                            if(x > start.x){
+                                start.x += tileScale.x;
+                                srow = cycle(srow,-1);
+                                snapToPositions(selected);
+                            } else {
+                                start.x -= tileScale.x;
+                                srow = cycle(srow,1);
+                                snapToPositions(selected);
+                            }
+                        }
+                    } else {
+                        //Vertical
+                        selected.y = y+offset.y;
+                        selected.x = positions[selected.column][selected.row].x;
+                        scol = getColumnFromPoint(selected);
+                        
+                        if(Math.abs(y-start.y) > tileScale.y*0.5){
+                            if(y > start.y){
+                                start.y += tileScale.y;
+                                scol = cycle(scol,-1);
+                                snapToPositions(selected);
+                            } else {
+                                start.y -= tileScale.y;
+                                scol = cycle(scol,1);
+                                snapToPositions(selected);
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }
+    }
+    
+    function inputEnd(){
+        snapToPositions();
+        selected = undefined;
+        start.x = -1;
+        srow.length = 0;
+        scol.length = 0;
+        gameover = validateGrid();
+    }
+    
+    function snapToPositions(exc=undefined){
+        tiles.forEach(function(a){
+             a.forEach(function(t){
+                 if(t != exc){
+                    t.x = positions[t.column][t.row].x;
+                    t.y = positions[t.column][t.row].y;
+                 }
+             })
+        });
+    }
+    
+    
+    scaleCanvas();
+    buildGrid();
+    animate();
+    validateGrid();
+    
+</script>
+</body>
+</html>
