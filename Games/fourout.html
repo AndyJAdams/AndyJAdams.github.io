@@ -13,6 +13,7 @@
         }
         canvas{
             touch-action: none;
+            background-color: #efefef;
         }
 	</style>
 </head>
@@ -20,7 +21,7 @@
 	<canvas id='canvas'></canvas>
 	<script>
     //Global Variables Here
-    var DEBUG = true;
+    var DEBUG = false;
     var version = 0.0001;
     var grid = {x:4,y:6};
     var tileScale = {x:0,y:0};
@@ -49,12 +50,16 @@
         this.owner = undefined;
         this.draw=function(){
             ctx.fillStyle=colorArray[this.t];
-            ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
+            //ctx.fillRect(this.x,this.y,this.w+1,this.h+1);
+            //function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            roundRect(ctx,this.x+5,this.y+5,this.w-10,this.h-10,this.w/10,colorArray[this.t]);
+            
+            
             
             if(DEBUG){
                 ctx.fillStyle='#FFF';
                 ctx.font = '14px sans-serif';
-                ctx.fillText(this.gx+","+this.gy + " " + this.t,this.x+5,this.y+16);
+                ctx.fillText(this.gx+","+this.gy + " " + this.t,this.x+25,this.y+26);
                 
                 if(this.owner != undefined){
                     ctx.strokeStyle='#FFF';
@@ -120,6 +125,11 @@
 	function animate(){
 		window.requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+         if(start.x < 0){
+            makeCollections();
+        }
+        
         if(tiles.length > 1){
             for(var i = 0; i < tiles.length; i++){
                 for(var j = 0; j < tiles[i].length; j++){
@@ -130,16 +140,25 @@
             
             if(selected.length > 0){
                 for(var i= 0; i < selected.length;i++){
-               ctx.fillStyle='#FFF'; ctx.fillRect(selected[i].x+tileScale.x-30,selected[i].y+5,10,10);
+               ctx.fillStyle='#FFF'; ctx.fillRect(selected[i].x+tileScale.x-30,selected[i].y+25,10,10);
+                    var r = getRowFromPoint(selected[i]);
+                    ctx.fillStyle='#000';
+                    for(var j = 0; j < r.length; j++){
+                        ctx.fillRect(r[j].x+25,r[j].y+40,10,10);
+                    }
+                    var c = getColumnFromPoint(selected[i]);
+                    ctx.fillStyle='#000';
+                    for(var j = 0; j < c.length; j++){
+                        ctx.fillRect(c[j].x+25,c[j].y+80,10,10);
+                    }
                 }
+                
             }
         } else {
             buildGrid();
         }
         
-        if(start.x < 0){
-            makeCollections();
-        }
+       
 	}
         
     //*** GAMEPLAY HELPERS ***//
@@ -215,6 +234,44 @@
         }
         return o;
     }
+        
+    function getRowFromPoint(t){ //t = tile we are checking against 
+        var row = [];
+        for(var i = t.gx-1; i > -1; i--){ //Left
+            if(getCollection(tiles[i][t.gy]) != -1){
+                break;
+            } else {
+                row.push(tiles[i][t.gy]);
+            }
+        }
+        for(var i =t.gx+1; i < grid.x; i++){
+            if(getCollection(tiles[i][t.gy])!= -1){
+                break;   
+            } else {
+                row.push(tiles[i][t.gy]);
+            }
+        }
+        return row;
+    }
+        
+    function getColumnFromPoint(t){
+        var col = [];
+        for(var i = t.gy-1; i> -1; i--){
+            if(getCollection(tiles[t.gx][i]) != -1){
+                break;
+            } else {
+                col.push(tiles[t.gx][i]);
+            } 
+        }
+        for(var i = t.gy+1; i < grid.y; i++){
+            if(getCollection(tiles[t.gx][i]) != -1){
+                break;
+            } else {
+                col.push(tiles[t.gx][i]);
+            }
+        }
+        return col;
+    }
 
 	//*** INPUT SECTION **//
     var start = {x:-1,y:-1};
@@ -276,6 +333,42 @@
             }
         }
         return false;
+    }
+        
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+      if (typeof stroke === 'undefined') {
+        stroke = false;
+      }
+      if (typeof radius === 'undefined') {
+        radius = 5;
+      }
+      if (typeof radius === 'number') {
+        radius = {tl: radius, tr: radius, br: radius, bl: radius};
+      } else {
+        var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+        for (var side in defaultRadius) {
+          radius[side] = radius[side] || defaultRadius[side];
+        }
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + radius.tl, y);
+      ctx.lineTo(x + width - radius.tr, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+      ctx.lineTo(x + width, y + height - radius.br);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+      ctx.lineTo(x + radius.bl, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+      ctx.lineTo(x, y + radius.tl);
+      ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+      ctx.closePath();
+      if (fill) {
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.stroke();
+      }
+        
+     
     }
 
     scaleCanvas();
