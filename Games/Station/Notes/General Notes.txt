@@ -1,0 +1,74 @@
+Station Notes - Andrew Adams 4/6/2020 @0902CST
+-Military Outpost
+    -Heavy Quarters
+    -Training Grounds
+    -Military Research
+    -MAX Defenses
+    -Medium/Heavy Repair Shops
+    -No Crime
+    -No Casino
+    -Medium Food
+    -MAX Command
+-Research Facility
+    -Minimal Population
+    -Technology Research
+    -Biology Research
+    -No Tourism
+    -Minimal Defenses
+    -Low Crime
+    -No Casino
+    -Low Food
+    -Low Command
+-Tourist Destination
+    -MAX Quarters
+    -Medium Trading
+    -Medium Shopping
+    -Minimal Defenses
+    -Profitable Research
+    -Low Crime
+    -No repair shops
+    -Casino
+    -Medium Food
+    -Low Command
+    -Max Tourism
+-Shopping Center
+    -Minimal Quarters
+    -Max Shopping
+    -Heavy Trading
+    -Minimal Defenses
+    -Medium Crime
+    -Low Repair shops
+    -Heavy Food
+    -No research
+    -Low Command
+-Trading Outpost
+    -Medium Crime
+    -Max Trading
+    -Minimal Shopping
+    -Medium Defenses
+    -Low Repair Shops
+    -Medium Food
+    -Medium Quarters
+    -No research
+    -Low/Med Command
+-Mercenary Den
+    -Heavy Quarters
+    -Heavy Defenses
+    -Medium Trading
+    -Military Research
+    -Heavy Food
+    -No Tourism
+    -Medium Repair shops
+    -Heavy Crime
+    -Low/Med Command
+-Maintenance Center
+    -Low Tourism
+    -Medium Food
+    -Medium Defenses
+    -Medium / Low Quarters
+    -Profitible / Repair Research
+    -Medium / Low Crime
+    -Low Trading
+    -Low Shopping
+    -MAX Repair Shops
+    -Low/Medium Command
