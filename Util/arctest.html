@@ -19,7 +19,7 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
-    var startAngle = 160; var endAngle = 200;
+    var startAngle = 0; var endAngle = 359;
         var radius = 200;
     var limits = {
         min: dtr(startAngle), //Convert the angles into "PURE" radians
@@ -38,7 +38,7 @@
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
         
-        //Draw limits
+        //Draw limits -Ring
         ctx.beginPath();
         ctx.arc(innerWidth/2,innerHeight/2,radius,limits.min,limits.max);
         ctx.stroke();
@@ -66,6 +66,10 @@
         }
         
         ctx.fillText(curAngle , 10,10);
+        
+        ctx.beginPath();
+        ctx.arc(innerWidth/2, innerHeight/2,50,0,1*Math.PI);
+        ctx.stroke();
 	}
         
     function rtd(a){ //Radians To Degrees

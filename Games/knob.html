@@ -28,6 +28,8 @@
     var color1 = '#ddd';
     var color2 = '#222';
     var angleDiff = 0;
+    var rotationSensitivity = 10;
+    var level = 8;
         
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
@@ -36,113 +38,196 @@
 	}
 	var ctx = canvas.getContext('2d');
         
-    function Target(x,y,r){
-        this.x = x; this.y = y; this.r = r;
+    function Ring(radius,startDeg,endDeg){ 
+        this.targetRadius = radius;
+        this.dotScale = 7.20;
+        this.keyScale = 9.20;
+        this.radius = 0; 
+        this.start = startDeg; this.end = endDeg;
+        this.limits = {min: dtr(this.start),max:dtr(this.end)};
+        this.keyAngle = this.limits.min+(Math.random()*(this.limits.max-this.limits.min));
+        this.gauge = Math.random()*4+2;
+        //Get default random positions for the key
+        this.keyX = this.targetRadius*Math.cos(this.keyAngle)+innerWidth/2;
+        this.keyY = this.targetRadius*Math.sin(this.keyAngle)+innerHeight/2;
+        //Get random position for the dot
+        this.dotAngle = this.limits.min+(Math.random()*(this.limits.max-this.limits.min));
+        this.dotX = this.targetRadius*Math.cos(this.dotAngle)+innerWidth/2;
+        this.dotY = this.targetRadius*Math.sin(this.dotAngle)+innerHeight/2;
+        
+        //Asset radii
+        this.dotRadius = 0;
+        this.keyRadius = 0;
+        
         this.draw = function(){
-            ctx.beginPath();
-            ctx.arc(this.x,this.y,this.r,0,2*Math.PI);
-            ctx.fillStyle=color2;
-            ctx.fill();
-        }
-        
-        this.update = function(){
-            this.draw();
-        }
-    }
-        
-    function Ring(r,s,e){
-        this.r = r; this.s = s; this.e = e;
-        console.log(this.s + " to " + this.e);
-        this.draw = function(){
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(innerWidth/2,innerHeight/2,this.r,this.s, this.e*Math.PI);
-            ctx.strokeStyle=color2;
-            ctx.stroke();
-        }
-        
-        this.update = function(){
-            this.draw();
-        }
-    }
-        
-    function Key(x,y,r, ring){
-        this.x = x; this.y = y; this.r = r; this.ring = ring;
-        this.angle = findAngle(this.x, this.y);
-        this.draw = function(){
+            ctx.setLineDash([]);
+            ctx.lineWidth = this.gauge;
             
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y,this.r,0,2*Math.PI);
-            ctx.fillStyle=color1;
-            ctx.fill();
-            ctx.strokeStyle=color2;
-            ctx.stroke();
+            //Draw the limiting ring
+            if(this.radius > 1){
+                ctx.beginPath();
+                ctx.arc(innerWidth/2,innerHeight/2,this.radius,this.limits.min, this.limits.max);
+                ctx.strokeStyle=color2;
+                ctx.stroke();
+                ctx.closePath();
+            }
+            //Here we draw the circle keys
+            if(this.keyRadius > 1){
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.keyX, this.keyY,this.keyRadius,0,2*Math.PI);
+                ctx.fillStyle = color1;
+                ctx.fill();
+                ctx.stroke();
+            }
+            //Here we draw the black dot "Target"
+            if(this.dotRadius > 1){
+                ctx.beginPath();
+                ctx.arc(this.dotX,this.dotY,this.dotRadius,0,2*Math.PI);
+                ctx.fillStyle=color2;
+                ctx.fill();
+                ctx.closePath();
+            }
+            
         }
         
-        this.update = function(){
-            this.angle += (angleDiff/100);
-            this.x = posXFromAngle(this.ring.r,this.angle);
-            this.y = posYFromAngle(this.ring.r, this.angle);
-//            this.x = this.ring.r*Math.sin(this.angle)+innerWidth/2;
-//            this.y = this.ring.r*-Math.cos(this.angle)+innerHeight/2;
-               
+        this.update = function(radDiff){
+            this.keyAngle += (radDiff/this.gauge)/rotationSensitivity;
+            if(this.keyAngle < this.limits.min){
+                this.keyAngle = this.limits.min;
+            } else if(this.keyAngle > this.limits.max){
+                this.keyAngle = this.limits.max;
+            }
+            this.keyX = this.radius*Math.cos(this.keyAngle)+innerWidth/2;
+        this.keyY = this.radius*Math.sin(this.keyAngle)+innerHeight/2;
             this.draw();
+            
+            if(gameOver){
+                if(this.dotRadius > 1){
+                    this.dotRadius-= 0.5;
+                } else if(this.keyRadius > 1){
+                    this.keyRadius -= 0.8;
+                } else if(this.radius > 1){
+                    this.radius -= (this.radius/10);
+                } 
+            } else {
+                if(this.radius < this.targetRadius){
+                    this.radius+= this.targetRadius/10;
+                } else if(this.dotRadius < this.dotScale){
+                    this.dotRadius+= this.dotScale/10;
+                } else if(this.keyRadius < this.keyScale){
+                    this.keyRadius += this.keyScale/10;
+                }
+            }
         }
     }
-        
+    
     var rings = [];
-    for(var i  =0; i < 3; i++){
-        
-        var start = Math.random()*1.75+0.25;
-        var end = Math.random()*1.75+0.25;
-        rings.push(new Ring(i*100+50,start,end));
+    var spawnCount = 1;
+    function buildRings(){
+        switch(level){
+            case 5:
+                spawnCount = 2;
+                break;
+            case 10:
+                spawnCount = 3;
+                break;
+            case 20:
+                spawnCount = 4;
+                break;
+            case 30:
+                spawnCount = 5;
+                break;
+            default:
+                break;
+        }
+        console.log(level);
+        for(var i  =0; i < spawnCount; i++){
+            var start = Math.random()*240;
+            var end = start+Math.random()*100+50;
+            rings.push(new Ring(i*40+50,start,end));
+        }
     }
-        
-    var targets = [];
-    for(var i = 0; i < rings.length; i++){
-        var range = rings[i].s-rings[i].e;
-        var rad = Math.random()*range+rings[i].s;
-        var x = posXFromAngle(rings[i].r,radToAngle(rad));
-        var y = posYFromAngle(rings[i].r, radToAngle(rad));
-//        var x = (Math.random()-0.5) * (rings[i].r*2);
-//        var y = Math.sqrt(Math.pow(rings[i].r,2)-Math.pow(x,2));
-        
-        targets.push(new Target(x,y,8));
-    }
-        
-    var keys = [];
-    for(var i = 0; i < rings.length; i++){
-        var x = (Math.random()-0.5) * (rings[i].r*2);
-        var y = Math.sqrt(Math.pow(rings[i].r,2)-Math.pow(x,2));
-        var randY = Math.random();
-        if(randY < 0.5){ y = -y;}
-        keys.push(new Key(x+innerWidth/2,y+innerHeight/2,12,rings[i]));
-    }
-
     //**********************************************************
-        
+    var gameOver = false;
 	function animate(){ //Game Draw Loop
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
         ctx.fillStyle=color1;
         ctx.fillRect(0,0,innerWidth,innerHeight);
-        
+        if(rings.length < 1){
+            buildRings();
+        }
+        if(current.x > -1 && !gameOver){
+            if(angle.current != angle.prev){
+                //angleDiff = angle.prev-angle.current;
+                angleDiff = start.angle-angle.current;
+                if(angleDiff > 350){
+                   angleDiff -= 360;
+                } else if(angleDiff < -300){
+                    angleDiff += 360;
+                }
+                angle.prev = angle.current;
+            }
+            
+            ctx.beginPath();
+            ctx.moveTo(innerWidth/2, innerHeight/2);
+            ctx.lineTo(current.x,current.y);
+            ctx.stroke();
+            ctx.closePath();
+            
+            var dist = getDistance(innerWidth/2, innerHeight/2,current.x,current.y);
+            var radStart = dtr(start.angle);
+            var radCurr = dtr(angle.current);
+            if(radStart > radCurr){
+                var placeholder = radCurr;
+                radCurr = radStart; 
+                radStart = placeholder;
+            }
+            ctx.beginPath();
+            ctx.arc(innerWidth/2,innerHeight/2,dist,radStart, radCurr);
+                    ctx.setLineDash([5,7]);
+            ctx.stroke();
+        } else {
+            angleDiff = 0;
+        }
         
         for(var i  =0; i < rings.length; i++){
-            rings[i].update();
+            rings[i].update(dtr(angleDiff));
         }
         
-        for(var i = 0; i < keys.length; i++){
-            keys[i].update();
+        if(validatePuzzle() && !gameOver){
+            gameOver = true;
         }
         
-        for(var i = 0; i< targets.length; i++){
-            targets[i].update();
+        if(gameOver){
+            respawn();
         }
 	}
         
     //***********************************************************
+    
+    function respawn(){
+         for(var i= 0; i < rings.length; i++){
+             if(rings[i].radius > 1){
+                 return false;
+             }
+         }
+        rings = [];
+        level++;
+        gameOver = false;
+    }
+        
+    function validatePuzzle(){
+        for(var i= 0; i < rings.length; i++){
+            var dist = getDistance(rings[i].dotX,rings[i].dotY,rings[i].keyX, rings[i].keyY);
+            if(dist > 5 || Math.abs(rings[i].radius-rings[i].targetRadius) > 5){
+                return false;
+            }
+        }
+        return true;
+    }
+        
     // USE SOHCAHTOA
     // Sine = Opposite (b) / Hypotenuse (c)
     // Cos = Adjacent(a)/Hypotenuse (c)
@@ -158,16 +243,34 @@
         return angle;
     }
         
-    function radToAngle(a){
+    function rtd(a){ //Radians To Degrees
         return a*(180/Math.PI);
     }
         
+    function dtr(a){ //Degrees To "Pure" Radians
+        return a*(Math.PI/180);
+    }
+        
     function posXFromAngle(r,a){
-       return r*Math.sin(a)+innerWidth/2;
+       return r*Math.cos(a)+innerWidth/2;
     }
         
     function posYFromAngle(r,a){
-        return r*-Math.cos(a)+innerHeight/2;
+        return r*-Math.sin(a)+innerHeight/2;
+    }
+        
+    function getRadains(x1,y1,x2,y2){
+        return Math.atan2(y2-y1,x2-x1);
+    }
+        
+    function getDegrees(x1,y1,x2,y2){
+        return getRadians(x1,y1,x2,y2)*180/Math.PI;
+    }
+        
+    function getDistance(x1,y1,x2,y2){
+        var x = Math.pow(Math.abs(x1-x2),2);
+        var y = Math.pow(Math.abs(y1-y2),2);
+        return Math.sqrt(x+y);
     }
     
 	//*** INPUT SECTION **//
@@ -186,7 +289,8 @@
     window.addEventListener('touchcancel',inputEnd,false);
     window.addEventListener('touchend',inputEnd,false);
     var angle = {prev: 0, current:0};
-    var start = {x:-1,y:-1};
+    var start = {x:-1,y:-1,angle:0};
+    var current = {x:-1,y:-1};
     function inputStart(evt){
         evt.preventDefault();
         if(evt.changedTouches != undefined){
@@ -199,8 +303,8 @@
             start.x = evt.pageX;
             start.y = evt.pageY;
             angle.prev = findAngle(start.x, start.y);
+            start.angle = angle.prev;
             angle.current = angle.prev;
-            console.log(angle.prev-angle.current);
         }
     }
     
@@ -211,18 +315,14 @@
             if(evt.changedTouches != undefined){
                 var touches = evt.changedTouches;
                 if(touches.length > 0){
-                    x = touches[0].pageX;
-                    y = touches[0].pageY;
+                   current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
                 }
             } else {
-                x = evt.pageX;
-                y = evt.pageY;
-                angle.current = findAngle(x,y);
-                if(angle.current != angle.prev){
-                    angleDiff = angle.prev-angle.current;
-                    angle.prev = angle.current;
-                    console.log(angleDiff);
-                }
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+                angle.current = findAngle(current.x,current.y);
+                
                 
             }
         }
@@ -230,11 +330,7 @@
     
     function inputEnd(){
         start.x = -1;
-        if(angleDiff > 0){
-            //Set the new position for the keys;
-            
-        }
-        angleDiff = 0;
+        current.x = -1;
     }
     
     scaleCanvas();
