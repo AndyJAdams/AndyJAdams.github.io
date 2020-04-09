@@ -22,30 +22,11 @@
 	</style>
 </head>
 <body id='body'>
-    <input id='url' type='text' placeholder="Streamlabs chat url"/>
-    <button type='button' onclick='loadChat()'>Load Chat</button>
-    <div id='chatDiv'></div>
     <div id='media'>
 	<iframe width="0" height="0" src="https://www.youtube.com/embed/v_YozYt8l-g?autoplay=1&start=11&end=15" allow="autoplay" allowfullscreen></iframe>
     </div>
 	<script>
-        var chatframe;
-        function loadChat(){
-            var chatDiv = document.getElementById('chatDiv');
-            var url = document.getElementById('url').value;
-            chatDiv.innerHTML = "<iframe src='"+url+"/' height='800' width='400' id='chat'></iframe>";
-            chatFrame = document.getElementById('chat');
-            scrape();
-        }
         
-        function scrape(){
-            //window.requestAnimationFrame(scrape);
-            var chatDoc = chatFrame.contentDocument;
-            console.log(chatDoc);
-            var sl = chatDoc.getElementById('sl_frame');
-            console.log(sl);
-            
-        }
 	
 	</script>
 </body>
