@@ -29,7 +29,7 @@
     var color2 = '#222';
     var angleDiff = 0;
     var rotationSensitivity = 10;
-    var level = 8;
+    var level = 1;
         
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
@@ -45,15 +45,20 @@
         this.radius = 0; 
         this.start = startDeg; this.end = endDeg;
         this.limits = {min: dtr(this.start),max:dtr(this.end)};
+        //Key Random Position
         this.keyAngle = this.limits.min+(Math.random()*(this.limits.max-this.limits.min));
-        this.gauge = Math.random()*4+2;
+        this.gauge = 2;
+        if(level > 15){
+            this.gauge = Math.random()*4+2;
+        }
         //Get default random positions for the key
         this.keyX = this.targetRadius*Math.cos(this.keyAngle)+innerWidth/2;
         this.keyY = this.targetRadius*Math.sin(this.keyAngle)+innerHeight/2;
-        //Get random position for the dot
-        this.dotAngle = this.limits.min+(Math.random()*(this.limits.max-this.limits.min));
-        this.dotX = this.targetRadius*Math.cos(this.dotAngle)+innerWidth/2;
-        this.dotY = this.targetRadius*Math.sin(this.dotAngle)+innerHeight/2;
+        this.dotAngle = this.keyAngle;
+        this.dotX = this.keyX;
+        this.dotY = this.keyY;
+        
+        
         
         //Asset radii
         this.dotRadius = 0;
@@ -91,6 +96,19 @@
             
         }
         
+        this.offsetSolution = function(spin){
+            for(var i = 0; i < spin.length; i++){
+                this.keyAngle += (dtr(spin[i])/this.gauge)/rotationSensitivity;
+                if(this.keyAngle < this.limits.min){
+                    this.keyAngle = this.limits.min;
+                } else if(this.keyAngle > this.limits.max){
+                    this.keyAngle = this.limits.max;
+                }
+                this.keyX = this.radius*Math.cos(this.keyAngle)+innerWidth/2;
+                this.keyY = this.radius*Math.sin(this.keyAngle)+innerHeight/2;
+            }
+        }
+        
         this.update = function(radDiff){
             this.keyAngle += (radDiff/this.gauge)/rotationSensitivity;
             if(this.keyAngle < this.limits.min){
@@ -124,7 +142,12 @@
     
     var rings = [];
     var spawnCount = 1;
+    var spin = [];
     function buildRings(){
+        spin = [];
+        for(var i = 0; i < 3; i++){
+            spin.push(Math.random()*330+30);
+        }
         switch(level){
             case 5:
                 spawnCount = 2;
@@ -141,11 +164,13 @@
             default:
                 break;
         }
-        console.log(level);
+        console.log(spin);
         for(var i  =0; i < spawnCount; i++){
             var start = Math.random()*240;
             var end = start+Math.random()*100+50;
-            rings.push(new Ring(i*40+50,start,end));
+            var r = new Ring(i*40+50,start,end);
+            r.offsetSolution(spin);
+            rings.push(r);
         }
     }
     //**********************************************************
@@ -305,6 +330,13 @@
             angle.prev = findAngle(start.x, start.y);
             start.angle = angle.prev;
             angle.current = angle.prev;
+        }
+        
+        if(start.x < 20 && start.y < 20){
+            for(var i = 0; i < rings.length; i++){
+                rings[i].keyAngle = rings[i].dotAngle;
+                rings[i].offsetSolution(spin);
+            }
         }
     }
     
