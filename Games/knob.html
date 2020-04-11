@@ -32,6 +32,7 @@
     var angleDiff = 0;
     var rotationSensitivity = 10;
     var ringCount = 2;
+    
         
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
@@ -45,23 +46,65 @@
         this.dotScale = 7.20;
         this.keyScale = 9.20;
         this.radius = 0; 
-        this.start = dtr(startDeg); this.end = dtr(endDeg);
-        this.limits = {min: this.start, max:this.end};
+        this.start = startDeg; this.end = endDeg;
+//        this.limits = {min: dtr(this.start), max:dtr(this.end)};
 //        if(this.end < this.start){
 //            this.limits.min = this.end; this.limits.max = this.start;
 //        }
-        //Key Random Position
+        this.gauge = gauge;
+        
+        this.posArray = [];
+        
+        this.defineRingArray = function(){
+            this.posArray = [];
+            var min = this.start; var max = this.end;
+            if(this.end < this.start){
+                min = this.end; max = this.start;
+            }
+            for(var i = min; i < max; i+=0.5){
+                var x = this.targetRadius*Math.cos(dtr(i))+innerWidth/2;
+                var y = this.targetRadius*Math.sin(dtr(i))+innerHeight/2;
+                this.posArray.push(new Position(x,y));
+            }
+            console.log(this.posArray);
+        }
+        
+        //Build array of available key positons
+        this.defineRingArray();
+
         this.keyAngle = dtr(keyAngle);
             //this.limits.min+(Math.random()*(this.limits.max-this.limits.min));
-        this.gauge = gauge;
         //Get default random positions for the key
         this.keyX = this.targetRadius*Math.cos(this.keyAngle)+innerWidth/2;
         this.keyY = this.targetRadius*Math.sin(this.keyAngle)+innerHeight/2;
+        
+        //Find the closest point in postion array for the key
+//        this.closestX = innerWidth; this.closestY = innerHeight;
+        this.distance = 10000000;
+        this.keyIndex = -1;
+        for(var i = 0; i < this.posArray.length; i++){
+            var dist = getDistance(this.posArray[i].x, this.posArray[i].y,this.keyX,this.keyY);
+            if(dist < this.distance){
+                this.distance = dist;
+                this.keyIndex = i;
+            }
+//            if(Math.abs(posArray.x-this.keyX)<this.closestX){
+//                if(Math.abs(posArray[i].y-this.keyY)<this.closestY){
+//                    this.closestX = Math.abs(posArray[i].x-this.keyX);
+//                    this.closestY = Math.abs(posArray[i].y-this.keyY);
+//                    this.keyIndex = i;
+//                }
+//            }
+        }
+        if(this.keyIndex > -1){
+            this.keyX = this.posArray[this.keyIndex].x;
+            this.keyY = this.posArray[this.keyIndex].y;
+        }
+        console.log(this.keyIndex +" @ "+ this.distance);
+        
         this.dotAngle = dtr(targetAngle);
         this.dotX = this.targetRadius*Math.cos(this.dotAngle)+innerWidth/2;
         this.dotY = this.targetRadius*Math.sin(this.dotAngle)+innerHeight/2;
-        
-        
         
         //Asset radii
         this.dotRadius = 0;
@@ -74,7 +117,7 @@
             //Draw the limiting ring
             if(this.radius > 1){
                 ctx.beginPath();
-                ctx.arc(innerWidth/2,innerHeight/2,this.radius,this.start, this.end);
+                ctx.arc(innerWidth/2,innerHeight/2,this.radius,dtr(this.start), dtr(this.end));
                 ctx.strokeStyle=color2;
                 ctx.stroke();
                 ctx.closePath();
@@ -96,18 +139,25 @@
                 ctx.fill();
                 ctx.closePath();
             }
+            
+            ctx.strokeRect(this.closestX-100, this.closestY-100, 200,200);
         }
         
         this.update = function(radDiff){
-            if(radDiff > 0){
-                this.keyAngle += (radDiff/this.gauge)/rotationSensitivity;
-                if(this.keyAngle < this.limits.min){
-                    this.keyAngle = this.limits.min;
-                } else if(this.keyAngle > this.limits.max){
-                    this.keyAngle = this.limits.max;
+            //Update key angle within bounds of posArray
+            if(this.keyIndex > -1){
+                if(radDiff > 0){
+                    this.keyIndex += this.gauge/rotationSensitivity;
+                } else if(radDiff < 0){
+                    this.keyIndex -= this.gauge/rotationSensitivity;
                 }
-                this.keyX = this.radius*Math.cos(this.keyAngle)+innerWidth/2;
-            this.keyY = this.radius*Math.sin(this.keyAngle)+innerHeight/2;
+                if(this.keyIndex < 0){
+                    this.keyIndex = 0;
+                } else if(this.keyIndex > this.posArray.length-1){
+                    this.keyIndex = this.posArray.length-1;
+                }
+                this.keyX = this.posArray[Math.round(this.keyIndex)].x;
+                this.keyY = this.posArray[Math.round(this.keyIndex)].y;
             }
             
             if(gameOver){
@@ -130,6 +180,11 @@
             this.draw();
         }
     }
+        
+    function Position(x,y){
+        this.x = x; 
+        this.y = y;
+    }
     
     var rings = [];
     function buildRings(){
@@ -145,13 +200,10 @@
                     var w = data[i][4];
                     
                     rings.push(new Ring(i*50+50,s,e,t,k,w));
-                    console.log(s + "," + e + "," + t + "," + k + "," +w);
                 } else {
                     //Do nothing for empty ring..
-                    console.log("EMPTY RING");
                 }
             }
-            console.log("loaded url data");
         } else {
             //Here we do not have URL data. 
             ringCount = 2;
