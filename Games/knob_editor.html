@@ -1,0 +1,259 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Knob Editor</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+	var canvas = document.getElementById('canvas');	
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	var ctx = canvas.getContext('2d');
+
+    //*** GLOBAL VARIABLES ***//
+    var center = {x: innerWidth/2,y: innerHeight/2};
+    var ringCount = 2;
+    var rings = [];
+
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+        if(selection.ring > -1){ //We have clicked and have a target selected;
+            var ang = getRadains(center.x, center.y,current.x,current.y);
+            if(selection.target == 0){ //Dot selected
+                rings[selection.ring].targetAngle = ang;
+            } else if(selection.target == 1){ //Key selected
+                rings[selection.ring].keyAngle = ang;
+            } else if(selection.target == 2){
+                rings[selection.ring].start = ang;
+            } else if(selection.target == 3){
+                rings[selection.ring].end = ang;
+            } else {
+                console.log("Ring selected but no object set");
+            }
+        }
+
+        if(rings.length != ringCount){
+            buildRings();
+        } else {
+            for(var i = 0; i < rings.length; i++){
+                rings[i].update();
+            }
+        }
+
+        ctx.fillText(rings.length,10,10);
+	}
+
+    //*** GAMEPLAY FUNCTIONS ***//
+    function buildRings(){
+        if(rings.length < 1){
+            rings = [];
+        }
+        if(rings.length < ringCount){
+            for(var i = rings.length; i < ringCount; i++){
+                rings.push(new Ring(i*50+50,45,270));
+            }
+        } 
+    }
+
+    //*** OBJECT DEFINITIONS ***//
+    function Ring(radius, start, end){
+        this.radius = radius; 
+        this.start = dtr(start); 
+        this.end = dtr(end);
+
+        this.targetAngle = this.start+(0.5*(this.end-this.start));
+        this.keyAngle = this.start+(0.75*(this.end-this.start));
+
+        this.draw = function(){
+            //Draw the key
+            this.drawKey(this.keyAngle);
+
+            //Draw the target
+            this.drawTarget(this.targetAngle);
+
+            //Draw the ring itself
+            ctx.beginPath();
+            ctx.arc(center.x,center.y,this.radius,this.start,this.end);
+            ctx.stroke();
+
+            //Draw the limits handles for the ring
+            this.drawHandle(this.start); //Start Handle
+            this.drawHandle(this.end); //End Handle
+        }
+
+        this.drawTarget = function(angle){
+            var x = this.radius*Math.cos(angle)+center.x;
+            var y = this.radius*Math.sin(angle)+center.y;
+            ctx.beginPath();
+            ctx.arc(x,y,6,0,2*Math.PI);
+            ctx.fillStyle='#222';
+            ctx.fill();
+        }
+
+        this.drawHandle = function(angle){
+            var x1 = (this.radius+6)*Math.cos(angle)+center.x;
+            var y1 = (this.radius+6)*Math.sin(angle)+center.y;
+            var x2 = (this.radius-6)*Math.cos(angle)+center.x;
+            var y2 = (this.radius-6)*Math.sin(angle)+center.y;
+            ctx.beginPath();
+            ctx.moveTo(x1,y1);
+            ctx.lineTo(x2,y2);
+            ctx.stroke();
+        }
+
+        this.drawKey = function(angle){
+            var x = this.radius*Math.cos(angle)+center.x;
+            var y = this.radius*Math.sin(angle)+center.y;
+            ctx.beginPath();
+            ctx.arc(x,y,8,0,2*Math.PI);
+            ctx.fillStyle='#DDD';
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        this.update = function(){
+            this.draw();
+        }
+    }
+
+    //**** HELPER FUNCTIONS ***//
+    function rtd(a){ //Radians To Degrees
+        return a*(180/Math.PI);
+    }
+        
+    function dtr(a){ //Degrees To "Pure" Radians
+        return a*(Math.PI/180);
+    }
+        
+    function posXFromAngle(r,a){
+       return r*Math.cos(a)+innerWidth/2;
+    }
+        
+    function posYFromAngle(r,a){
+        return r*-Math.sin(a)+innerHeight/2;
+    }
+        
+    function getRadains(x1,y1,x2,y2){
+        return Math.atan2(y2-y1,x2-x1);
+    }
+        
+    function getDegrees(x1,y1,x2,y2){
+        return getRadians(x1,y1,x2,y2)*180/Math.PI;
+    }
+        
+    function getDistance(x1,y1,x2,y2){
+        var x = Math.pow(Math.abs(x1-x2),2);
+        var y = Math.pow(Math.abs(y1-y2),2);
+        return Math.sqrt(x+y);
+    }
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+    
+    var start = {x:-1,y:-1}; //Start of click or touch
+    var current = {x:-1,y:-1}; //Current position of click/touch
+    var selection = {ring:-1,target:-1}; //Selected ring and object
+
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+
+            for(var i = 0; i < rings.length; i++){
+                var tx = rings[i].radius * Math.cos(rings[i].targetAngle)+center.x;
+                var ty = rings[i].radius * Math.sin(rings[i].targetAngle)+center.y;
+                var kx = rings[i].radius * Math.cos(rings[i].keyAngle)+center.x;
+                var ky = rings[i].radius * Math.sin(rings[i].keyAngle)+center.y;
+                var h1x = rings[i].radius * Math.cos(rings[i].start)+center.x;
+                var h1y = rings[i].radius * Math.sin(rings[i].start)+center.y;
+                var h2x = rings[i].radius * Math.cos(rings[i].end)+center.x;
+                var h2y = rings[i].radius * Math.sin(rings[i].end)+center.y;
+                if(getDistance(start.x,start.y,tx,ty)<10){
+                    console.log(i+" target selected");
+                    selection.ring = i;
+                    selection.target = 0;
+                    break;
+                } else if(getDistance(start.x,start.y,kx,ky) < 10){
+                    selection.ring = i;
+                    selection.target = 1;
+                    console.log(i+" key selected");
+                    break;
+                } else if(getDistance(start.x,start.y,h1x,h1y) < 10){
+                    selection.ring = i;
+                    selection.target = 2;
+                    console.log(i + " start handle selected");
+                    break;
+                } else if(getDistance(start.x,start.y,h2x,h2y) < 10){
+                    selection.ring = i;
+                    selection.target = 3;
+                    console.log(i + " end handle selected");
+                    break;
+                }
+            }
+        }
+    }
+    
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+    }
+    
+    function inputEnd(){
+        start.x = -1;
+        current.x = -1;
+    }
+    
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>

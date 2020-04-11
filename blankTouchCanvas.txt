@@ -13,6 +13,7 @@
         }
         canvas{
             touch-action: none;
+            background-color: #DDD;
         }
 	</style>
 </head>
