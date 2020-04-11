@@ -31,7 +31,7 @@
     var color2 = '#222';
     var angleDiff = 0;
     var rotationSensitivity = 10;
-    var level = 1;
+    var ringCount = 2;
         
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
@@ -40,25 +40,26 @@
 	}
 	var ctx = canvas.getContext('2d');
         
-    function Ring(radius,startDeg,endDeg){ 
+    function Ring(radius,startDeg,endDeg,targetAngle, keyAngle,gauge){ 
         this.targetRadius = radius;
         this.dotScale = 7.20;
         this.keyScale = 9.20;
         this.radius = 0; 
-        this.start = startDeg; this.end = endDeg;
-        this.limits = {min: dtr(this.start),max:dtr(this.end)};
+        this.start = dtr(startDeg); this.end = dtr(endDeg);
+        this.limits = {min: this.start, max:this.end};
+//        if(this.end < this.start){
+//            this.limits.min = this.end; this.limits.max = this.start;
+//        }
         //Key Random Position
-        this.keyAngle = this.limits.min+(Math.random()*(this.limits.max-this.limits.min));
-        this.gauge = 2;
-        if(level > 15){
-            this.gauge = Math.random()*4+2;
-        }
+        this.keyAngle = dtr(keyAngle);
+            //this.limits.min+(Math.random()*(this.limits.max-this.limits.min));
+        this.gauge = gauge;
         //Get default random positions for the key
         this.keyX = this.targetRadius*Math.cos(this.keyAngle)+innerWidth/2;
         this.keyY = this.targetRadius*Math.sin(this.keyAngle)+innerHeight/2;
-        this.dotAngle = this.keyAngle;
-        this.dotX = this.keyX;
-        this.dotY = this.keyY;
+        this.dotAngle = dtr(targetAngle);
+        this.dotX = this.targetRadius*Math.cos(this.dotAngle)+innerWidth/2;
+        this.dotY = this.targetRadius*Math.sin(this.dotAngle)+innerHeight/2;
         
         
         
@@ -73,7 +74,7 @@
             //Draw the limiting ring
             if(this.radius > 1){
                 ctx.beginPath();
-                ctx.arc(innerWidth/2,innerHeight/2,this.radius,this.limits.min, this.limits.max);
+                ctx.arc(innerWidth/2,innerHeight/2,this.radius,this.start, this.end);
                 ctx.strokeStyle=color2;
                 ctx.stroke();
                 ctx.closePath();
@@ -95,32 +96,19 @@
                 ctx.fill();
                 ctx.closePath();
             }
-            
         }
         
-        this.offsetSolution = function(spin){
-            for(var i = 0; i < spin.length; i++){
-                this.keyAngle += (dtr(spin[i])/this.gauge)/rotationSensitivity;
+        this.update = function(radDiff){
+            if(radDiff > 0){
+                this.keyAngle += (radDiff/this.gauge)/rotationSensitivity;
                 if(this.keyAngle < this.limits.min){
                     this.keyAngle = this.limits.min;
                 } else if(this.keyAngle > this.limits.max){
                     this.keyAngle = this.limits.max;
                 }
                 this.keyX = this.radius*Math.cos(this.keyAngle)+innerWidth/2;
-                this.keyY = this.radius*Math.sin(this.keyAngle)+innerHeight/2;
+            this.keyY = this.radius*Math.sin(this.keyAngle)+innerHeight/2;
             }
-        }
-        
-        this.update = function(radDiff){
-            this.keyAngle += (radDiff/this.gauge)/rotationSensitivity;
-            if(this.keyAngle < this.limits.min){
-                this.keyAngle = this.limits.min;
-            } else if(this.keyAngle > this.limits.max){
-                this.keyAngle = this.limits.max;
-            }
-            this.keyX = this.radius*Math.cos(this.keyAngle)+innerWidth/2;
-        this.keyY = this.radius*Math.sin(this.keyAngle)+innerHeight/2;
-            this.draw();
             
             if(gameOver){
                 if(this.dotRadius > 1){
@@ -139,41 +127,71 @@
                     this.keyRadius += this.keyScale/10;
                 }
             }
+            this.draw();
         }
     }
     
     var rings = [];
-    var spawnCount = 1;
-    var spin = [];
     function buildRings(){
-        spin = [];
-        for(var i = 0; i < 3; i++){
-            spin.push(Math.random()*330+30);
+        var data = getData();
+        if(data.length > 0){
+            //Here we have data from the URL
+            for(var i = 0; i < data.length; i++){
+                if(data[i] != undefined){
+                    var s = data[i][0];
+                    var e = data[i][1];
+                    var t = data[i][2];
+                    var k = data[i][3];
+                    var w = data[i][4];
+                    
+                    rings.push(new Ring(i*50+50,s,e,t,k,w));
+                    console.log(s + "," + e + "," + t + "," + k + "," +w);
+                } else {
+                    //Do nothing for empty ring..
+                    console.log("EMPTY RING");
+                }
+            }
+            console.log("loaded url data");
+        } else {
+            //Here we do not have URL data. 
+            ringCount = 2;
+            for(var i  =0; i < ringCount; i++){
+                var start = dtr(Math.random()*240);
+                var end = start+dtr(Math.random()*100+50);
+                var target = dtr(0.5*(end-start));
+                var key = dtr(0.75*(end-start));
+                var width = 2;
+                rings.push(new Ring(i*40+50,start,end,target,key,2));
+            }
+            console.log("Loaded trash data");
         }
-        switch(level){
-            case 5:
-                spawnCount = 2;
-                break;
-            case 10:
-                spawnCount = 3;
-                break;
-            case 20:
-                spawnCount = 4;
-                break;
-            case 30:
-                spawnCount = 5;
-                break;
-            default:
-                break;
+        
+
+    }
+        
+    function getData(){
+        var raw = location.search;
+        var ringData = [];
+        if(raw == ""){
+           return ringData;
+        } else {
+            //Parse out the level data
+            //EXAMPLE - ?level=1.7_-0.6_2.3_-1.3_2/u/-1.9_1.7_1.2_-1.6_2/2.4_-2.7_2.7_-3_2/u
+            var rawSplit = raw.split('=');
+            var data = rawSplit[1].split('/');
+            for(var i = 0; i < data.length; i++){
+                if(data[i] == "u"){
+                    ringData.push(undefined);
+                } else {
+                    var r = data[i].split('_');
+                    for(var j = 0; j < r.length;j++){
+                        r[j] = parseFloat(r[j]);
+                    }
+                    ringData.push(r);
+                }
+            }
         }
-        console.log(spin);
-        for(var i  =0; i < spawnCount; i++){
-            var start = Math.random()*240;
-            var end = start+Math.random()*100+50;
-            var r = new Ring(i*40+50,start,end);
-            r.offsetSolution(spin);
-            rings.push(r);
-        }
+        return ringData;
     }
     //**********************************************************
     var gameOver = false;
@@ -241,7 +259,6 @@
              }
          }
         rings = [];
-        level++;
         gameOver = false;
     }
         

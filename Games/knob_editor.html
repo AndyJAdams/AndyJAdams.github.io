@@ -93,10 +93,22 @@
             if(rings[i] == undefined){
                 output += "u"
             } else {
-                var s = Math.floor(rings[i].start*10)/10;
-                var e = Math.floor(rings[i].end*10)/10;
-                var t = Math.floor(rings[i].targetAngle*10)/10;
-                var k = Math.floor(rings[i].keyAngle*10)/10;
+                var s = rtd(Math.floor(rings[i].start*10)/10);
+//                if(s < 0){
+//                    s+= 360;
+//                }
+                var e = rtd(Math.floor(rings[i].end*10)/10);
+//                if(e < 0){
+//                    e+=360;
+//                }
+                var t = rtd(Math.floor(rings[i].targetAngle*10)/10);
+//                if(t<0){
+//                    t+=360;
+//                }
+                var k = rtd(Math.floor(rings[i].keyAngle*10)/10);
+//                if(k < 0){
+//                    k+=360;
+//                }
                 var l = Math.floor(rings[i].width*10)/10;
                 output += s+"_"+e+"_"+t+"_"+k+"_"+l;
 
@@ -334,7 +346,8 @@
 
             if(start.x > playBTN.x && start.x < playBTN.x+playBTN.w && start.y > playBTN.y && start.y < playBTN.y+playBTN.h){
                 //We have click the play button, let's go play this level
-                var url = 'https://andyjadams.github.io/Games/knob.html?level='+getData();
+                //var url = 'https://andyjadams.github.io/Games/knob.html?level='+getData();
+                var url = 'file:///Users/James/Documents/GitHub/AndyJAdams.github.io/Games/knob.html?level='+getData();
                 window.open(url,'_blank');
             }            
         }
