@@ -29,15 +29,30 @@
 
     //*** GLOBAL VARIABLES ***//
     var center = {x: innerWidth/2,y: innerHeight/2};
-    var ringCount = 2;
-    var rings = [];
+    var rings = [undefined,undefined,undefined,undefined,undefined];
+    var playlink = document.getElementById('playlink');
+    var indicators = [];
+    for(var i = 0; i < 5; i++){
+        var x = (center.x + (i * 50))-100;
+        indicators.push(new Indicator(x,50));
+        if(i == 0){
+            indicators[i].fill = true;
+            buildRings(i);
+        }
+    }
+
+    var playBTN = new Play(innerWidth-110,innerHeight-60,100,50);
 
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
 
+        for(var i = 0; i < indicators.length; i++){
+            indicators[i].update();
+        }
+
         if(selection.ring > -1){ //We have clicked and have a target selected;
-            var ang = getRadains(center.x, center.y,current.x,current.y);
+            var ang = getRadians(center.x, center.y,current.x,current.y);
             if(selection.target == 0){ //Dot selected
                 rings[selection.ring].targetAngle = ang;
             } else if(selection.target == 1){ //Key selected
@@ -46,32 +61,52 @@
                 rings[selection.ring].start = ang;
             } else if(selection.target == 3){
                 rings[selection.ring].end = ang;
+            } else if(selection.target == 4){
+                var currentDist = getDistance(center.x, center.y, current.x, current.y);
+                rings[selection.ring].width += (rings[selection.ring].radius-currentDist)/center.x;
             } else {
                 console.log("Ring selected but no object set");
             }
         }
 
-        if(rings.length != ringCount){
-            buildRings();
-        } else {
-            for(var i = 0; i < rings.length; i++){
+        for(var i = 0; i < rings.length; i++){
+            if(rings[i] != undefined){
                 rings[i].update();
             }
         }
 
-        ctx.fillText(rings.length,10,10);
+        playBTN.draw();
 	}
 
     //*** GAMEPLAY FUNCTIONS ***//
-    function buildRings(){
-        if(rings.length < 1){
-            rings = [];
-        }
-        if(rings.length < ringCount){
-            for(var i = rings.length; i < ringCount; i++){
-                rings.push(new Ring(i*50+50,45,270));
+    function buildRings(index){
+        rings[index] = new Ring(index*50+50,45,270);
+    }
+
+    function removeRing(index){
+        rings[index] = undefined;
+    }
+
+    function getData(){
+        var output = "";
+        for(var i = 0; i < rings.length; i++){
+            if(rings[i] == undefined){
+                output += "u"
+            } else {
+                var s = Math.floor(rings[i].start*10)/10;
+                var e = Math.floor(rings[i].end*10)/10;
+                var t = Math.floor(rings[i].targetAngle*10)/10;
+                var k = Math.floor(rings[i].keyAngle*10)/10;
+                var l = Math.floor(rings[i].width*10)/10;
+                output += s+"_"+e+"_"+t+"_"+k+"_"+l;
+
             }
-        } 
+            if(i < rings.length-1){
+                output+="/";
+            }
+            
+        }
+        return output;
     }
 
     //*** OBJECT DEFINITIONS ***//
@@ -79,25 +114,28 @@
         this.radius = radius; 
         this.start = dtr(start); 
         this.end = dtr(end);
+        this.width = 2;
 
         this.targetAngle = this.start+(0.5*(this.end-this.start));
         this.keyAngle = this.start+(0.75*(this.end-this.start));
 
         this.draw = function(){
+            //Draw the ring itself
+            ctx.beginPath();
+            ctx.arc(center.x,center.y,this.radius,this.start,this.end);
+            ctx.lineWidth = this.width;
+            ctx.stroke();
+
+            //Draw the limits handles for the ring
+            this.drawHandle(this.start); //Start Handle
+            this.drawHandle(this.end); //End Handle
+
             //Draw the key
             this.drawKey(this.keyAngle);
 
             //Draw the target
             this.drawTarget(this.targetAngle);
 
-            //Draw the ring itself
-            ctx.beginPath();
-            ctx.arc(center.x,center.y,this.radius,this.start,this.end);
-            ctx.stroke();
-
-            //Draw the limits handles for the ring
-            this.drawHandle(this.start); //Start Handle
-            this.drawHandle(this.end); //End Handle
         }
 
         this.drawTarget = function(angle){
@@ -117,6 +155,7 @@
             ctx.beginPath();
             ctx.moveTo(x1,y1);
             ctx.lineTo(x2,y2);
+            ctx.lineWidth = 2;
             ctx.stroke();
         }
 
@@ -127,11 +166,52 @@
             ctx.arc(x,y,8,0,2*Math.PI);
             ctx.fillStyle='#DDD';
             ctx.fill();
+            ctx.lineWidth = 2;
             ctx.stroke();
         }
 
         this.update = function(){
+            if(this.width > 6){
+                this.width = 6;
+            } else if(this.width < 2){
+                this.width = 2;
+            }
             this.draw();
+        }
+    }
+
+    function Indicator(x,y){
+        this.x = x; this.y = y; this.fill = false;
+        this.draw = function(){
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 15, 0, 2*Math.PI);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle='#222';
+            if(this.fill){
+                ctx.fill();
+            }
+        }
+
+        this.update = function(){
+            this.draw();
+        }
+    }
+
+    function Play(x,y,w,h){
+        this.x = x; this.y = y;
+        this.w = w; this.h = h;
+        this.draw = function(){
+            ctx.fillStyle='#222';
+            ctx.fillRect(this.x, this.y, this.w, this.h);
+
+            ctx.beginPath();
+            ctx.moveTo(this.x+this.w/2-10,this.y+this.h/2-10);
+            ctx.lineTo(this.x+this.w/2+10,this.y+this.h/2);
+            ctx.lineTo(this.x+this.w/2-10,this.y+this.h/2+10);
+            ctx.closePath();
+            ctx.fillStyle='#DDD';
+            ctx.fill();
         }
     }
 
@@ -152,7 +232,7 @@
         return r*-Math.sin(a)+innerHeight/2;
     }
         
-    function getRadains(x1,y1,x2,y2){
+    function getRadians(x1,y1,x2,y2){
         return Math.atan2(y2-y1,x2-x1);
     }
         
@@ -196,38 +276,67 @@
         } else {
             start.x = evt.pageX;
             start.y = evt.pageY;
+            current.x = start.x;
+            current.y = start.y;
 
-            for(var i = 0; i < rings.length; i++){
-                var tx = rings[i].radius * Math.cos(rings[i].targetAngle)+center.x;
-                var ty = rings[i].radius * Math.sin(rings[i].targetAngle)+center.y;
-                var kx = rings[i].radius * Math.cos(rings[i].keyAngle)+center.x;
-                var ky = rings[i].radius * Math.sin(rings[i].keyAngle)+center.y;
-                var h1x = rings[i].radius * Math.cos(rings[i].start)+center.x;
-                var h1y = rings[i].radius * Math.sin(rings[i].start)+center.y;
-                var h2x = rings[i].radius * Math.cos(rings[i].end)+center.x;
-                var h2y = rings[i].radius * Math.sin(rings[i].end)+center.y;
-                if(getDistance(start.x,start.y,tx,ty)<10){
-                    console.log(i+" target selected");
-                    selection.ring = i;
-                    selection.target = 0;
-                    break;
-                } else if(getDistance(start.x,start.y,kx,ky) < 10){
-                    selection.ring = i;
-                    selection.target = 1;
-                    console.log(i+" key selected");
-                    break;
-                } else if(getDistance(start.x,start.y,h1x,h1y) < 10){
-                    selection.ring = i;
-                    selection.target = 2;
-                    console.log(i + " start handle selected");
-                    break;
-                } else if(getDistance(start.x,start.y,h2x,h2y) < 10){
-                    selection.ring = i;
-                    selection.target = 3;
-                    console.log(i + " end handle selected");
-                    break;
+            for(var i = 0; i < indicators.length; i++){
+                var indi = indicators[i];
+                if(getDistance(start.x, start.y,indi.x, indi.y) < 17){
+                    if(indi.fill){
+                        indi.fill = false;
+                        removeRing(i);
+                    } else {
+                        indi.fill = true;
+                        buildRings(i);
+                    }
                 }
             }
+
+            for(var i = 0; i < rings.length; i++){
+                if(rings[i] != undefined){
+                    var tx = rings[i].radius * Math.cos(rings[i].targetAngle)+center.x;
+                    var ty = rings[i].radius * Math.sin(rings[i].targetAngle)+center.y;
+                    var kx = rings[i].radius * Math.cos(rings[i].keyAngle)+center.x;
+                    var ky = rings[i].radius * Math.sin(rings[i].keyAngle)+center.y;
+                    var h1x = rings[i].radius * Math.cos(rings[i].start)+center.x;
+                    var h1y = rings[i].radius * Math.sin(rings[i].start)+center.y;
+                    var h2x = rings[i].radius * Math.cos(rings[i].end)+center.x;
+                    var h2y = rings[i].radius * Math.sin(rings[i].end)+center.y;
+                    if(getDistance(start.x,start.y,tx,ty)<10){
+                        console.log(i+" target selected");
+                        selection.ring = i;
+                        selection.target = 0;
+                        break;
+                    } else if(getDistance(start.x,start.y,kx,ky) < 10){
+                        selection.ring = i;
+                        selection.target = 1;
+                        console.log(i+" key selected");
+                        break;
+                    } else if(getDistance(start.x,start.y,h1x,h1y) < 10){
+                        selection.ring = i;
+                        selection.target = 2;
+                        console.log(i + " start handle selected");
+                        break;
+                    } else if(getDistance(start.x,start.y,h2x,h2y) < 10){
+                        selection.ring = i;
+                        selection.target = 3;
+                        console.log(i + " end handle selected");
+                        break;
+                    } else if(Math.abs(getDistance(start.x,start.y,center.x,center.y)-rings[i].radius)<20){
+                        //We are on the line, not near key, target or handles... let's adjust the line width
+                        selection.ring = i;
+                        selection.target = 4;
+                        console.log(i + " ring width selected");
+                        break;
+                    }
+                }
+            } //END RING SELECTION CHECK
+
+            if(start.x > playBTN.x && start.x < playBTN.x+playBTN.w && start.y > playBTN.y && start.y < playBTN.y+playBTN.h){
+                //We have click the play button, let's go play this level
+                var url = 'https://andyjadams.github.io/Games/knob.html?level='+getData();
+                window.open(url,'_blank');
+            }            
         }
     }
     
@@ -248,10 +357,14 @@
     }
     
     function inputEnd(){
+        selection.ring = -1;
+        selection.target = -1;
         start.x = -1;
         current.x = -1;
+
     }
     
+
     scaleCanvas();
 	animate();
 	</script>
