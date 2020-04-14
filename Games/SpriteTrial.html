@@ -1,0 +1,225 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>SpriteTrial</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            overflow: hidden;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+    <img id='shipsprite' src='./Art/Ship_Black.png'>
+	<script>
+	var canvas = document.getElementById('canvas');	
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	var ctx = canvas.getContext('2d');
+    var burn = false;
+    var ship = document.getElementById('shipsprite');
+    
+    var sx = 0; var sy=0; var sw = 32; var sh = 32;
+        
+    var direction = 0;
+    var SpinOff = [[0,0],[32,32],[64,0],[96,32],[96,0],[64,32],[32,0],[0,32]];
+    var index = 0;
+    var frame = 0; 
+    var shipSpeed = 0.10;
+    var dx = innerWidth/2-16;
+    var dy = innerHeight/2-16;
+    var force ={x:0,y:0};
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+        var y = SpinOff[index][1];
+        if(burn){ y+=64};
+        ctx.drawImage(ship,SpinOff[index][0],y,sw,sh,dx,dy,32,32);
+        
+        if(direction < -0.1 && frame >= 16){
+            index++;
+            frame = 0;
+            //direction += 0.1;
+        } else if(direction > 0.1 && frame >= 16){
+            index--;
+            frame = 0;
+            //direction -= 0.1;
+        }
+        
+        if(index > SpinOff.length-1){
+            index = 0;
+        } else if(index < 0){
+            index = SpinOff.length-1;
+        }
+        frame++;
+        
+        if(burn){
+            switch(index){
+                case 0:
+                    force.y -= shipSpeed;
+                    break;
+                case 1:
+                    force.x -= shipSpeed/2;
+                    force.y -= shipSpeed/2;
+                    break;
+                case 2:
+                    force.x -= shipSpeed;
+                    break;
+                case 3:
+                    force.x -= shipSpeed/2;
+                    force.y += shipSpeed/2;
+                    break;
+                case 4:
+                    force.y += shipSpeed;
+                    break;
+                case 5:
+                    force.x += shipSpeed/2;
+                    force.y += shipSpeed/2;
+                    break;
+                case 6:
+                    force.x += shipSpeed;
+                    break;
+                case 7:
+                    force.x += shipSpeed/2;
+                    force.y -= shipSpeed/2;
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        dy += force.y;
+        dx += force.x;
+        
+//        ctx.font = '20px sans-serif';
+//        ctx.fillText(force.x + ',' + force.y, 10,30);
+        
+        //WRAPPING SUCKAS
+        if(dx > innerWidth + 32){
+            dx = -30+force.x;
+        } else if(dx < -32){
+            dx = innerWidth+force.x;
+        }
+        
+        if(dy > innerHeight+32){
+            dy = -30+force.y;
+        } else if(dy < -32){
+            dy = innerHeight+force.y;
+        }
+        
+        if(force.x > 10){
+            force.x = 10;
+        } else if(force.x < -10){
+            force.x = -10;
+        }
+        
+        if(force.y > 10){
+            force.y = 10;
+        } else if(force.y < -10){
+            force.y = -10;
+        }
+	}
+
+	//*** INPUT SECTION **//
+    var start = {x:-1,y:-1};
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+    
+    window.addEventListener('keydown',processKey,false);
+    window.addEventListener('keyup',releaseKey,false);
+        
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+        
+    function releaseKey(evt){
+        if(evt.key == 'ArrowUp'){
+            burn = false;
+        }
+        if(evt.key == 'ArrowLeft' || evt.key == 'ArrowRight'){
+            direction = 0;
+        }
+    }
+        
+    function processKey(evt){
+        evt.preventDefault();
+        if(evt.key == 'ArrowUp'){
+            burn = true;
+        }
+        switch(evt.key){
+            case 'ArrowDown':
+                direction = 0;
+                break;
+            case 'ArrowLeft':
+                //Spin the ship left... by updating the sprite.
+                direction = -1;
+                break;
+            case 'ArrowRight':
+                direction = 1;
+                break;
+            default:
+                //Fuck off
+                break;
+        }
+    }
+    
+    var start = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+    }
+    
+    function inputMove(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        }
+    }
+    
+    function inputEnd(){
+        start.x = -1;
+    }
+    
+    scaleCanvas();
+    animate();
+	</script>
+</body>
+</html>
