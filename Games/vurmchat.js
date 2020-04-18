@@ -3,7 +3,7 @@
 //@AndyJamesAdams on twitter
 //Code inspired by Alca - tmi.js
 var messages = [];
-
+var chatTimeOut = 12000;
 function Message(msg, user, cheer = false){
     this.msg = msg; this.user = user; this.cheer = cheer;
     this.shown = false;
@@ -16,8 +16,13 @@ var krakID = '3k6e7ld0rs475g212tcuxzpmhcx1ea';
 var targetChan = '';
 var tc = (window.location.search);
 if(tc != ''){
-    var data = tc.split('=');
+    var raw = tc.split('&');
+    var data = raw[0].split('=');
     targetChan = data[1];
+    if(raw.length > 1){
+        data = raw[1].split('=');
+        chatTimeOut = data[1];
+    }
 }
 
 var client = new tmi.client({

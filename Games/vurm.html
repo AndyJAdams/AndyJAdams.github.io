@@ -33,10 +33,10 @@
 		canvas.height = window.innerHeight;
 	}
 	var ctx = canvas.getContext('2d');
-    
-    
         
     //GLOBAL VARIABLES
+    var primaryColor = '#dddddd';
+    var invertedColor = '#222222';
     var moveSpeed = 2;
     var direction = -1;
     var startLength = 40;
@@ -45,8 +45,9 @@
     var begin = false;
     var score = 0;
     var gameOver = false;
-    var bgColor = '#222';
+    var bgColor = '#222222';
     var timeOut = 0;
+    
     var defaultBlockSpeed = 1;
     var currentBlockSpeed = 1;
 
@@ -62,7 +63,10 @@
             ctx.lineWidth = innerWidth/100;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.strokeStyle='#DDD';
+            ctx.strokeStyle=primaryColor;
+            if(inverted){
+                ctx.strokeStyle=invertedColor;
+            }
             ctx.beginPath();
             ctx.moveTo(this.points[0].x, this.points[0].y)
             for(var i = 1; i < this.len; i++){
@@ -156,7 +160,10 @@
         this.draw = function(){
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.r,0,2*Math.PI);
-            ctx.fillStyle='#DDD';
+            ctx.fillStyle=primaryColor;
+            if(inverted){
+                ctx.fillStyle=invertedColor;
+            }
             ctx.fill();
         }
         
@@ -166,6 +173,7 @@
                 if(getDist(this.x, this.y, vurms[i].points[0].x, vurms[i].points[0].y) < this.r+(this.r/2)){
                     //COLLISION
                     vurms[i].len+= 10;
+                    effects.push(new RingEffect(this.x, this.y,this.r));
                     score++;
                     this.reset();
                     break;
@@ -190,7 +198,10 @@
         
         this.draw = function(){
             ctx.lineWidth = 2;
-            ctx.strokeStyle='#ddd';
+            ctx.strokeStyle=primaryColor;
+            if(inverted){
+                ctx.strokeStyle=invertedColor;
+            }
             ctx.strokeRect(this.x, this.y, this.w, this.h);
 //            ctx.fillStyle=bgColor;
 //            ctx.fillRect(this.x, this.y, this.w, this.h);
@@ -238,6 +249,32 @@
         }
     }
         
+    function RingEffect(x,y,r){
+        this.x = x; this.y = y; this.r = r;
+        this.w = 5;
+        
+        this.draw = function(){
+            ctx.strokeStyle=primaryColor+'88';
+            if(inverted){
+                ctx.strokeStyle=invertedColor+'88';
+            }
+            ctx.lineWidth = this.w;
+            ctx.beginPath();
+            ctx.arc(this.x,this.y,this.r,0,2*Math.PI);
+            ctx.stroke();
+        }
+        
+        this.update = function(){
+            this.r++;
+            this.w -= 0.02;
+            if(this.w > 0.02){
+                this.draw();
+            } else {
+                removeEffect(this);
+            }
+        }
+    }
+        
     //OBJECT DECLARATION
     function makeStartVurm(){
             var p = [];
@@ -250,9 +287,8 @@
     var obs = [];
     obs.push(new Obstacle(100,100,innerWidth/5,innerHeight/20,innerWidth-100-innerWidth/5,100));
         obs.push(new Obstacle(innerWidth-100-innerWidth/5,innerHeight-200,innerWidth/5,innerHeight/20,100,innerHeight-200));
-    obs.push(new Obstacle(80,300,innerWidth/40,innerHeight-600,innerWidth-80-innerWidth/40,300));
-    obs.push(new Obstacle(innerWidth-80-innerWidth/40,300,innerWidth/40,innerHeight-600,80,300));
-//    obs.push(new Obstacle(140,innerHeight/10,innerWidth/30,innerHeight/4,140,((innerHeight/10)*9)-innerHeight/4));
+    obs.push(new Obstacle(80,300,innerWidth/40,innerHeight-600,innerWidth/2-80-innerWidth/40,300));
+    obs.push(new Obstacle(innerWidth-80-innerWidth/40,300,innerWidth/40,innerHeight-600,innerWidth/2+80,300));
     obs.push(new Obstacle(innerWidth-140-innerWidth/30,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,innerWidth-140-innerWidth/30,innerHeight/10));
     obs.push(new Obstacle(140,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,140,innerHeight/10));
         
@@ -265,6 +301,15 @@
         f2.reset();
         fruits.push(f2);
         
+    var effects = [];
+    function removeEffect(e){
+        for(var i = 0; i< effects.length; i++){
+            if(effects[i]==e){
+                effects.splice(i,1);
+                break;
+            }
+        }
+    }
     //******************************************************************
     //******************************************************************
     //var bgoffset = 0;
@@ -296,14 +341,16 @@
                         //Increase speed of blocks
                         if(msg.includes('!fast') && Date.now() > timeOut){
                                 currentBlockSpeed = 4;
-                                timeOut = Date.now()+12000;
+                                timeOut = Date.now()+chatTimeOut;
                         } 
                         if(msg.includes('!slow') && Date.now() > timeOut){
                                 currentBlockSpeed = 0.01;
-                                timeOut = Date.now()+12000;
+                                timeOut = Date.now()+chatTimeOut;
                         }
                         if(msg.includes('!derp') && Date.now() > timeOut){
-                                
+                                //Mess with player controls here
+                                inverted = true;
+                                timeOut = Date.now()+chatTimeOut;
                         }
                     }
                     lastUser = messages[i].user;
@@ -313,17 +360,28 @@
         }
         
         ctx.fillStyle=bgColor;
+        if(bgColor == invertedColor && inverted){
+            ctx.fillStyle=primaryColor;
+        }
         ctx.fillRect(0,0,innerWidth,innerHeight);
         
         if(Date.now() > timeOut){
             currentBlockSpeed = defaultBlockSpeed;
+            inverted = false;
         } 
         
-        ctx.fillStyle='#dddddd22';
+        ctx.fillStyle=primaryColor+'22';
+        if(inverted){
+            ctx.fillStyle = invertedColor+'22';
+        }
         ctx.font = '48px sans-serif';
         ctx.textAlign = 'left';
         for(var i = 0; i < messages.length; i++){
             ctx.fillText(messages[i].user+": "+messages[i].msg,20,innerHeight-20-i*50);
+        }
+        
+        for(var i = 0;i < effects.length; i++){
+            effects[i].update();
         }
         
         for(var i = 0;i < obs.length; i++){
@@ -337,7 +395,6 @@
         for(var i = 0; i < vurms.length; i++){
             vurms[i].update();
             if(vurms[i].length > nextVurm){
-                console.log("NEW VURM");
                 var x = Math.random()*innerWidth;
                 var y = Math.random()*innerHeight;
                 var pts = [];
@@ -355,15 +412,24 @@
         
         detectCollisions();
         
-        ctx.fillStyle='#ddddddaa';
+        ctx.fillStyle=primaryColor+'aa';
+        if(inverted){
+            ctx.fillStyle=invertedColor+'aa';
+        }
         ctx.font='36px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(score,innerWidth/2,50);
         
         if(begin && direction < 0 && !gameOver){
-            ctx.fillStyle='#ddd';
+            ctx.fillStyle=primaryColor;
+            if(inverted){
+                ctx.fillStyle=invertedColor;
+            }
             ctx.fillRect(innerWidth/2-innerWidth/4,innerHeight/2-innerHeight/4,innerWidth/2,innerHeight/2);
-            ctx.fillStyle='#222';
+            ctx.fillStyle=invertedColor;
+            if(inverted){
+                ctx.fillStyle=primaryColor;
+            }
             ctx.font = '72px sans-serif';
             ctx.textAlign = "center";
             ctx.fillText("PAUSED",innerWidth/2, innerHeight/2);
@@ -409,6 +475,7 @@
         for(var i = 0; i < vurms.length; i++){
             if(vurms[i] == v){
                 vurms.splice(i,1);
+                break;
             }
         }
     }
@@ -462,52 +529,113 @@
     
     var prevDir = -1;
     var lastPress = 0;
+    var inverted = false;
     window.addEventListener('keydown', function(e){
         escaped = true;
         e.preventDefault();
         switch(e.key){
             case 'ArrowUp':
-                if(direction != 2 && prevDir < 0){
-                    direction = 0;
-                }
-                break;
-            case 'w':
-                if(direction != 2 && prevDir < 0){
-                    direction = 0;
-                }
-                break;
-            case 'ArrowDown':
-                if(direction != 0 && prevDir < 0){
-                    if(direction == -1){
+                if(!inverted){
+                    if(direction != 2 && prevDir < 0){
                         direction = 0;
-                    } else {
+                    }
+                } else {
+                    if(direction != 0 && prevDir < 0){
                         direction = 2;
                     }
                 }
                 break;
+            case 'w':
+                if(!inverted){
+                    if(direction != 2 && prevDir < 0){
+                        direction = 0;
+                    }
+                } else {
+                    if(direction != 0 && prevDir < 0){
+                        direction = 2;
+                    }
+                }
+                break;
+            case 'ArrowDown':
+                if(!inverted){
+                    if(direction != 0 && prevDir < 0){
+                        if(direction == -1){
+                            direction = 0;
+                        } else {
+                            direction = 2;
+                        }
+                    }
+                } else {
+                    if(direction != 2 && prevDir < 0){
+                        if(direction == -1){
+                            direction = 0;
+                        } else {
+                            direction = 0;
+                        }
+                    }
+                }
+                break;
             case 's':
-                if(direction != 0 && prevDir < 0){
-                    direction = 2;
+                if(!inverted){
+                    if(direction != 0 && prevDir < 0){
+                        if(direction == -1){
+                            direction = 0;
+                        } else {
+                            direction = 2;
+                        }
+                    }
+                } else {
+                    if(direction != 2 && prevDir < 0){
+                        if(direction == -1){
+                            direction = 0;
+                        } else {
+                            direction = 0;
+                        }
+                    }
                 }
                 break;
             case 'ArrowLeft':
-                if(direction != 1 && prevDir < 0){
-                    direction = 3;
+                if(!inverted){
+                    if(direction != 1 && prevDir < 0){
+                        direction = 3;
+                    }
+                } else {
+                    if(direction != 3 && prevDir < 0){
+                        direction = 1;
+                    }
                 }
                 break;
             case 'a':
-                if(direction != 1 && prevDir < 0){
-                    direction = 3;
+                if(!inverted){
+                    if(direction != 1 && prevDir < 0){
+                        direction = 3;
+                    }
+                } else {
+                    if(direction != 3 && prevDir < 0){
+                        direction = 1;
+                    }
                 }
                 break;
             case 'ArrowRight':
-                if(direction != 3 && prevDir < 0){
-                    direction = 1;
+                if(!inverted){
+                    if(direction != 3 && prevDir < 0){
+                        direction = 1;
+                    }
+                } else {
+                    if(direction != 1 && prevDir < 0){
+                        direction = 3;
+                    }
                 }
                 break;
             case 'd':
-                if(direction != 3 && prevDir < 0){
-                    direction = 1;
+                if(!inverted){
+                    if(direction != 3 && prevDir < 0){
+                        direction = 1;
+                    }
+                } else {
+                    if(direction != 1 && prevDir < 0){
+                        direction = 3;
+                    }
                 }
                 break;
             case 'Escape':
@@ -583,7 +711,7 @@
                     current.x = touches[0].pageX;
                     current.y = touches[0].pageY;
                     //Now we check current agains previous (aka start)
-                    if(getDist(current.x,current.y,start.x, start.y) > 10){
+                    if(getDist(current.x,current.y,start.x, start.y) > 30){
                         var xDif = Math.abs(current.x-start.x);
                         var yDif = Math.abs(current.y-start.y);
                         if(xDif > yDif){ //Horizontal
