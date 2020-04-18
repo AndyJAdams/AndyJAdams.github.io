@@ -11,7 +11,6 @@
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
              
-            background-color: #222;
         }
         #canvas{
             touch-action: none;
@@ -19,36 +18,37 @@
             top: 0;
             left:0;
         }
-        #blur_canvas{
-            touch-action: none;
-            position:absolute;
-            top:0;
-            left:0;
-            filter: blur(4px);
-        }
+        
 	</style>
 </head>
 <body id='body'>
-    <canvas id='blur_canvas'></canvas>
+    <script src='https://alca.sfo2.cdn.digitaloceanspaces.com/tmijs/1.4.2/tmi.min.js'></script>
+    <script id='vurmchat' src='./vurmchat.js'></script>
+    <canvas id='bgcanvas'></canvas>
 	<canvas id='canvas'></canvas>
 	<script>
 	var canvas = document.getElementById('canvas');	
-    var blurCanvas = document.getElementById('blur_canvas');
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
-        blurCanvas.width = window.innerWidth;
-        blurCanvas.height = window.innerHeight;
 	}
 	var ctx = canvas.getContext('2d');
-    var dctx = blurCanvas.getContext('2d');
+    
+    
         
     //GLOBAL VARIABLES
     var moveSpeed = 2;
     var direction = -1;
-    var startLength = 200;
-    
+    var startLength = 40;
+    var nextVurm = 100;
     var vurms = [];
+    var begin = false;
+    var score = 0;
+    var gameOver = false;
+    var bgColor = '#222';
+    var timeOut = 0;
+    var defaultBlockSpeed = 1;
+    var currentBlockSpeed = 1;
 
     //OBJECT DEFINITION
     function Point(x,y){
@@ -59,7 +59,7 @@
         this.len=len; this.points = points;
         
         this.draw = function(){
-            ctx.lineWidth = 10;
+            ctx.lineWidth = innerWidth/100;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.strokeStyle='#DDD';
@@ -77,6 +77,9 @@
         
         this.update = function(){
             if(direction > -1){
+                if(!begin){
+                    begin = true;
+                }
                 var x = this.points[0].x; 
                 var y = this.points[0].y;
                 switch(direction){
@@ -113,7 +116,7 @@
                     if(this.points[i].x == np.x && this.points[i].y == np.y){
                         //COLLISION
                         if(i < this.len){
-                            this.selfHit(i);
+                            this.cut(i);
                             break;
                         }
                     }
@@ -124,12 +127,12 @@
                     this.points.pop();
                 }
             }
-            this.draw();
-        }
-        
-        this.selfHit = function(i){
-            this.len -= i;
-            this.points.splice(0,i);
+            
+            if(this.len > innerWidth/100){
+                this.draw();
+            } else {
+                removeVurm(this);
+            }
         }
         
         this.cut = function(index, start=false){
@@ -163,6 +166,7 @@
                 if(getDist(this.x, this.y, vurms[i].points[0].x, vurms[i].points[0].y) < this.r+(this.r/2)){
                     //COLLISION
                     vurms[i].len+= 10;
+                    score++;
                     this.reset();
                     break;
                 }
@@ -188,37 +192,44 @@
             ctx.lineWidth = 2;
             ctx.strokeStyle='#ddd';
             ctx.strokeRect(this.x, this.y, this.w, this.h);
+//            ctx.fillStyle=bgColor;
+//            ctx.fillRect(this.x, this.y, this.w, this.h);
         }
+        
+//        this.drawFiller = function(){
+//            ctx.fillStyle='#ddd';
+//            ctx.fillRect(this.x+5, this.y+5, this.w-10, this.h-10);
+//        }
         
         this.update = function(){
             if(direction > -1){
                 if(!this.bounce){
                     if(this.x < this.tx){
-                        this.x++;
+                        this.x+=currentBlockSpeed;
                     } else if(this.x > this.tx){
-                        this.x--;
+                        this.x-=currentBlockSpeed;
                     }
                     if(this.y < this.ty){
-                        this.y++;
+                        this.y+=currentBlockSpeed;
                     } else if(this.y > this.ty){
-                        this.y--;
+                        this.y-=currentBlockSpeed;
                     }
 
-                    if(getDist(this.x, this.y, this.tx, this.ty)<2){
+                    if(getDist(this.x, this.y, this.tx, this.ty)< 12){
                         this.bounce = true;
                     }
                 } else {
                     if(this.x < this.sx){
-                        this.x++;
+                        this.x+=currentBlockSpeed;
                     } else if(this.x > this.sx){
-                        this.x--;
+                        this.x-=currentBlockSpeed;
                     }
                     if(this.y < this.sy){
-                        this.y++;
+                        this.y+=currentBlockSpeed;
                     } else if(this.y > this.sy){
-                        this.y--;
+                        this.y-currentBlockSpeed;
                     }
-                    if(getDist(this.x,this.y, this.sx, this.sy) < 2){
+                    if(getDist(this.x,this.y, this.sx, this.sy) < 12){
                         this.bounce = false;
                     }
                 }
@@ -228,34 +239,114 @@
     }
         
     //OBJECT DECLARATION
-    var p = [];
-    for(var i = 0; i < startLength; i++){
-        p.push(new Point(innerWidth/2,innerHeight/2+(i*moveSpeed)));
+    function makeStartVurm(){
+            var p = [];
+            for(var i = 0; i < startLength; i++){
+                p.push(new Point(innerWidth/2,innerHeight/2+(i*moveSpeed)));
+            }
+            vurms.push(new Vurm(startLength,p));
     }
-    vurms.push(new Vurm(startLength,p));
     
     var obs = [];
-    obs.push(new Obstacle(100,100,150,20,800,100));
-        obs.push(new Obstacle(800,innerHeight-200,150,20,100,innerHeight-200));
-    obs.push(new Obstacle(80,200,50,850,80,200));
-    obs.push(new Obstacle(innerWidth-130,200,50,850,innerWidth-130,200));
+    obs.push(new Obstacle(100,100,innerWidth/5,innerHeight/20,innerWidth-100-innerWidth/5,100));
+        obs.push(new Obstacle(innerWidth-100-innerWidth/5,innerHeight-200,innerWidth/5,innerHeight/20,100,innerHeight-200));
+    obs.push(new Obstacle(80,300,innerWidth/40,innerHeight-600,innerWidth-80-innerWidth/40,300));
+    obs.push(new Obstacle(innerWidth-80-innerWidth/40,300,innerWidth/40,innerHeight-600,80,300));
+//    obs.push(new Obstacle(140,innerHeight/10,innerWidth/30,innerHeight/4,140,((innerHeight/10)*9)-innerHeight/4));
+    obs.push(new Obstacle(innerWidth-140-innerWidth/30,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,innerWidth-140-innerWidth/30,innerHeight/10));
+    obs.push(new Obstacle(140,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,140,innerHeight/10));
         
     var fruits = [];
     fruits.push(new Fruit(innerWidth/2,innerHeight/2-200,10));
-        
+    var f1 = new Fruit(innerWidth/2,innerHeight/2-200,10);
+        f1.reset();
+        fruits.push(f1);
+    var f2 = new Fruit(innerWidth/2,innerHeight/2-200,10);
+        f2.reset();
+        fruits.push(f2);
         
     //******************************************************************
     //******************************************************************
+    //var bgoffset = 0;
+    var lastUser = '';
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        if(messages.length > 0){
+            for(var i =  0; i< messages.length; i++){
+                if(!messages[i].shown){
+                    console.log(messages[i].msg);
+                    if(messages[i].cheer){
+                        //SOMEONE CHEERED... DO SUMPTIN
+                    } else {
+                        //Broke ass message
+                        var msg = messages[i].msg;
+                        console.log(msg);
+                        msg.toLocaleLowerCase();
+                        if(msg.includes('!red')){
+                            bgColor = '#b22222';
+                        }
+                        if(msg.includes('!blue')){
+                            bgColor = '#15357A';
+                        }
+                        if(msg.includes('!green')){
+                            bgColor = '#193207';
+                        }
+                        //Increase speed of blocks
+                        if(msg.includes('!fast') && Date.now() > timeOut){
+                                currentBlockSpeed = 4;
+                                timeOut = Date.now()+12000;
+                        } 
+                        if(msg.includes('!slow') && Date.now() > timeOut){
+                                currentBlockSpeed = 0.01;
+                                timeOut = Date.now()+12000;
+                        }
+                        if(msg.includes('!derp') && Date.now() > timeOut){
+                                
+                        }
+                    }
+                    lastUser = messages[i].user;
+                    messages[i].shown = true;
+                }
+            }
+        }
+        
+        ctx.fillStyle=bgColor;
+        ctx.fillRect(0,0,innerWidth,innerHeight);
+        
+        if(Date.now() > timeOut){
+            currentBlockSpeed = defaultBlockSpeed;
+        } 
+        
+        ctx.fillStyle='#dddddd22';
+        ctx.font = '48px sans-serif';
+        ctx.textAlign = 'left';
+        for(var i = 0; i < messages.length; i++){
+            ctx.fillText(messages[i].user+": "+messages[i].msg,20,innerHeight-20-i*50);
+        }
         
         for(var i = 0;i < obs.length; i++){
             obs[i].update();
         }
         
+//        for(var i = 0;i < obs.length; i++){
+//            obs[i].drawFiller();
+//        }
+        
         for(var i = 0; i < vurms.length; i++){
             vurms[i].update();
+            if(vurms[i].length > nextVurm){
+                console.log("NEW VURM");
+                var x = Math.random()*innerWidth;
+                var y = Math.random()*innerHeight;
+                var pts = [];
+                for(var i = 0; i < 30; i++){
+                    pts.push(new Point(x,y+(i*moveSpeed)));
+                }
+                vurms.push(new Vurm(30,pts));
+                nextVurm += 60;
+            }
         }
         
         for(var i = 0; i < fruits.length; i++){
@@ -263,16 +354,64 @@
         }
         
         detectCollisions();
-        //BLUR EFFECT
-//        dctx.clearRect(0,0,innerWidth,innerHeight);
-//        dctx.drawImage(canvas,0,0);
+        
+        ctx.fillStyle='#ddddddaa';
+        ctx.font='36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(score,innerWidth/2,50);
+        
+        if(begin && direction < 0 && !gameOver){
+            ctx.fillStyle='#ddd';
+            ctx.fillRect(innerWidth/2-innerWidth/4,innerHeight/2-innerHeight/4,innerWidth/2,innerHeight/2);
+            ctx.fillStyle='#222';
+            ctx.font = '72px sans-serif';
+            ctx.textAlign = "center";
+            ctx.fillText("PAUSED",innerWidth/2, innerHeight/2);
+            ctx.font = '40px sans-serif';
+            if(escaped){
+                ctx.fillText('press esc to resume', innerWidth/2, innerHeight/2+60);
+            } else {
+                ctx.fillText('touch to resume', innerWidth/2, innerHeight/2+60);
+            }
+        }
+        
+        if(direction < 0 && gameOver && begin){
+            ctx.fillRect(innerWidth/2-innerWidth/4,innerHeight/2-innerHeight/4,innerWidth/2,innerHeight/2);
+            ctx.fillStyle='#222';
+            ctx.font = '72px sans-serif';
+            ctx.textAlign = "center";
+            ctx.fillText(score,innerWidth/2, innerHeight/2);
+            ctx.font = '40px sans-serif';
+            if(escaped){
+                ctx.fillText('press esc to restart', innerWidth/2, innerHeight/2+60);
+            } else {
+                ctx.fillText('Double Tap to restart', innerWidth/2, innerHeight/2+80);
+            }
+            ctx.fillText('FIN',innerWidth/2,innerHeight/2-80);
+        }
+        validateGame();
+        
 	}
      
-   
+   var escaped = false;
     //******************************************************************
     //******************************************************************    
         
     //HELPER FUNCTIONS
+    function validateGame(){
+        if(vurms.length < 1){
+            gameOver = true;
+            direction = -1;
+        }
+    }    
+    
+    function removeVurm(v){
+        for(var i = 0; i < vurms.length; i++){
+            if(vurms[i] == v){
+                vurms.splice(i,1);
+            }
+        }
+    }
     function getDist(x1,y1,x2,y2){
         return Math.abs(Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2)));
     }
@@ -321,58 +460,73 @@
         scaleCanvas();
     });
     
-        var prevDir = -1;
+    var prevDir = -1;
+    var lastPress = 0;
     window.addEventListener('keydown', function(e){
-        console.log(e.key);
+        escaped = true;
         e.preventDefault();
         switch(e.key){
             case 'ArrowUp':
-                if(direction != 2){
+                if(direction != 2 && prevDir < 0){
                     direction = 0;
                 }
                 break;
             case 'w':
-                if(direction != 2){
+                if(direction != 2 && prevDir < 0){
                     direction = 0;
                 }
                 break;
             case 'ArrowDown':
-                if(direction != 0){
-                    direction = 2;
+                if(direction != 0 && prevDir < 0){
+                    if(direction == -1){
+                        direction = 0;
+                    } else {
+                        direction = 2;
+                    }
                 }
                 break;
             case 's':
-                if(direction != 0){
+                if(direction != 0 && prevDir < 0){
                     direction = 2;
                 }
                 break;
             case 'ArrowLeft':
-                if(direction != 1){
+                if(direction != 1 && prevDir < 0){
                     direction = 3;
                 }
                 break;
             case 'a':
-                if(direction != 1){
+                if(direction != 1 && prevDir < 0){
                     direction = 3;
                 }
                 break;
             case 'ArrowRight':
-                if(direction != 3){
+                if(direction != 3 && prevDir < 0){
                     direction = 1;
                 }
                 break;
             case 'd':
-                if(direction != 3){
+                if(direction != 3 && prevDir < 0){
                     direction = 1;
                 }
                 break;
             case 'Escape':
-                if(prevDir < 0){
-                    prevDir = direction;
-                    direction = -1;
+                if(!gameOver){
+                    if(prevDir < 0){
+                        prevDir = direction;
+                        direction = -1;
+                        lastPress = Date.now();
+                    } else {
+                        if(Date.now() > lastPress+600){
+                            direction = prevDir;
+                            prevDir = -1;
+                        }
+                    }
                 } else {
-                    direction = prevDir;
-                    prevDir = -1;
+                    makeStartVurm();
+                    score = 0;
+                    gameOver = false;
+                    begin = false;
                 }
                 break;
             default:
@@ -390,6 +544,8 @@
     window.addEventListener('touchend',inputEnd,false);
     
     var start = {x:-1,y:-1};
+    var current = {x:-1,y:-1};
+    var tapTime = 0;
     function inputStart(evt){
         evt.preventDefault();
         if(evt.changedTouches != undefined){
@@ -397,10 +553,23 @@
             if(touches.length > 0){
                 start.x = touches[0].pageX;
                 start.y = touches[0].pageY;
+                direction = prevDir;
+                prevDir = -1;
+                if(gameOver){
+                    if(Date.now()-tapTime < 1000){
+                        makeStartVurm();
+                        score = 0;
+                        gameOver = false;
+                        begin = false;
+                    } else {
+                        tapTime = Date.now();
+                    }
+                }
             }
         } else {
-            start.x = evt.pageX;
-            start.y = evt.pageY;
+            //No mouse controls on this one.
+//            start.x = evt.pageX;
+//            start.y = evt.pageY;
         }
     }
     
@@ -411,8 +580,27 @@
             if(evt.changedTouches != undefined){
                 var touches = evt.changedTouches;
                 if(touches.length > 0){
-                    x = touches[0].pageX;
-                    y = touches[0].pageY;
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                    //Now we check current agains previous (aka start)
+                    if(getDist(current.x,current.y,start.x, start.y) > 10){
+                        var xDif = Math.abs(current.x-start.x);
+                        var yDif = Math.abs(current.y-start.y);
+                        if(xDif > yDif){ //Horizontal
+                            if(current.x > start.x && direction != 3){
+                                direction = 1;
+                            } else if(current.x < start.x && direction != 1){
+                                direction = 3;
+                            }
+                        } else if(yDif > xDif){
+                            if(current.y > start.y && direction != 0){
+                                direction = 2;
+                            } else if(current.y < start.y && direction != 2){
+                                direction = 0;
+                            }
+                        }
+                        start.x = current.x; start.y = current.y;
+                    }
                 }
             } else {
                 x = evt.pageX;
@@ -422,11 +610,23 @@
     }
     
     function inputEnd(){
+        if(current.x > -1){
+            prevDir = direction;
+            direction = -1;
+        }
         start.x = -1;
+        current.x = -1;
+    
     }
     
     scaleCanvas();
+    makeStartVurm();
 	animate();
+        
+    /*
+    Put some noise in there. 
+    BG Effects on collisions, cuts, and eating
+    */
 	</script>
 </body>
 </html>
