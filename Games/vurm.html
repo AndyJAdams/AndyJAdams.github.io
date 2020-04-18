@@ -1,0 +1,432 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>VURM</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+             
+            background-color: #222;
+        }
+        #canvas{
+            touch-action: none;
+            position: absolute;
+            top: 0;
+            left:0;
+        }
+        #blur_canvas{
+            touch-action: none;
+            position:absolute;
+            top:0;
+            left:0;
+            filter: blur(4px);
+        }
+	</style>
+</head>
+<body id='body'>
+    <canvas id='blur_canvas'></canvas>
+	<canvas id='canvas'></canvas>
+	<script>
+	var canvas = document.getElementById('canvas');	
+    var blurCanvas = document.getElementById('blur_canvas');
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+        blurCanvas.width = window.innerWidth;
+        blurCanvas.height = window.innerHeight;
+	}
+	var ctx = canvas.getContext('2d');
+    var dctx = blurCanvas.getContext('2d');
+        
+    //GLOBAL VARIABLES
+    var moveSpeed = 2;
+    var direction = -1;
+    var startLength = 200;
+    
+    var vurms = [];
+
+    //OBJECT DEFINITION
+    function Point(x,y){
+        this.x = x; this.y = y;
+    }
+        
+    function Vurm(len,points){
+        this.len=len; this.points = points;
+        
+        this.draw = function(){
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle='#DDD';
+            ctx.beginPath();
+            ctx.moveTo(this.points[0].x, this.points[0].y)
+            for(var i = 1; i < this.len; i++){
+                if(Math.abs(this.points[i].x-this.points[i-1].x) > innerWidth/2 || Math.abs(this.points[i].y-this.points[i-1].y) > innerHeight/2){
+                    ctx.moveTo(this.points[i].x, this.points[i].y);
+                } else {
+                    ctx.lineTo(this.points[i].x, this.points[i].y);
+                }
+            }
+            ctx.stroke();
+        }
+        
+        this.update = function(){
+            if(direction > -1){
+                var x = this.points[0].x; 
+                var y = this.points[0].y;
+                switch(direction){
+                    case 0: //Up
+                        y-= moveSpeed;
+                        break;
+                    case 1: //Right
+                        x+= moveSpeed;
+                        break;
+                    case 2: //Down
+                        y+= moveSpeed;
+                        break;
+                    case 3: //Left
+                        x-= moveSpeed;
+                        break;
+                    default:
+                        break;
+                }
+                //Wrap the vurm if it goes off the edge
+                if(x < -1){
+                    x = innerWidth;
+                } else if(x > innerWidth+1){
+                    x = 0;
+                }
+                if(y < -1){
+                    y = innerHeight;
+                } else if(y > innerHeight+1){
+                    y = 0;
+                }
+                //Update a new point to the vurm
+                var np = new Point(x,y);
+                //Check for self collision
+                for(var i =  0; i < this.points.length;i++){
+                    if(this.points[i].x == np.x && this.points[i].y == np.y){
+                        //COLLISION
+                        if(i < this.len){
+                            this.selfHit(i);
+                            break;
+                        }
+                    }
+                }
+                this.points.unshift(np);
+                //Make sure we're only storing enough points for use
+                if(this.points.length > this.len+20){
+                    this.points.pop();
+                }
+            }
+            this.draw();
+        }
+        
+        this.selfHit = function(i){
+            this.len -= i;
+            this.points.splice(0,i);
+        }
+        
+        this.cut = function(index, start=false){
+            if(index < this.len){  //Can't cut off what isn't there 
+                //First let's cut the length of the vurm
+                if(!start){ //from this point backwards
+                    var toEnd = Math.abs(index-this.len);
+                    this.len -= toEnd;
+                    this.points.splice(index,toEnd);
+                } else {
+                    var half = Math.floor(this.len/2);
+                    this.len -= half;
+                    this.points.splice(0,half);    
+                }
+            }
+        }
+    }
+        
+    function Fruit(x,y,r){
+        this.x = x; this.y = y; this.r = r;
+        this.draw = function(){
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r,0,2*Math.PI);
+            ctx.fillStyle='#DDD';
+            ctx.fill();
+        }
+        
+        this.update=function(){
+            //Check for vurm collision
+            for(var i = 0; i < vurms.length; i++){
+                if(getDist(this.x, this.y, vurms[i].points[0].x, vurms[i].points[0].y) < this.r+(this.r/2)){
+                    //COLLISION
+                    vurms[i].len+= 10;
+                    this.reset();
+                    break;
+                }
+            }
+            
+            this.draw();
+        }
+        
+        this.reset = function(){
+            this.x = Math.random()*(innerWidth-40)+20;
+            this.y = Math.random()*(innerHeight-40)+20;
+        }
+        
+    }
+        
+    function Obstacle(x,y,w,h,tx,ty){
+        this.sx = x; this.sy  = y;
+        this.x = x; this.y=y; this.w = w; this.h = h;
+        this.tx = tx; this.ty = ty;
+        this.bounce = false;
+        
+        this.draw = function(){
+            ctx.lineWidth = 2;
+            ctx.strokeStyle='#ddd';
+            ctx.strokeRect(this.x, this.y, this.w, this.h);
+        }
+        
+        this.update = function(){
+            if(direction > -1){
+                if(!this.bounce){
+                    if(this.x < this.tx){
+                        this.x++;
+                    } else if(this.x > this.tx){
+                        this.x--;
+                    }
+                    if(this.y < this.ty){
+                        this.y++;
+                    } else if(this.y > this.ty){
+                        this.y--;
+                    }
+
+                    if(getDist(this.x, this.y, this.tx, this.ty)<2){
+                        this.bounce = true;
+                    }
+                } else {
+                    if(this.x < this.sx){
+                        this.x++;
+                    } else if(this.x > this.sx){
+                        this.x--;
+                    }
+                    if(this.y < this.sy){
+                        this.y++;
+                    } else if(this.y > this.sy){
+                        this.y--;
+                    }
+                    if(getDist(this.x,this.y, this.sx, this.sy) < 2){
+                        this.bounce = false;
+                    }
+                }
+            }
+            this.draw();
+        }
+    }
+        
+    //OBJECT DECLARATION
+    var p = [];
+    for(var i = 0; i < startLength; i++){
+        p.push(new Point(innerWidth/2,innerHeight/2+(i*moveSpeed)));
+    }
+    vurms.push(new Vurm(startLength,p));
+    
+    var obs = [];
+    obs.push(new Obstacle(100,100,150,20,800,100));
+        obs.push(new Obstacle(800,innerHeight-200,150,20,100,innerHeight-200));
+    obs.push(new Obstacle(80,200,50,850,80,200));
+    obs.push(new Obstacle(innerWidth-130,200,50,850,innerWidth-130,200));
+        
+    var fruits = [];
+    fruits.push(new Fruit(innerWidth/2,innerHeight/2-200,10));
+        
+        
+    //******************************************************************
+    //******************************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        for(var i = 0;i < obs.length; i++){
+            obs[i].update();
+        }
+        
+        for(var i = 0; i < vurms.length; i++){
+            vurms[i].update();
+        }
+        
+        for(var i = 0; i < fruits.length; i++){
+            fruits[i].update();
+        }
+        
+        detectCollisions();
+        //BLUR EFFECT
+//        dctx.clearRect(0,0,innerWidth,innerHeight);
+//        dctx.drawImage(canvas,0,0);
+	}
+     
+   
+    //******************************************************************
+    //******************************************************************    
+        
+    //HELPER FUNCTIONS
+    function getDist(x1,y1,x2,y2){
+        return Math.abs(Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2)));
+    }
+        
+    function detectCollisions(){
+        for(var i = 0;i < vurms.length; i++){
+            var v = vurms[i];
+            //Now that we have the vurm let's check it against some boxes
+            for(var j = 0; j < obs.length; j++){
+                var ob = obs[j];
+                var ox1 = ob.x; var oy1 = ob.y; var ox2 = ob.x+ob.w; var oy2 = ob.y+ob.h;
+                //Now we have the limits for a box, lets check against points on the vurm
+                for(var p = 0; p < v.points.length; p++){
+                    var pt = v.points[p];
+                    if(pt.x > ox1 && pt.x < ox2 && pt.y > oy1 && pt.y < oy2){
+                        //The point is inside the box
+                        if(p == 0){
+                            v.cut(p,true);
+                        } else {
+                            v.cut(p);
+                        }
+                    }
+                }
+            }
+        }
+        
+        //Check if fruit are inside obstacles
+        for(var i = 0; i < fruits.length; i++){
+            var f = fruits[i];
+            //Check the obstacles
+            for(var j = 0; j < obs.length; j++){
+                var ob = obs[j];
+                var ox1 = ob.x; var oy1 = ob.y; var ox2 = ob.x+ob.w; var oy2 = ob.y+ob.h;
+                if(f.x > ox1-f.r && f.x < ox2+f.r && f.y > oy1-f.r && f.y < oy2+f.r){
+                    //fruit is too close to box... reset it. 
+                    f.reset();
+                    break;
+                }
+            }
+        }
+    }
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+    
+        var prevDir = -1;
+    window.addEventListener('keydown', function(e){
+        console.log(e.key);
+        e.preventDefault();
+        switch(e.key){
+            case 'ArrowUp':
+                if(direction != 2){
+                    direction = 0;
+                }
+                break;
+            case 'w':
+                if(direction != 2){
+                    direction = 0;
+                }
+                break;
+            case 'ArrowDown':
+                if(direction != 0){
+                    direction = 2;
+                }
+                break;
+            case 's':
+                if(direction != 0){
+                    direction = 2;
+                }
+                break;
+            case 'ArrowLeft':
+                if(direction != 1){
+                    direction = 3;
+                }
+                break;
+            case 'a':
+                if(direction != 1){
+                    direction = 3;
+                }
+                break;
+            case 'ArrowRight':
+                if(direction != 3){
+                    direction = 1;
+                }
+                break;
+            case 'd':
+                if(direction != 3){
+                    direction = 1;
+                }
+                break;
+            case 'Escape':
+                if(prevDir < 0){
+                    prevDir = direction;
+                    direction = -1;
+                } else {
+                    direction = prevDir;
+                    prevDir = -1;
+                }
+                break;
+            default:
+                break;
+        }
+    });
+        
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+    
+    var start = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+    }
+    
+    function inputMove(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        }
+    }
+    
+    function inputEnd(){
+        start.x = -1;
+    }
+    
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>

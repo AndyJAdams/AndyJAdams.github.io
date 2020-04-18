@@ -28,7 +28,7 @@
 		canvas.height = window.innerHeight;
 	}
         
-    var touchDebug = 'DEBUG';
+    var touchDebug = 'V0.002';
 	var ctx = canvas.getContext('2d');
     var burn = false;
     var ship = document.getElementById('shipsprite');
@@ -37,15 +37,104 @@
         
     var direction = 0;
     var SpinOff = [[0,0],[32,32],[64,0],[96,32],[96,0],[64,32],[32,0],[0,32]];
+        //Orgranized for left spin order
     var index = 0;
     var frame = 0; 
     var shipSpeed = 0.10;
     var dx = innerWidth/2-16;
     var dy = innerHeight/2-16;
     var force ={x:0,y:0};
+    var bv = 15; //Bullet Velocity
+        
+    function Blob(x,y,w,h){
+        this.x = x; this.y = y; this.w = w; this.h = h;
+        this.hit = false;
+        this.draw = function(){
+            ctx.lineWidth=2;
+            if(!this.hit){
+                ctx.strokeRect(this.x, this.y, this.w, this.h);
+            }
+        }
+        
+        this.update = function(){
+            this.draw();
+        }
+        
+        this.boom = function(){
+            console.log("BOOM");
+            this.hit = true;
+        }
+    }
+        
+    var blobs = [];
+    for(var i = 0; i < 1; i++){
+        blobs.push(new Blob(Math.random()*innerWidth,Math.random()*innerHeight,50,50));
+    }
+        
+    function Bullet(x,y,ex,ey){
+        this.x = x; this.y = y; this.ex = ex; this.ey = ey;
+        this.draw = function(){
+            ctx.fillRect(this.x-5,this.y-5,10,10);
+        }
+        
+        this.update = function(){
+            if(this.x > this.ex){
+                this.x-= bv;
+            } else if(this.x < this.ex){
+                this.x+=bv;
+            }
+            if(this.y > this.ey){
+                this.y-=bv;
+            } else if(this.y < this.ey){
+                this.y+=bv;
+            }
+            
+            if(getDistance(this.x,this.y,this.ex,this.ey)<10){
+                this.destroy();
+            }
+            
+            this.draw();
+            
+            for(var i = 0; i < blobs.length; i++){
+                if(!blobs[i].hit){
+                    var dist = getDistance(this.x+5,this.y+5,blobs[i].x+blobs[i].w, blobs[i].y+blobs[i].h);
+                    if(dist < blobs[i].w/2+5){
+                        blobs[i].boom();
+                        this.destroy();
+                    }
+                }
+            }
+        }
+        
+        this.destroy = function(){
+            bullets.splice(this,1);
+        }
+    }
+        
+    var bullets = [];
+    var fireTime = 0;
+    var fire = false;
+    var shipDraw = true;
+    //******************************************************************
+    //******************************************************************
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        for(var i = 0; i < bullets.length; i++){
+            if(bullets[i] != undefined){
+                bullets[i].update();
+                var dist = getDistance(bullets[i].x+5,bullets[i].y+5,dx+32,dy+32);
+                if(dist < 32){
+                    bullets[i].destroy();
+                    shipDraw=false;
+                }
+            }
+        }
+        
+        for(var i = 0; i < blobs.length; i++){
+            blobs[i].update();
+        }
         
         //Draw touch input.
         if(current.x > -1){
@@ -64,7 +153,10 @@
         
         var y = SpinOff[index][1];
         if(burn){ y+=64};
-        ctx.drawImage(ship,SpinOff[index][0],y,sw,sh,dx,dy,32*2,32*2);
+        if(shipDraw){
+            ctx.drawImage(ship,SpinOff[index][0],y,sw,sh,dx,dy,32*2,32*2);
+        }
+        
         
         if(direction < -0.1 && frame >= 16){
             index++;
@@ -84,45 +176,77 @@
         frame++;
         
         if(burn){
-            switch(index){
-                case 0:
-                    force.y -= shipSpeed;
+            switch(index){ //Which way are we facing
+                case 0: //Straight up
+                    force.y -= shipSpeed;  
                     break;
-                case 1:
+                case 1: //Up-left
                     force.x -= shipSpeed/2;
                     force.y -= shipSpeed/2;
                     break;
-                case 2:
+                case 2: //Left
                     force.x -= shipSpeed;
                     break;
-                case 3:
+                case 3: //Down-left
                     force.x -= shipSpeed/2;
                     force.y += shipSpeed/2;
                     break;
-                case 4:
+                case 4: //Down
                     force.y += shipSpeed;
                     break;
-                case 5:
+                case 5: //Down-Right
                     force.x += shipSpeed/2;
                     force.y += shipSpeed/2;
                     break;
-                case 6:
+                case 6: //Right
                     force.x += shipSpeed;
                     break;
-                case 7:
+                case 7: //Upper Right
                     force.x += shipSpeed/2;
                     force.y -= shipSpeed/2;
                     break;
                 default:
                     break;
             }
-        }
+        } 
+        
+        if(fire && Date.now() > fireTime){
+            switch(index){ //Which way are we facing
+                case 0: //Straight up
+                    bullets.push(new Bullet(dx+32,dy,dx+32,dy-innerHeight*2));
+                    break;
+                case 1: //Up-left
+                    bullets.push(new Bullet(dx+8,dy+8,dx-innerHeight*2,dy-innerHeight*2));
+                    break;
+                case 2: //Left
+                    bullets.push(new Bullet(dx,dy+32,dx-innerHeight*2,dy+32));
+                    break;
+                case 3: //Down-left
+                    bullets.push(new Bullet(dx+8,dy+56,dx-innerHeight*2,dy+innerHeight*2));
+                    break;
+                case 4: //Down
+                    bullets.push(new Bullet(dx+32,dy+64,dx+32,dy+innerHeight*2));
+                    break;
+                case 5: //Down-Right
+                    bullets.push(new Bullet(dx+56,dy+56,dx+innerHeight*2,dy+innerHeight*2));
+                    break;
+                case 6: //Right
+                    bullets.push(new Bullet(dx+64,dy+32,dx+innerHeight*2,dy+32));
+                    break;
+                case 7: //Upper Right
+                    bullets.push(new Bullet(dx+56,dy+8,dx+innerHeight*2,dy-innerHeight*2));
+                    break;
+                default:
+                    break;
+            }
+            fireTime = Date.now()+60;
+        } 
         
         dy += force.y;
         dx += force.x;
         
-        ctx.font = '20px sans-serif';
-        ctx.fillText(touchDebug, 10,30);
+        ctx.font = '10px sans-serif';
+        ctx.fillText(touchDebug, 10,15);
         
         //WRAPPING SUCKAS
         if(dx > innerWidth + 32){
@@ -149,9 +273,12 @@
             force.y = -10;
         }
         
-        
 	}
-
+        
+    function getDistance(x1,y1,x2,y2){
+        return Math.sqrt(Math.pow(Math.abs(x2-x1),2)+Math.pow(Math.abs(y2-y1),2));
+    }
+      
 	//*** INPUT SECTION **//
     window.addEventListener('resize',function(evt){
         evt.preventDefault();
@@ -177,6 +304,9 @@
         if(evt.key == 'ArrowLeft' || evt.key == 'ArrowRight'){
             direction = 0;
         }
+        if(evt.key=='ArrowDown'){
+            fire = false;
+        }
     }
         
     function processKey(evt){
@@ -187,6 +317,7 @@
         switch(evt.key){
             case 'ArrowDown':
                 direction = 0;
+                fire = true;
                 break;
             case 'ArrowLeft':
                 //Spin the ship left... by updating the sprite.
@@ -212,7 +343,6 @@
                 start.x = touches[0].pageX;
                 start.y = touches[0].pageY;
             }
-            touchDebug = 'TOUCH START';
         } else {
             start.x = evt.pageX;
             start.y = evt.pageY;
@@ -270,6 +400,7 @@
         }
         current.x = -1;
         start.x = -1;
+        fire = false;
     }
     
     scaleCanvas();
