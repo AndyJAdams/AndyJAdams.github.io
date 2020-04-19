@@ -598,6 +598,41 @@
             ctx.fillText('MOBILE',innerWidth/2+120,innerHeight/2-50);
             ctx.fillText('swipe',innerWidth/2+120,innerHeight/2);
             ctx.fillText('to move',innerWidth/2+120,innerHeight/2+30);
+            
+            //Draw title
+            ctx.beginPath();
+            ctx.strokeStyle='#dddddd88';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 20;
+            
+            //V
+            ctx.moveTo(innerWidth/2-200,innerHeight/2-360);
+            ctx.lineTo(innerWidth/2-170,innerHeight/2-300);
+            ctx.lineTo(innerWidth/2-140, innerHeight/2-360);
+            
+            //U
+            ctx.moveTo(innerWidth/2-80,innerHeight/2-360);
+            ctx.lineTo(innerWidth/2-80,innerHeight/2-300);
+            ctx.lineTo(innerWidth/2-30,innerHeight/2-300);
+            ctx.lineTo(innerWidth/2-30,innerHeight/2-360);
+            
+            //R
+            ctx.moveTo(innerWidth/2+30,innerHeight/2-300);
+            ctx.lineTo(innerWidth/2+30,innerHeight/2-360);
+            ctx.lineTo(innerWidth/2+80,innerHeight/2-360);
+            ctx.lineTo(innerWidth/2+60,innerHeight/2-330);
+            ctx.lineTo(innerWidth/2+80,innerHeight/2-300);
+            
+            //M
+            ctx.moveTo(innerWidth/2+140,innerHeight/2-300);
+            ctx.lineTo(innerWidth/2+140,innerHeight/2-360);
+            ctx.lineTo(innerWidth/2+170,innerHeight/2-330);
+            ctx.lineTo(innerWidth/2+200,innerHeight/2-360);
+            ctx.lineTo(innerWidth/2+200,innerHeight/2-300);
+            
+            
+            ctx.stroke();
         }
 	}
      
