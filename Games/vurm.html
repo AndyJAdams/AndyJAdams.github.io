@@ -27,7 +27,7 @@
 	<canvas id='canvas'></canvas>
     <img id='kap' src='./Emotes/Kappa.png'>
     <img id='pog' src='./Emotes/Pog.png'>
-    <img id='lul' src='./Emotes/LUL.png'>
+    <img id='lul' src='./Emotes/Lul.png'>
 	<script>
     var kap = document.getElementById('kap');
     var pog = document.getElementById('pog');
@@ -585,9 +585,10 @@
         validateGame();
         
         //Display controls on screen
-        if(!escaped && !touched){
+        if(!begin){
             ctx.font = '16px sans-serif';
             ctx.fillStyle=primaryColor;
+            ctx.textAlign = 'center';
             ctx.fillText('DESKTOP',innerWidth/2-120,innerHeight/2-50);
             ctx.fillText('w',innerWidth/2-120,innerHeight/2);
             ctx.fillText('a',innerWidth/2-160,innerHeight/2+30);
