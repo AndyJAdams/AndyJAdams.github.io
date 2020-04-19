@@ -343,7 +343,6 @@
         if(messages.length > 0){
             for(var i =  0; i< messages.length; i++){
                 if(!messages[i].shown){
-                    console.log(messages[i].msg);
                     if(messages[i].cheer && Date.now()>timeOut){
                         //SOMEONE CHEERED... DO SUMPTIN
                         for(var i = 0; i< 60;i++){
@@ -405,12 +404,15 @@
         if(inverted){
             ctx.fillStyle = invertedColor+'22';
         }
-        ctx.font = '20px sans-serif';
-        ctx.textAlign = 'left';
-        for(var i = 0; i < messages.length; i++){
-            ctx.fillText(messages[i].user+": "+messages[i].msg,20,innerHeight-20-i*50);
+
+        if(chatAllow){
+            ctx.font = '20px sans-serif';
+            ctx.textAlign = 'left';
+            for(var i = 0; i < messages.length; i++){
+                ctx.fillText(messages[i].user+": "+messages[i].msg,20,innerHeight-20-i*50);
+            }
         }
-        
+
         for(var i = 0; i < dots.length; i++){
             dots[i].update();
         }
@@ -699,16 +701,6 @@
                     gameOver = false;
                     begin = false;
                 }
-                break;
-            case 'n':
-                for(var i = 0;i < 10; i++){
-                    var x = Math.random()*innerWidth;
-                    var y = Math.random()*innerHeight;
-                    var r = Math.random()*10+5;
-                    var c = randColor(); //'#ffffff';
-                    dots.push(new Dot(x,y,r));
-                }
-                timeOut = Date.now()+chatTimeOut;
                 break;
             default:
                 break;
