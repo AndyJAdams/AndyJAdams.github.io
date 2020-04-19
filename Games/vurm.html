@@ -968,8 +968,10 @@
                 touched = true;
                 start.x = touches[0].pageX;
                 start.y = touches[0].pageY;
-                direction = prevDir;
-                prevDir = -1;
+                if(direction < 0){
+                 direction = prevDir;
+                 prevDir = -1;
+                }
                 if(gameOver){
                     if(Date.now()-tapTime < 1000){
                         makeStartVurm();
