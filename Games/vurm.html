@@ -37,10 +37,10 @@
     //GLOBAL VARIABLES
     var primaryColor = '#dddddd';
     var invertedColor = '#222222';
-    var moveSpeed = 2;
+    var moveSpeed = 3.5;
     var direction = -1;
-    var startLength = 40;
-    var nextVurm = 60;
+    var startLength = 10;
+    var nextVurm = 50;
     var vurms = [];
     var begin = false;
     var score = 0;
@@ -60,7 +60,7 @@
         this.len=len; this.points = points;
         
         this.draw = function(){
-            ctx.lineWidth = innerWidth/100;
+            ctx.lineWidth = innerWidth/35;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.strokeStyle=primaryColor;
@@ -279,14 +279,14 @@
         }
     }
         
-    function Dot(x,y,r,c){
+    function Dot(x,y,r){
         this.x =x; this.y=y; this.r = r;
-        this.c=c;
+        this.c= randColor();
         this.gr = Math.random()*2+0.1;
         this.draw=function(){
             ctx.beginPath();
             ctx.arc(this.x, this.y,this.r,0,2*Math.PI);
-            ctx.fillStyle=this.c;
+            ctx.fillStyle = '#'+this.c;
             ctx.fill();
         }
         
@@ -350,7 +350,7 @@
                             var x = Math.random()*innerWidth;
                             var y = Math.random()*innerHeight;
                             var r = Math.random()*10+5;
-                            dots.push(new Dot(x,y,r,randColor()));
+                            dots.push(new Dot(x,y,r));
                         }
                         timeOut = Date.now()+chatTimeOut;
                     } else {
@@ -405,7 +405,7 @@
         if(inverted){
             ctx.fillStyle = invertedColor+'22';
         }
-        ctx.font = '48px sans-serif';
+        ctx.font = '20px sans-serif';
         ctx.textAlign = 'left';
         for(var i = 0; i < messages.length; i++){
             ctx.fillText(messages[i].user+": "+messages[i].msg,20,innerHeight-20-i*50);
@@ -706,7 +706,7 @@
                     var y = Math.random()*innerHeight;
                     var r = Math.random()*10+5;
                     var c = randColor(); //'#ffffff';
-                    dots.push(new Dot(x,y,r,c));
+                    dots.push(new Dot(x,y,r));
                 }
                 timeOut = Date.now()+chatTimeOut;
                 break;
