@@ -602,7 +602,7 @@
         
         detectCollisions();
         
-        if(begin && !gameOver){
+        if(begin && !gameOver && direction > -1){
             ctx.fillStyle=primaryColor+'aa';
             if(inverted){
                 ctx.fillStyle=invertedColor+'aa';
