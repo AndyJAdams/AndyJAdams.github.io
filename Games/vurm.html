@@ -358,25 +358,25 @@
                         var msg = messages[i].msg;
                         console.log(msg);
                         msg.toLocaleLowerCase();
-                        if(msg.includes('!red')){
+                        if(msg.includes('!red') && redAllow){
                             bgColor = '#b22222';
                         }
-                        if(msg.includes('!blue')){
+                        if(msg.includes('!blue') && blueAllow){
                             bgColor = '#15357A';
                         }
-                        if(msg.includes('!green')){
+                        if(msg.includes('!green') && greenAllow){
                             bgColor = '#193207';
                         }
                         //Increase speed of blocks
-                        if(msg.includes('!fast') && Date.now() > timeOut){
+                        if(msg.includes('!fast') && Date.now() > timeOut && fastAllow){
                                 currentBlockSpeed = 4;
                                 timeOut = Date.now()+chatTimeOut;
                         } 
-                        if(msg.includes('!slow') && Date.now() > timeOut){
+                        if(msg.includes('!slow') && Date.now() > timeOut && slowAllow){
                                 currentBlockSpeed = 0.01;
                                 timeOut = Date.now()+chatTimeOut;
                         }
-                        if(msg.includes('!derp') && Date.now() > timeOut){
+                        if(msg.includes('!derp') && Date.now() > timeOut && derpAllow){
                                 //Mess with player controls here
                                 inverted = true;
                                 timeOut = Date.now()+chatTimeOut;

@@ -4,6 +4,14 @@
 //Code inspired by Alca - tmi.js
 var messages = [];
 var chatTimeOut = 12000;
+var chatDisplay = true;
+var blueAllow = true;
+var redAllow = true;
+var greenAllow = true;
+var fastAllow = true;
+var slowAllow = true;
+var derpAllow = true;
+
 function Message(msg, user, cheer = false){
     this.msg = msg; this.user = user; this.cheer = cheer;
     this.shown = false;
@@ -22,6 +30,40 @@ if(tc != ''){
     if(raw.length > 1){
         data = raw[1].split('=');
         chatTimeOut = data[1];
+    }
+    //Handle changed default commands
+    if(raw.length > 2){
+        for(var i = 2; i < raw.length; i++){
+            var pair = raw[i]
+            data = raw[i].split('=');
+            var id=data[0];
+            switch(id){
+                case 'chat':
+                    chatAllow = false;
+                    break;
+                case 'blue':
+                    blueAllow = false;
+                    break;
+                case 'red':
+                    redAllow = false;
+                    break;
+                case 'green':
+                    greenAllow = false;
+                    break;
+                case 'fast':
+                    fastAllow = false;
+                    break;
+                case 'slow':
+                    slowAllow = false;
+                    break;
+                case 'derp':
+                    derpAllow = false;
+                    break;
+                default:
+                    break;
+
+            }
+        }
     }
 }
 

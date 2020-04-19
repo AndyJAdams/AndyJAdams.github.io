@@ -63,15 +63,27 @@
   <input type="range" min="6000" max="18000" value="12000" class="slider" id="myRange">
   <p>Value: <span id="demo"></span></p>
 </div>
+<h3>Chat</h3>
+<input type="checkbox" name="chat" value="chat" id='chat' checked>
+  <label for="chat"> Display chat in background of game?</label><br>
 <h3>Available Commands</h3>
-<p>
-  !blue<br>
-  !red<br>
-  !green<br>
-  !fast<br>
-  !slow<br>
-  !derp<br>
-</p>
+<input type="checkbox" name="blue" value="!blue" id='blue' checked>
+  <label for="!blue"> !blue - Change background blue</label><br>
+
+<input type="checkbox" name="red" value="!red" id='red' checked>
+  <label for="!red"> !red - Change background red</label><br>
+
+<input type="checkbox" name="green" value="!green" id='green' checked>
+  <label for="!green"> !green - Change background green</label><br>
+
+<input type="checkbox" name="fast" value="!fast" id='fast' checked>
+  <label for="!fast"> !fast - boxes move faster</label><br>
+
+<input type="checkbox" name="slow" value="!slow" id='slow' checked>
+  <label for="!slow"> !slow - boxes move slower</label><br>
+
+<input type="checkbox" name="derp" value="!derp" id='derp' checked>
+  <label for="!derp"> !derp - invert controls</label><br>
 <br>
 <button id='play' onclick='playVurm()'>Play Vurm</button>
 <br>
@@ -95,7 +107,29 @@ function playVurm(){
   } else {
     var to = slider.value;
     var url = 'https://andyjadams.github.io/Games/vurm.html?tc='+tc+'&to='+to;
-    window.open(url);
+    if(!document.getElementById('chat').checked){
+      url+='&chat=false'
+    }
+    if(!document.getElementById('blue').checked){
+      url+='&blue=false'
+    }
+    if(!document.getElementById('red').checked){
+      url+='&red=false'
+    }
+    if(!document.getElementById('green').checked){
+      url+='&green=false'
+    }
+    if(!document.getElementById('fast').checked){
+      url+='&fast=false'
+    }
+    if(!document.getElementById('slow').checked){
+      url+='&slow=false'
+    }
+    if(!document.getElementById('derp').checked){
+      url+='&derp=false'
+    }
+    alert(url);
+    //window.open(url);
   }
 
 }
