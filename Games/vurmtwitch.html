@@ -84,6 +84,9 @@
 
 <input type="checkbox" name="derp" value="!derp" id='derp' checked>
   <label for="!derp"> !derp - invert controls</label><br>
+<h3>Control VURM</h3>
+<input type="checkbox" name="ctrl" value="!ctrl" id='ctrl' checked>
+  <label for="!derp"> Control VURM w/ !up !down !left !right</label><br>
 <br>
 <button id='play' onclick='playVurm()'>Play Vurm</button>
 <br>
@@ -127,6 +130,9 @@ function playVurm(){
     }
     if(!document.getElementById('derp').checked){
       url+='&derp=false'
+    }
+    if(!docuemt.getElementById('ctrl').checked){
+        url+='&ctrl=false'
     }
     //alert(url);
     window.open(url);

@@ -11,6 +11,7 @@ var greenAllow = true;
 var fastAllow = true;
 var slowAllow = true;
 var derpAllow = true;
+var controlAllow = true;
 
 function Message(msg, user, cheer = false){
     this.msg = msg; this.user = user; this.cheer = cheer;
@@ -59,6 +60,9 @@ if(tc != ''){
                 case 'derp':
                     derpAllow = false;
                     break;
+                case 'ctrl':
+                    controlAllow = false;
+                    break;
                 default:
                     break;
 
@@ -93,7 +97,7 @@ function addListeners(){
     
     function handleCheer(chanell, userstate,message,self){
         let name = userstate['display-name'];
-        message.push(new Message(message, name, true));
+        messages.push(new Message(message, name, true));
         updateMessageCount();
     }
     

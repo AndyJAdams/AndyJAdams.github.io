@@ -341,12 +341,17 @@
     }
     
     var obs = [];
-    obs.push(new Obstacle(100,100,innerWidth/5,innerHeight/20,innerWidth-100-innerWidth/5,100));
-        obs.push(new Obstacle(innerWidth-100-innerWidth/5,innerHeight-200,innerWidth/5,innerHeight/20,100,innerHeight-200));
+        //Top horizontal moving box
+    obs.push(new Obstacle(-50,100,innerWidth/5,innerHeight/20,innerWidth+50-innerWidth/5,100));
+        //Bottom horz box
+        obs.push(new Obstacle(innerWidth+50-innerWidth/5,innerHeight-200,innerWidth/5,innerHeight/20,-50,innerHeight-200));
+        
     obs.push(new Obstacle(80,300,innerWidth/40,innerHeight-600,innerWidth/2-80-innerWidth/40,300));
     obs.push(new Obstacle(innerWidth-80-innerWidth/40,300,innerWidth/40,innerHeight-600,innerWidth/2+80,300));
-    obs.push(new Obstacle(innerWidth-140-innerWidth/30,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,innerWidth-140-innerWidth/30,innerHeight/10));
-    obs.push(new Obstacle(140,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,140,innerHeight/10));
+        //Right vertical mover
+    obs.push(new Obstacle(innerWidth-140-innerWidth/30,(innerHeight)-innerHeight/4,innerWidth/30,innerHeight/4,innerWidth-140-innerWidth/30,0));
+        //Left vert mover
+    obs.push(new Obstacle(140,(innerHeight)-innerHeight/4,innerWidth/30,innerHeight/4,140,0));
     obs.push(new Obstacle(innerWidth/2-(innerWidth/20)/2,-20,innerWidth/20,150,innerWidth/2-(innerWidth/20)/2,-20));
     obs.push(new Obstacle(innerWidth/2-(innerWidth/20)/2,innerHeight-150,innerWidth/20,150,innerWidth/2-(innerWidth/20)/2,innerHeight-150));
     obs.push(new Obstacle(-20,innerHeight/2-(innerHeight/20)*2,150,innerHeight/20,-20,innerHeight/2-(innerHeight/20)*2));
@@ -454,6 +459,71 @@
                     if(msg.includes('PogChamp')){
                         emotes.push(new Emote(2, Date.now()+10000));
                     }
+                    
+                    if(msg.includes('!up') && controlAllow){ //UP
+                        if(!inverted){
+                                if(direction != 0 && prevDir < 0){
+                                    if(direction == -1){
+                                        direction = 0;
+                                    } else {
+                                        direction = 2;
+                                    }
+                                } else {
+                                    if(direction != 2 && prevDir < 0){
+                                        if(direction == -1){
+                                            direction = 0;
+                                        } else {
+                                            direction = 0;
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                    
+                    if(msg.includes('!down') && controlAllow){//DOWN
+                         if(!inverted){
+                            if(direction != 0 && prevDir < 0){
+                                if(direction == -1){
+                                    direction = 0;
+                                } else {
+                                    direction = 2;
+                                }
+                            }
+                        } else {
+                            if(direction != 2 && prevDir < 0){
+                                if(direction == -1){
+                                    direction = 0;
+                                } else {
+                                    direction = 0;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if(msg.includes('!left') && controlAllow){ //Left
+                        if(!inverted){
+                            if(direction != 1 && prevDir < 0){
+                                direction = 3;
+                            }
+                        } else {
+                            if(direction != 3 && prevDir < 0){
+                                direction = 1;
+                            }
+                        }
+                    }
+                    
+                    if(msg.includes('!right') && controlAllow){ //Right
+                        if(!inverted){
+                            if(direction != 3 && prevDir < 0){
+                                direction = 1;
+                            }
+                        } else {
+                            if(direction != 1 && prevDir < 0){
+                                direction = 3;
+                            }
+                        }
+                    }
+                    
                     lastUser = messages[i].user;
                     messages[i].shown = true;
                 }
@@ -845,10 +915,10 @@
                     }
                 } else {
                     makeStartVurm();
-                    score = 0;
                     if(score > bestScore){
                         bestScore = score;
                     }
+                    score = 0;
                     gameOver = false;
                     begin = false;
                 }
