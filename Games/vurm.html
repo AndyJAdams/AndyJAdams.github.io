@@ -24,9 +24,15 @@
 <body id='body'>
     <script src='https://alca.sfo2.cdn.digitaloceanspaces.com/tmijs/1.4.2/tmi.min.js'></script>
     <script id='vurmchat' src='./vurmchat.js'></script>
-    <canvas id='bgcanvas'></canvas>
 	<canvas id='canvas'></canvas>
+    <img id='kap' src='./Emotes/Kappa.png'>
+    <img id='pog' src='./Emotes/Pog.png'>
+    <img id='lul' src='./Emotes/LUL.png'>
 	<script>
+    var kap = document.getElementById('kap');
+    var pog = document.getElementById('pog');
+    var lul = document.getElementById('lul');
+    
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
@@ -47,6 +53,8 @@
     var gameOver = false;
     var bgColor = '#222222';
     var timeOut = 0;
+    var startTime = 0;
+    var bestScore = 0;
     
     var defaultBlockSpeed = 1;
     var currentBlockSpeed = 1;
@@ -83,6 +91,7 @@
             if(direction > -1){
                 if(!begin){
                     begin = true;
+                    startTime = Date.now();
                 }
                 var x = this.points[0].x; 
                 var y = this.points[0].y;
@@ -176,7 +185,7 @@
                     //COLLISION
                     vurms[i].len+= 10;
                     effects.push(new RingEffect(this.x, this.y,this.r));
-                    score++;
+                    //score++;
                     var audio = new Audio('./Audio/Knock.wav');
                     audio.play();
                     this.reset();
@@ -230,7 +239,7 @@
                         this.y-=currentBlockSpeed;
                     }
 
-                    if(getDist(this.x, this.y, this.tx, this.ty)< 12){
+                    if(getDist(this.x, this.y, this.tx, this.ty)< 4*currentBlockSpeed){
                         this.bounce = true;
                     }
                 } else {
@@ -296,6 +305,32 @@
         }
     }
         
+    function Emote(type, time){
+        this.type = type; this.time = time;
+        this.x = Math.random()*innerWidth-100;
+        this.y = Math.random()*innerHeight-100;
+        this.scale = Math.random() * innerHeight/2 + 100;
+        this.draw = function(){
+            if(this.time > Date.now()){
+                switch(this.type){
+                    case 0: //Kappa
+                        ctx.drawImage(kap,0,0,473,473,this.x,this.y,this.scale,this.scale);
+                        break;
+                    case 1: //LUL
+                        ctx.drawImage(lul,0,0,512,512,this.x,this.y,this.scale,this.scale);
+                        break;
+                    case 2: //POG
+                        ctx.drawImage(pog,0,0,200,200,this.x,this.y,this.scale,this.scale);
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                removeEmote(this);
+            }
+        }
+    }
+        
     //OBJECT DECLARATION
     function makeStartVurm(){
             var pts = [];
@@ -312,6 +347,11 @@
     obs.push(new Obstacle(innerWidth-80-innerWidth/40,300,innerWidth/40,innerHeight-600,innerWidth/2+80,300));
     obs.push(new Obstacle(innerWidth-140-innerWidth/30,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,innerWidth-140-innerWidth/30,innerHeight/10));
     obs.push(new Obstacle(140,(innerHeight/10*9)-innerHeight/4,innerWidth/30,innerHeight/4,140,innerHeight/10));
+    obs.push(new Obstacle(innerWidth/2-(innerWidth/20)/2,-20,innerWidth/20,150,innerWidth/2-(innerWidth/20)/2,-20));
+    obs.push(new Obstacle(innerWidth/2-(innerWidth/20)/2,innerHeight-150,innerWidth/20,150,innerWidth/2-(innerWidth/20)/2,innerHeight-150));
+    obs.push(new Obstacle(-20,innerHeight/2-(innerHeight/20)*2,150,innerHeight/20,-20,innerHeight/2-(innerHeight/20)*2));
+    obs.push(new Obstacle(innerWidth-150,innerHeight/2-(innerHeight/20)*2,150,innerHeight/20,innerWidth-150,innerHeight/2-(innerHeight/20)*2));
+    
         
     var fruits = [];
     fruits.push(new Fruit(innerWidth/2,innerHeight/2-200,10));
@@ -332,6 +372,10 @@
             }
         }
     }
+    var emotes = [];
+        
+    var speedTimeOut = 0;
+    var invTimeOut = 0;
     //******************************************************************
     //******************************************************************
     //var bgoffset = 0;
@@ -351,7 +395,7 @@
                             var r = Math.random()*10+5;
                             dots.push(new Dot(x,y,r));
                         }
-                        timeOut = Date.now()+chatTimeOut;
+                        timeOut = Date.now()+parseInt(chatTimeOut);
                     } else {
                         //Broke ass message
                         var msg = messages[i].msg;
@@ -359,27 +403,56 @@
                         msg.toLocaleLowerCase();
                         if(msg.includes('!red') && redAllow){
                             bgColor = '#b22222';
+                            var redAud = new Audio('./Audio/red.mp3');
+                            redAud.play();
                         }
                         if(msg.includes('!blue') && blueAllow){
                             bgColor = '#15357A';
+                            var blueAud = new Audio('./Audio/blue.mp3');
+                            blueAud.play();
                         }
                         if(msg.includes('!green') && greenAllow){
                             bgColor = '#193207';
+                            var gAud = new Audio('./Audio/green.mp3');
+                            gAud.play();
                         }
                         //Increase speed of blocks
-                        if(msg.includes('!fast') && Date.now() > timeOut && fastAllow){
-                                currentBlockSpeed = 4;
-                                timeOut = Date.now()+chatTimeOut;
+                        if(msg.includes('!fast') && fastAllow){
+                                currentBlockSpeed *= 2;
+                                if(currentBlockSpeed > 10){
+                                    currentBlockSpeed = 10;
+                                }
+                                speedTimeOut = Date.now()+parseInt(chatTimeOut);
+                                var fAud = new Audio('./Audio/fast.mp3');
+                                fAud.play();
+                            
                         } 
-                        if(msg.includes('!slow') && Date.now() > timeOut && slowAllow){
-                                currentBlockSpeed = 0.01;
-                                timeOut = Date.now()+chatTimeOut;
+                        if(msg.includes('!slow') && slowAllow){
+                                currentBlockSpeed = currentBlockSpeed/2;
+                                if(currentBlockSpeed < 0.2){
+                                    currentBlockSpeed = 0.2;
+                                }
+                                speedTimeOut = Date.now()+parseInt(chatTimeOut);
+                                var sAud = new Audio('./Audio/slow.mp3');
+                                sAud.play();
                         }
-                        if(msg.includes('!derp') && Date.now() > timeOut && derpAllow){
+                        if(msg.includes('!derp') && derpAllow){
                                 //Mess with player controls here
-                                inverted = true;
-                                timeOut = Date.now()+chatTimeOut;
+                                inverted = !inverted;
+                                invTimeOut = Date.now()+parseInt(chatTimeOut);
+                                var dAud = new Audio('./Audio/derp.mp3');
+                                dAud.play();
                         }
+                    }
+                    
+                    if(msg.includes('LUL')){
+                        emotes.push(new Emote(1,Date.now()+10000));
+                    }
+                    if(msg.includes('Kappa')){
+                        emotes.push(new Emote(0,Date.now()+10000));
+                    }
+                    if(msg.includes('PogChamp')){
+                        emotes.push(new Emote(2, Date.now()+10000));
                     }
                     lastUser = messages[i].user;
                     messages[i].shown = true;
@@ -393,17 +466,27 @@
         }
         ctx.fillRect(0,0,innerWidth,innerHeight);
         
+        for(var i = 0; i < emotes.length;i++){
+            emotes[i].draw();
+        }
         
-        if(Date.now() > timeOut){
-            currentBlockSpeed = defaultBlockSpeed;
-            inverted = false;
+        var now = Date.now();
+        if(now > timeOut){
             dots = [];
         } 
+        
+        if(now > speedTimeOut){
+            currentBlockSpeed = defaultBlockSpeed;
+        }
+        
+        if(now > invTimeOut){
+            inverted = false;
+        }
 
         if(chatAllow){
-            ctx.fillStyle=primaryColor+'22';
+            ctx.fillStyle=primaryColor+'44';
             if(inverted){
-                ctx.fillStyle = invertedColor+'22';
+                ctx.fillStyle = invertedColor+'44';
             }
             ctx.font = '20px sans-serif';
             ctx.textAlign = 'left';
@@ -449,14 +532,21 @@
         
         detectCollisions();
         
-        ctx.fillStyle=primaryColor+'aa';
-        if(inverted){
-            ctx.fillStyle=invertedColor+'aa';
+        if(begin && !gameOver){
+            ctx.fillStyle=primaryColor+'aa';
+            if(inverted){
+                ctx.fillStyle=invertedColor+'aa';
+            }
+            ctx.font='36px sans-serif';
+            ctx.textAlign = 'center';
+            score = Math.floor((Date.now()-startTime)/1000);
+            ctx.fillText(score,40,50);
+            if(bestScore > 0){
+                ctx.textAlign = 'right';
+                ctx.fillText("best: " + bestScore, innerWidth-40,50);
+            }
         }
-        ctx.font='36px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(score,innerWidth/2,50);
-        
+            
         if(begin && direction < 0 && !gameOver){
             ctx.fillStyle=primaryColor;
             if(inverted){
@@ -536,6 +626,16 @@
             }
         }
     }
+        
+    function removeEmote(e){
+        for(var i = 0; i < emotes.length; i++){
+            if(emotes[i] == e){
+                emotes.splice(i,1);
+                return;
+            }
+        }
+    }    
+        
     function getDist(x1,y1,x2,y2){
         return Math.abs(Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2)));
     }
@@ -710,6 +810,9 @@
                 } else {
                     makeStartVurm();
                     score = 0;
+                    if(score > bestScore){
+                        bestScore = score;
+                    }
                     gameOver = false;
                     begin = false;
                 }
@@ -773,16 +876,32 @@
                         var xDif = Math.abs(current.x-start.x);
                         var yDif = Math.abs(current.y-start.y);
                         if(xDif > yDif){ //Horizontal
-                            if(current.x > start.x && direction != 3){
-                                direction = 1;
-                            } else if(current.x < start.x && direction != 1){
-                                direction = 3;
+                            if(!inverted){
+                                if(current.x > start.x && direction != 3){
+                                    direction = 1;
+                                } else if(current.x < start.x && direction != 1){
+                                    direction = 3;
+                                }
+                            } else {
+                                if(current.x > start.x && direction != 1){
+                                    direction = 3;
+                                } else if(current.x < start.x && direction != 3){
+                                    direction = 1;
+                                }
                             }
                         } else if(yDif > xDif){
-                            if(current.y > start.y && direction != 0){
-                                direction = 2;
-                            } else if(current.y < start.y && direction != 2){
-                                direction = 0;
+                            if(!inverted){
+                                if(current.y > start.y && direction != 0){
+                                    direction = 2;
+                                } else if(current.y < start.y && direction != 2){
+                                    direction = 0;
+                                }
+                            } else {
+                                if(current.y > start.y && direction != 2){
+                                    direction = 0;
+                                } else if(current.y < start.y && direction != 0){
+                                    direction = 2;
+                                }
                             }
                         }
                         start.x = current.x; start.y = current.y;
