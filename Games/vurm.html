@@ -40,7 +40,7 @@
     var moveSpeed = 2;
     var direction = -1;
     var startLength = 40;
-    var nextVurm = 100;
+    var nextVurm = 60;
     var vurms = [];
     var begin = false;
     var score = 0;
@@ -151,6 +151,8 @@
                     this.len -= half;
                     this.points.splice(0,half);    
                 }
+                var audio = new Audio('./Audio/Umph.mp3');
+                audio.play();
             }
         }
     }
@@ -175,6 +177,8 @@
                     vurms[i].len+= 10;
                     effects.push(new RingEffect(this.x, this.y,this.r));
                     score++;
+                    var audio = new Audio('./Audio/Knock.wav');
+                    audio.play();
                     this.reset();
                     break;
                 }
@@ -275,6 +279,23 @@
         }
     }
         
+    function Dot(x,y,r,c){
+        this.x =x; this.y=y; this.r = r;
+        this.c=c;
+        this.gr = Math.random()*2+0.1;
+        this.draw=function(){
+            ctx.beginPath();
+            ctx.arc(this.x, this.y,this.r,0,2*Math.PI);
+            ctx.fillStyle=this.c;
+            ctx.fill();
+        }
+        
+        this.update=function(){
+            this.r+=this.gr;
+            this.draw();
+        }
+    }
+        
     //OBJECT DECLARATION
     function makeStartVurm(){
             var p = [];
@@ -300,7 +321,8 @@
     var f2 = new Fruit(innerWidth/2,innerHeight/2-200,10);
         f2.reset();
         fruits.push(f2);
-        
+    
+    var dots = [];
     var effects = [];
     function removeEffect(e){
         for(var i = 0; i< effects.length; i++){
@@ -322,8 +344,15 @@
             for(var i =  0; i< messages.length; i++){
                 if(!messages[i].shown){
                     console.log(messages[i].msg);
-                    if(messages[i].cheer){
+                    if(messages[i].cheer && Date.now()>timeOut){
                         //SOMEONE CHEERED... DO SUMPTIN
+                        for(var i = 0; i< 60;i++){
+                            var x = Math.random()*innerWidth;
+                            var y = Math.random()*innerHeight;
+                            var r = Math.random()*10+5;
+                            dots.push(new Dot(x,y,r,randColor()));
+                        }
+                        timeOut = Date.now()+chatTimeOut;
                     } else {
                         //Broke ass message
                         var msg = messages[i].msg;
@@ -365,9 +394,11 @@
         }
         ctx.fillRect(0,0,innerWidth,innerHeight);
         
+        
         if(Date.now() > timeOut){
             currentBlockSpeed = defaultBlockSpeed;
             inverted = false;
+            dots = [];
         } 
         
         ctx.fillStyle=primaryColor+'22';
@@ -378,6 +409,10 @@
         ctx.textAlign = 'left';
         for(var i = 0; i < messages.length; i++){
             ctx.fillText(messages[i].user+": "+messages[i].msg,20,innerHeight-20-i*50);
+        }
+        
+        for(var i = 0; i < dots.length; i++){
+            dots[i].update();
         }
         
         for(var i = 0;i < effects.length; i++){
@@ -394,15 +429,19 @@
         
         for(var i = 0; i < vurms.length; i++){
             vurms[i].update();
-            if(vurms[i].length > nextVurm){
-                var x = Math.random()*innerWidth;
-                var y = Math.random()*innerHeight;
-                var pts = [];
-                for(var i = 0; i < 30; i++){
-                    pts.push(new Point(x,y+(i*moveSpeed)));
+            if(vurms[i] != undefined){
+                if(vurms[i].len > nextVurm){
+                    var x = Math.random()*innerWidth;
+                    var y = Math.random()*innerHeight;
+                    var pts = [];
+                    for(var i = 0; i < 30; i++){
+                        pts.push(new Point(x,y+(i*moveSpeed)));
+                    }
+                    vurms.push(new Vurm(30,pts));
+                    nextVurm += 60;
+                    var aud = new Audio('./Audio/Whup.mp3');
+                    aud.play();
                 }
-                vurms.push(new Vurm(30,pts));
-                nextVurm += 60;
             }
         }
         
@@ -456,7 +495,6 @@
             ctx.fillText('FIN',innerWidth/2,innerHeight/2-80);
         }
         validateGame();
-        
 	}
      
    var escaped = false;
@@ -464,6 +502,11 @@
     //******************************************************************    
         
     //HELPER FUNCTIONS
+    function randColor(){
+       var c = Math.floor(Math.random()*16777215).toString(16);
+        return c;
+    }    
+        
     function validateGame(){
         if(vurms.length < 1){
             gameOver = true;
@@ -656,6 +699,16 @@
                     gameOver = false;
                     begin = false;
                 }
+                break;
+            case 'n':
+                for(var i = 0;i < 10; i++){
+                    var x = Math.random()*innerWidth;
+                    var y = Math.random()*innerHeight;
+                    var r = Math.random()*10+5;
+                    var c = randColor(); //'#ffffff';
+                    dots.push(new Dot(x,y,r,c));
+                }
+                timeOut = Date.now()+chatTimeOut;
                 break;
             default:
                 break;
