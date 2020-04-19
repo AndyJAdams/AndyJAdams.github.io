@@ -381,6 +381,8 @@
         
     var speedTimeOut = 0;
     var invTimeOut = 0;
+    var totalTime = 0;
+    var totalPauseTime = 0;
     //******************************************************************
     //******************************************************************
     //var bgoffset = 0;
@@ -524,6 +526,14 @@
                         }
                     }
                     
+                    if(msg.includes('!esc') && controlAllow && direction < 0){ 
+                        if(Date.now() > lastPress+600){
+                            direction = prevDir;
+                            prevDir = -1;
+                            totalPauseTime += Math.floor((Date.now()-lastPress)/1000);
+                        }
+                    }
+                    
                     lastUser = messages[i].user;
                     messages[i].shown = true;
                 }
@@ -602,6 +612,9 @@
         
         detectCollisions();
         
+        totalTime = Math.floor((Date.now()-startTime)/1000);
+        
+        
         if(begin && !gameOver && direction > -1){
             ctx.fillStyle=primaryColor+'aa';
             if(inverted){
@@ -609,7 +622,7 @@
             }
             ctx.font='36px sans-serif';
             ctx.textAlign = 'center';
-            score = Math.floor((Date.now()-startTime)/1000);
+            score = totalTime-totalPauseTime;
             ctx.fillText(score,40,50);
             if(bestScore > 0){
                 ctx.textAlign = 'right';
@@ -623,6 +636,7 @@
                 ctx.fillStyle=invertedColor;
             }
             ctx.fillRect(innerWidth/2-innerWidth/4,innerHeight/2-innerHeight/4,innerWidth/2,innerHeight/2);
+            
             ctx.fillStyle=invertedColor;
             if(inverted){
                 ctx.fillStyle=primaryColor;
@@ -639,6 +653,9 @@
         }
         
         if(direction < 0 && gameOver && begin){
+            if(inverted){
+                inverted = false;
+            }
             ctx.fillRect(innerWidth/2-innerWidth/4,innerHeight/2-innerHeight/4,innerWidth/2,innerHeight/2);
             ctx.fillStyle='#222';
             ctx.font = '72px sans-serif';
@@ -911,6 +928,7 @@
                         if(Date.now() > lastPress+600){
                             direction = prevDir;
                             prevDir = -1;
+                            totalPauseTime += Math.floor((Date.now()-lastPress)/1000);
                         }
                     }
                 } else {
@@ -921,6 +939,8 @@
                     score = 0;
                     gameOver = false;
                     begin = false;
+                    totalTime =0;
+                    totalPauseTime = 0;
                 }
                 break;
             default:
@@ -956,6 +976,8 @@
                         score = 0;
                         gameOver = false;
                         begin = false;
+                        totalTime = 0;
+                        totalPauseTime = 0;
                     } else {
                         tapTime = Date.now();
                     }
