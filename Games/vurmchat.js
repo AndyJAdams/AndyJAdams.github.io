@@ -4,7 +4,7 @@
 //Code inspired by Alca - tmi.js
 var messages = [];
 var chatTimeOut = 12000;
-var chatDisplay = true;
+var chatAllow = true;
 var blueAllow = true;
 var redAllow = true;
 var greenAllow = true;
