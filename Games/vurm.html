@@ -443,7 +443,7 @@
                                 var sAud = new Audio('./Audio/slow.mp3');
                                 sAud.play();
                         }
-                        if(msg.includes('!derp') && derpAllow){
+                        if(msg.includes('!derp') && derpAllow && begin){
                                 //Mess with player controls here
                                 inverted = !inverted;
                                 invTimeOut = Date.now()+parseInt(chatTimeOut);
