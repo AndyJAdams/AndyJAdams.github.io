@@ -60,7 +60,7 @@
         this.len=len; this.points = points;
         
         this.draw = function(){
-            ctx.lineWidth = innerWidth/35;
+            ctx.lineWidth = innerWidth/35+5;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.strokeStyle=primaryColor;
@@ -132,7 +132,7 @@
                 }
             }
             
-            if(this.len > innerWidth/100){
+            if(this.len >= startLength){
                 this.draw();
             } else {
                 removeVurm(this);
@@ -298,11 +298,11 @@
         
     //OBJECT DECLARATION
     function makeStartVurm(){
-            var p = [];
+            var pts = [];
             for(var i = 0; i < startLength; i++){
-                p.push(new Point(innerWidth/2,innerHeight/2+(i*moveSpeed)));
+                pts.push(new Point(innerWidth/2,innerHeight/2+(i*moveSpeed)));
             }
-            vurms.push(new Vurm(startLength,p));
+            vurms.push(new Vurm(startLength,pts));
     }
     
     var obs = [];
@@ -345,7 +345,7 @@
                 if(!messages[i].shown){
                     if(messages[i].cheer && Date.now()>timeOut){
                         //SOMEONE CHEERED... DO SUMPTIN
-                        for(var i = 0; i< 60;i++){
+                        for(var i = 0; i< 20;i++){
                             var x = Math.random()*innerWidth;
                             var y = Math.random()*innerHeight;
                             var r = Math.random()*10+5;
@@ -399,13 +399,12 @@
             inverted = false;
             dots = [];
         } 
-        
-        ctx.fillStyle=primaryColor+'22';
-        if(inverted){
-            ctx.fillStyle = invertedColor+'22';
-        }
 
         if(chatAllow){
+            ctx.fillStyle=primaryColor+'22';
+            if(inverted){
+                ctx.fillStyle = invertedColor+'22';
+            }
             ctx.font = '20px sans-serif';
             ctx.textAlign = 'left';
             for(var i = 0; i < messages.length; i++){
@@ -425,10 +424,7 @@
             obs[i].update();
         }
         
-//        for(var i = 0;i < obs.length; i++){
-//            obs[i].drawFiller();
-//        }
-        
+        //Draw vurms ***********************************>>>>>>>>>>>>>>>>>>>>
         for(var i = 0; i < vurms.length; i++){
             vurms[i].update();
             if(vurms[i] != undefined){
@@ -444,7 +440,7 @@
                     var aud = new Audio('./Audio/Whup.mp3');
                     aud.play();
                 }
-            }
+            } 
         }
         
         for(var i = 0; i < fruits.length; i++){
@@ -497,9 +493,25 @@
             ctx.fillText('FIN',innerWidth/2,innerHeight/2-80);
         }
         validateGame();
+        
+        //Display controls on screen
+        if(!escaped && !touched){
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle=primaryColor;
+            ctx.fillText('DESKTOP',innerWidth/2-120,innerHeight/2-50);
+            ctx.fillText('w',innerWidth/2-120,innerHeight/2);
+            ctx.fillText('a',innerWidth/2-160,innerHeight/2+30);
+            ctx.fillText('s',innerWidth/2-120,innerHeight/2+30);
+            ctx.fillText('d',innerWidth/2-90,innerHeight/2+30);
+            
+            ctx.fillText('MOBILE',innerWidth/2+120,innerHeight/2-50);
+            ctx.fillText('swipe',innerWidth/2+120,innerHeight/2);
+            ctx.fillText('to move',innerWidth/2+120,innerHeight/2+30);
+        }
 	}
      
    var escaped = false;
+    var touched = false;
     //******************************************************************
     //******************************************************************    
         
@@ -724,6 +736,7 @@
         if(evt.changedTouches != undefined){
             var touches = evt.changedTouches;
             if(touches.length > 0){
+                touched = true;
                 start.x = touches[0].pageX;
                 start.y = touches[0].pageY;
                 direction = prevDir;
@@ -783,13 +796,9 @@
     }
     
     function inputEnd(){
-        if(current.x > -1){
-            prevDir = direction;
-            direction = -1;
-        }
         start.x = -1;
         current.x = -1;
-    
+        
     }
     
     scaleCanvas();
