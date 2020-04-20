@@ -84,6 +84,9 @@
 
 <input type="checkbox" name="derp" value="!derp" id='derp' checked>
   <label for="!derp"> !derp - invert controls</label><br>
+<h3>Control VURM</h3>
+<input type="checkbox" name="ctrl" value="!ctrl" id='ctrl' checked>
+  <label for="!derp"> Control VURM w/ !up !down !left !right</label><br>
 <br>
 <button id='play' onclick='playVurm()'>Play Vurm</button>
 <br>
@@ -108,25 +111,28 @@ function playVurm(){
     var to = slider.value;
     var url = 'https://andyjadams.github.io/Games/vurm.html?tc='+tc+'&to='+to;
     if(!document.getElementById('chat').checked){
-      url+='&chat=false'
+      url+='&chat=false';
     }
     if(!document.getElementById('blue').checked){
-      url+='&blue=false'
+      url+='&blue=false';
     }
     if(!document.getElementById('red').checked){
-      url+='&red=false'
+      url+='&red=false';
     }
     if(!document.getElementById('green').checked){
-      url+='&green=false'
+      url+='&green=false';
     }
     if(!document.getElementById('fast').checked){
-      url+='&fast=false'
+      url+='&fast=false';
     }
     if(!document.getElementById('slow').checked){
-      url+='&slow=false'
+      url+='&slow=false';
     }
     if(!document.getElementById('derp').checked){
-      url+='&derp=false'
+      url+='&derp=false';
+    }
+    if(!docuemt.getElementById('ctrl').checked){
+        url+='&ctrl=false';
     }
     //alert(url);
     window.open(url);
