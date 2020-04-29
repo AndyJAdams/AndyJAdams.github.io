@@ -6,22 +6,14 @@ var messages = [];
 
 function Message(msg, user, cheer = false){
     this.msg = msg; this.user = user; this.cheer = cheer;
-    this.shown = false;
+    this.read = false;
 }
 
 var krak = 'https://api.twitch.tv/kraken/';
 
 var krakID = '3k6e7ld0rs475g212tcuxzpmhcx1ea';
-
-var targetChan = '';
-var tc = (window.location.search);
-if(tc != ''){
-    var raw = tc.split('&');
-    var data = raw[0].split('=');
-    targetChan = data[1];
-} else {
-    targetChan = 'AndyJamesAdams';
-}
+var connStatus = 'disconnected';
+var targetChan = 'AndyJamesAdams';
 
 var client = new tmi.client({
     connection: {
@@ -35,9 +27,11 @@ function addListeners(){
     client.on('connected', () =>{
         //Do something here to show twitch connection
         console.log('chat connected ' + targetChan);
+        connStatus = 'connected '+targetChan;
     });
     client.on('disconnected', () =>{
         console.log('disconnected');
+        connStatus = 'disconnected';
     });
     
     function handleMsg(channel,userstate,message,self){
