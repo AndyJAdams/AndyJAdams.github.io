@@ -88,21 +88,24 @@
 <input type="checkbox" name="ctrl" value="!ctrl" id='ctrl' checked>
   <label for="!derp"> Control VURM w/ !up !down !left !right</label><br>
 <br>
-<button id='play' onclick='playVurm()'>Play Vurm</button>
+<button id='play' onclick='PlayGame()'>Play Vurm</button>
 <br>
+<p id='link'></p>
 <p id='warning'></p>
 
 <script>
 var slider = document.getElementById("myRange");
 var output = document.getElementById("demo");
 var warning = document.getElementById('warning');
+var link = document.getElementById('link');
 output.innerHTML = slider.value;
 
 slider.oninput = function() {
   output.innerHTML = this.value;
 }
 
-function playVurm(){
+function PlayGame(){
+  //window.requestAnimationFrame(updateLink);
   var tc = document.getElementById('channel').value;
   if(tc ==''){
     warning.innerHTML = '*You must enter a channel name';
@@ -131,13 +134,12 @@ function playVurm(){
     if(!document.getElementById('derp').checked){
       url+='&derp=false';
     }
-    if(!docuemt.getElementById('ctrl').checked){
+    if(!document.getElementById('ctrl').checked){
         url+='&ctrl=false';
     }
-    //alert(url);
-    window.open(url);
   }
-
+  link.innerHTML = ''+url;
+  window.open(''+url);
 }
 </script>
 
