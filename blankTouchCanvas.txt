@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>TITLE</title>
+	<title>joined</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -33,7 +33,6 @@
 	}
 
 	//*** INPUT SECTION **//
-    var start = {x:-1,y:-1};
     window.addEventListener('resize',function(evt){
         evt.preventDefault();
         scaleCanvas();

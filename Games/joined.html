@@ -1,0 +1,225 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>joined</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+    
+    var grid = {x:4,y:4};
+    var tileScale = {x:0,y:0};
+    var palette = ['#F00','#0F0','#00F','#FF0','#0FF','#F0F'];
+    var selection = {tile: undefined, xOff: -1, yOff: -1};
+    var dragDirection = -1;
+    var affected = [];
+	var canvas = document.getElementById('canvas');	
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+        tileScale.x = innerWidth/grid.x;
+        tileScale.y = innerHeight/grid.y;
+	}
+	var ctx = canvas.getContext('2d');
+        
+    var tiles=[];
+    function Tile(x,y,val){
+        this.x = x; this.y = y; this.val = val;
+        this.dx = 0; this.dy = 0;
+        this.draw = function(){
+            ctx.fillStyle=palette[this.val];
+            ctx.fillRect(this.x+this.dx, this.y+this.dy, tileScale.x+1, tileScale.y+1);
+        }
+        
+        this.update = function(){
+            this.draw();
+        }
+    }
+        
+    function buildGrid(){
+        for(var i = 0; i < grid.x; i++){
+            var col = [];
+            for(var j = 0; j < grid.y; j++){
+                col.push(new Tile(i*tileScale.x,j*tileScale.y, Math.floor(Math.random()*palette.length)));
+            }
+            tiles.push(col);
+        }
+    }
+
+    function makeSelection(x,y){
+        for(var i = 0;i < tiles.length; i++){
+            for(var j = 0; j< tiles[i].length; j++){
+                var m = tiles[i][j];
+                if(x > m.x && x < m.x+tileScale.x && y > m.y && y < m.y+tileScale.y){
+                    return m;
+                }
+            }
+        }
+        return undefined;
+    }
+        
+    function setAffected(){
+        //Start with selection
+        var row = -1; var col = -1;
+        for(var i =0;i < tiles.length; i++){
+            for(var j = 0; j < tiles[i].length; j++){
+                if(tiles[i][j] == selection.tile){
+                    row = i; col = j;
+                    break;
+                }
+            }
+            if(row > -1 || col > -1){
+                break;
+            }
+        }
+        
+        if(dragDirection == 0 || dragDirection == 2){
+            //Move vertical
+            console.log(col);
+            if(col > -1){
+                for(var i = 0; i < tiles[row].length; i++){
+                    affected.push(tiles[row][i]);
+                }
+            }
+        } else if(dragDirection == 1 || dragDirection ==3){
+            console.log(row);
+            if(row > -1){
+                for(var i =0;i < tiles.length; i++){
+                    affected.push(tiles[i][col]);
+                }
+            }
+        }
+    }
+        
+    //********************************************************************************************************
+    //********************************************************************************************************
+    function animate(){
+		window.requestAnimationFrame(animate); //Basically the while(true) game loop
+		ctx.clearRect(0,0,innerWidth,innerHeight); //Clear the screen so we can draw to it again.
+        
+        //If there is no grid... make one?
+        if(tiles.length < 1){
+            buildGrid();
+        }
+        
+        //Update tiles and draw them. 
+        for(var i = 0;i < tiles.length; i++){
+            for(var j = 0; j< tiles[i].length; j++){
+                tiles[i][j].update();
+            }
+        }
+        
+        //Handle input
+        if(start.x != -1){
+            if(selection.tile != undefined){
+                if(dragDirection == -1){
+                    var xDif = Math.abs(current.x-start.x);
+                    var yDif = Math.abs(current.y-start.y);
+                    if(xDif > 30 || yDif > 30){
+                        if(xDif > yDif){
+                            if(current.x > start.x){
+                                dragDirection = 1;
+                            } else {
+                                dragDirection = 3;
+                            }
+                        } else {
+                            if(current.y > start.y){
+                                dragDirection = 2;
+                            } else {
+                                dragDirection = 0;
+                            }
+                        }
+                        setAffected();
+                    }
+                } else {
+                   if(affected.length > 0){
+                       ctx.fillStyle='#000';
+                       for(var i = 0;i < affected.length; i++){
+                           
+                       }
+                   }
+                }
+            }
+        }
+        
+        
+	}
+    //********************************************************************************************************
+    //********************************************************************************************************
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){evt.preventDefault();scaleCanvas();});
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+    
+    var start = {x:-1,y:-1};
+    var current = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+        current.x = start.x;
+        current.y = start.y;
+        selection.tile = makeSelection(start.x, start.y);
+        selection.xOff = selection.tile.x-start.x;
+        selection.yOff = selection.tile.y-start.y;
+    }
+    
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+        
+        
+    }
+    
+    function inputEnd(){
+        start.x = -1;
+        current.x = -1;
+        selection.tile = undefined;
+        dragDirection = -1;
+        affected = [];
+    }
+    
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>

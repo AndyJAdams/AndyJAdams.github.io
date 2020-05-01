@@ -1,0 +1,165 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>TDSG</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #607382;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+	var canvas = document.getElementById('canvas');	
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	var ctx = canvas.getContext('2d');
+    var spinSpeed = 1.25;
+        
+    //***OBJECT SECTION **//
+    function Board(x,y,w,h){
+        this.x = x; this.y = y; this.w = w; this.h = h;
+        this.spin = false; this.flip = false;
+        this.wheelRad = 8; this.wheelWidth = 16;
+        this.draw = function(){
+            if(this.flip){
+                roundRect(ctx,this.x,this.y,this.w,this.h,this.w/2,'#ebbf81');
+                roundRect(ctx,this.x+5,this.y+5,this.wheelWidth,this.wheelWidth,this.wheelRad,'#FFF');
+            } else {
+                roundRect(ctx,this.x,this.y,this.w,this.h,this.w/2,'#222');
+            }
+        }
+        
+        this.update = function(){
+            if(this.w < 4){
+                this.spin = true; 
+                this.flip = !this.flip;
+            } else if(this.w > 30){
+                this.spin = false;
+            }
+            
+            if(this.spin){
+                this.w += spinSpeed;
+                this.x -= spinSpeed/2;
+            } else if(!this.spin){
+                this.w -= spinSpeed;
+                this.x += spinSpeed/2;
+            }
+            this.draw();
+        }
+    }
+        
+    //** GAME VARS **//
+    var board = new Board(innerWidth/2-15,innerHeight/2-40,30,80);
+        
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        board.update();
+	}
+    
+    //*** HELPER SECTION **//
+    //context, xpos, ypos, width, height, radius, fill, stroke
+    function roundRect(ctx, x, y, width, height, radius, fill='', stroke='') {
+      if (typeof stroke === 'undefined') {
+        stroke = false;
+      }
+      if (typeof radius === 'undefined') {
+        radius = 5;
+      }
+      if (typeof radius === 'number') {
+        radius = {tl: radius, tr: radius, br: radius, bl: radius};
+      } else {
+        var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+        for (var side in defaultRadius) {
+          radius[side] = radius[side] || defaultRadius[side];
+        }
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + radius.tl, y);
+      ctx.lineTo(x + width - radius.tr, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+      ctx.lineTo(x + width, y + height - radius.br);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+      ctx.lineTo(x + radius.bl, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+      ctx.lineTo(x, y + radius.tl);
+      ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+      ctx.closePath();
+      if (fill != '') {
+        ctx.fillStyle=fill;
+        ctx.fill();
+      }
+      if (stroke != '') {
+        ctx.strokeStyle=stroke;
+        ctx.stroke();
+      }
+    }
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+    
+    var start = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+    }
+    
+    function inputMove(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        }
+    }
+    
+    function inputEnd(){
+        start.x = -1;
+    }
+    
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>
