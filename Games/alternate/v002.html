@@ -1,0 +1,357 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>joined</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #222;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+	var canvas = document.getElementById('canvas');	
+    var center = {x:-1,y:-1};
+    var targetScale = 1;
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+        center.x = innerWidth/2;
+        center.y = innerHeight/2;
+	}
+	var ctx = canvas.getContext('2d');
+    var startTime = Date.now();
+    var offsetX = 0;
+    var targetOffsetX = 0;
+    var speed = 2;
+    var paused = false;
+    var interval = 0;
+
+    function Point(x,y){
+        this.x = x; this.y = y;
+    }
+
+    function Traveller(x,y){
+        this.x = x; this.y = y;
+        this.dx = x; this.y = y;
+        this.pts = [];
+        this.pts.push(new Point(this.x, this.y));
+        this.dead = false;
+        this.draw = function(){
+            ctx.strokeStyle='#ccc';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(this.pts[0].x+offsetX, this.pts[0].y+interval);
+            for(var i = 1; i < this.pts.length; i++){
+                ctx.lineTo(this.pts[i].x+offsetX,this.pts[i].y+interval);
+            }
+            if(!this.dead){
+                ctx.lineTo(this.x+offsetX, this.y);
+            }
+            ctx.stroke();
+
+            if(!this.dead){
+                ctx.fillStyle='#CCC';
+                ctx.beginPath();
+                ctx.arc(this.x+offsetX, this.y, 10, 0, 2*Math.PI);
+                ctx.fill();
+                
+            }
+        }
+
+        this.update = function(){
+            if(this.x < this.dx){
+                this.x+=speed;
+                this.pts.push(new Point(this.x, this.y-interval));
+            } else if(this.x > this.dx){
+                this.x-=speed;
+                this.pts.push(new Point(this.x, this.y-interval));
+            }
+            this.draw();
+        }
+
+        this.end = function(){
+            this.pts.push(new Point(this.x, this.y-interval));
+            this.dead = true;
+        }
+    }
+    
+
+    function Obstacle(x,y,w,h){
+        this.x = x; this.y = y; this.w = w; this.h = h;
+        this.extend = false;
+        this.draw = function(){
+            ctx.fillStyle='#CCC';
+            ctx.beginPath();
+            ctx.moveTo(this.x+offsetX,this.y-this.h/2+interval);
+            ctx.lineTo(this.x+this.w/2+offsetX,this.y+interval);
+            ctx.lineTo(this.x+offsetX,this.y+this.h/2+interval);
+            ctx.lineTo(this.x-this.w/2+offsetX,this.y+interval);
+            ctx.lineTo(this.x+offsetX,this.y-this.h/2+interval);
+            ctx.closePath();
+            
+            ctx.fill();
+        }
+
+        this.update = function(){
+            if(travellers[0] != undefined){
+                var tx = travellers[0].x+offsetX;
+                var ty = travellers[0].y;
+                var rx = this.w/2;
+                var ry = this.h/2;
+                var ox = this.x+offsetX;
+                var oy = this.y+interval;
+
+                tx = Math.abs(tx-ox);
+                ty = Math.abs(ty-oy);
+                if(tx*ry+ty*rx<rx*ry){
+                    endTraveller();
+                }
+
+                if(this.y-this.h+interval > innerHeight/2 && !this.extend &&!paused){
+                    var size = Math.floor(Math.random()*(interval/10))+30;
+                    var variance = Math.floor((Math.random()-0.5)*innerWidth);
+                    obstacles.push(new Obstacle(innerWidth/2+variance,-(innerHeight/4+interval),size,size));
+                    this.extend = true;
+                }
+
+            }
+            this.draw();
+        }
+    }
+
+    function Boundaries(){
+       this.draw = function(){
+        ctx.fillStyle='#CCC';
+        ctx.fillRect((-(innerWidth*2))+offsetX,-(innerHeight*5),innerWidth*2,innerHeight*10);
+        ctx.fillRect(innerWidth+offsetX,-(innerHeight*5),innerWidth*2,innerHeight*10);
+       } 
+
+       this.update = function(){
+        this.draw();
+       }
+    }
+
+    var dir = 0;
+    var travellers = [];
+    var obstacles = [];
+    for(var i = 0; i < 20; i++){
+        var size = Math.floor(Math.random()*170)+30;
+        var variance = Math.floor((Math.random()-0.5)*innerWidth);
+        var startY = (-Math.floor(Math.random()*(innerHeight)))+innerHeight/4;
+        obstacles.push(new Obstacle(innerWidth/2+variance,startY,size,size));
+    }
+    obstacles.push(new Obstacle(innerWidth/2,0,30,30));
+    var bounds = undefined;
+    var scale = targetScale;
+    var pausedPosition = {x:0,y:0};
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+        
+        
+        if(travellers.length < 1){
+            travellers.push(new Traveller(center.x, center.y));
+            bounds = new Boundaries();
+        }
+        if(!paused && speed > 0){
+            interval+= speed;
+            travellers[0].dx += dir;
+            targetOffsetX -= dir;
+            if(offsetX < targetOffsetX){
+                offsetX++;
+            } else if(offsetX > targetOffsetX){
+                offsetX--;
+            }
+            ctx.setTransform(scale,0,0,scale,0,0);
+            var calcW = -(((innerWidth*scale)-innerWidth)/2)*(1/scale);
+            var calcH = -(((innerHeight*scale)-innerHeight)/2)*(1/scale);
+            ctx.translate(calcW,calcH);       
+            ctx.save();
+            ctx.clearRect(-innerWidth*10,-innerHeight*10,innerWidth*20,innerHeight*20);
+            ctx.restore();
+        } else {
+            //First we scale the image
+            ctx.setTransform(scale,0,0,scale,0,0);
+            var calcW = -(((innerWidth*scale)-innerWidth)/2)*(1/scale);
+            var calcH = -(((innerHeight*scale)-innerHeight)/2)*(1/scale);
+            ctx.translate(calcW+pausedPosition.x,calcH+pausedPosition.y);
+            ctx.save();
+            ctx.clearRect(-innerWidth*10,-innerHeight*10,innerWidth*20,innerHeight*20);
+            ctx.restore();
+        }
+        if(Math.abs(scale-targetScale)>0.1){
+            if(scale > targetScale){
+                scale -= 0.01;
+            } else if(scale < targetScale){
+                scale += 0.01;
+            }
+        }
+
+       
+        for(var i = 0; i< travellers.length;i++){
+            travellers[i].update();
+        }
+
+        for(var i = 0; i < obstacles.length;i++){
+            obstacles[i].update();
+        }
+
+        bounds.update();
+	}
+
+    function endTraveller(){
+        travellers[0].end();
+        travellers.unshift(new Traveller(center.x, center.y));
+        offsetX = targetOffsetX = 0;
+        paused= false;
+        interval = 0;
+        for(var i = 0; i< obstacles.length; i++){
+           // obstacles[i].extend = false;
+        }
+        dir = 0;
+    }
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+    
+    window.addEventListener('keydown',function(evt){
+        switch(evt.key){
+            case 'ArrowLeft':
+                if(!paused){
+                    dir--;
+                } else {
+                    pausedPosition.x += 10;
+                }
+                // travellers[0].dx-= 2;
+                // targetOffsetX += 2;
+                break;
+            case 'ArrowRight':
+                if(!paused){
+                    dir++;
+                } else {
+                    pausedPosition.x -= 10;
+                }
+                // travellers[0].dx+= 2;
+                // targetOffsetX -= 2;
+                break;
+            case 'ArrowUp':
+                if(!paused){
+                    speed = 2;
+                } else {
+                    pausedPosition.y += 10;
+                }
+                break;
+            case 'ArrowDown':
+                if(!paused){
+                    speed = 1;
+                } else {
+                    pausedPosition.y -= 10;
+                }
+                break;
+            case 'Escape':
+                //We need to stop the game and zoom out on the tree. 
+                paused = !paused;
+                if(paused){
+                    targetScale = 0.4;
+                } else {
+                    pausedPosition.x = 0; 
+                    pausedPosition.y = 0;
+                    targetScale = 1;
+                }
+                // if(!paused){
+                //     travellers[0].end();
+                //     travellers.unshift(new Traveller(center.x, center.y));
+                //     offsetX = targetOffsetX = 0;
+                //     startTime = Date.now();
+                //     dir = 0;
+                //     paused = true;
+                // } else {
+                //     paused = false;
+                // }
+                break;
+            case '[':
+                targetScale -= 0.05;
+                if(targetScale < 0.2){
+                    targetScale = 0.2;
+                }
+                break;
+            case ']':
+                targetScale += 0.05;
+                if(targetScale > 1){
+                    targetScale = 1;
+                }
+            default:
+                break;
+        }
+        if(dir > 1){
+            dir = 1;
+        } else if(dir < -1){
+            dir = -1;
+        }
+    });
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+    
+    var start = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+    }
+    
+    function inputMove(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        }
+    }
+    
+    function inputEnd(){
+        start.x = -1;
+    }
+    
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Alternate</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+	var canvas = document.getElementById('canvas');	
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	var ctx = canvas.getContext('2d');
+    var center = {x:innerWidth/2,y:innerHeight/2};
+    var speedDampner = 12;
+    var spawnDampner = 30;
+
+
+    var startTime = Date.now();
+    var offsetX = 0;
+
+    function Point(x,y){this.x = x; this.y = y;}
+    var pts = [];
+    pts.push(new Point(0,0));
+
+    function Line(pts){
+        this.pts = pts;
+        this.draw = function(){
+            ctx.lineWidth = 2;
+            ctx.strokeStyle='#00000044';
+            ctx.fillStyle='#00000044';
+            ctx.beginPath();
+            var prevX = -1;
+            for(var i = 0; i< pts.length; i++){
+                var x = center.x+offsetX+this.pts[i].x;
+                var y = center.y+(Date.now()-startTime)/speedDampner-this.pts[i].y;
+                if(i == 0 || x != prevX){
+                    ctx.moveTo(x, y);
+                    if(i > 0){
+                        if(x > prevX){
+                            ctx.fillRect(prevX+2,y,4,2);
+                        } else {
+                            ctx.fillRect(prevX-6,y,4,2);
+                        }
+                    }
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                prevX = x;
+            }
+            ctx.stroke();
+
+            ctx.fillRect(prevX-3,center.y+(Date.now()-startTime)/speedDampner-this.pts[this.pts.length-1].y-6,6,4);
+
+        }
+    }
+
+    function Barrier(x,y){
+        this.x = x; this.y = y; this.extend = false;
+        this.spawnLimit = Math.random()*0.3+0.1;
+        this.w = Math.random()*80+20;
+        this.draw = function(){
+            var x = center.x+offsetX+this.x-(this.w/2);
+            var y = center.y+(Date.now()-startTime)/speedDampner-this.y-6;
+            ctx.fillStyle='#000';
+            if(y-20 < innerHeight){
+                ctx.fillRect(x,y,this.w,12);
+            }
+            if(!this.extend && y/innerHeight > this.spawnLimit){
+                console.log((-offsetX)+","+(this.y+innerHeight));
+                spawnBarrier(-offsetX,this.y+center.y);
+                this.extend = true;
+                
+            }
+            ctx.font='16px sans-serif';
+            ctx.fillText(y/innerHeight,x+22,y+16);
+        }
+
+    }
+
+    function spawnBarrier(x,y){
+        barriers.push(new Barrier(x,y+((Math.random()-0.5)*(center.y/2))));
+    }
+
+    var ln = [];
+    var barriers = [];
+    barriers.push(new Barrier(0,center.y));
+
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle='#00000088';
+        ctx.fillStyle='#00000088';
+        var prevX = -1;
+        ctx.beginPath();
+        for(var i = 0; i< pts.length; i++){
+            var x = center.x+offsetX+pts[i].x;
+            var y = center.y+(Date.now()-startTime)/speedDampner-pts[i].y;
+            if(i == 0 || x != prevX){
+                ctx.moveTo(x, y);
+                if(i > 0){
+                    if(x > prevX){
+                        ctx.fillRect(prevX+4,y,4,2);
+                    } else {
+                        ctx.fillRect(prevX-8,y,4,2);
+                    }
+                }
+            } else {
+                ctx.lineTo(x, y);
+            }
+            prevX = x;
+        }
+        ctx.lineTo(center.x, center.y);
+        ctx.stroke();
+
+        if(ln.length > 0){
+            for(var i = 0; i < ln.length; i++){
+                ln[i].draw();
+            }
+        }
+
+        if(barriers.length > 0){
+            for(var i = 0;i < barriers.length; i++){
+                barriers[i].draw();
+            }
+        }
+
+        ctx.font='40px sans-serif';
+        ctx.fillText(barriers.length, 10,50);
+
+        ctx.fillStyle='#000';
+        ctx.fillRect(center.x-6,center.y-6,12,12);
+	}
+
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+    
+    
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+    
+    var start = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+        
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        }
+    }
+    
+    function inputEnd(evt){
+        evt.preventDefault();
+        var x = -1; var y = -1;
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    x = touches[0].pageX;
+                    y = touches[0].pageY;
+                }
+            } else {
+                x = evt.pageX;
+                y = evt.pageY;
+            }
+        }
+        var xDif = Math.abs(x-start.x);
+        var yDif = Math.abs(y-start.y);
+
+        if(xDif > 40 || yDif > 40){
+            if(xDif > yDif){
+                if(x < start.x){ //Left
+                    pts.push(new Point(-offsetX,(Date.now()-startTime)/speedDampner));
+                    offsetX += 40;
+                    pts.push(new Point(-offsetX,(Date.now()-startTime)/speedDampner));
+                    console.log("LEFT");
+                } else { //Right
+                    pts.push(new Point(-offsetX,(Date.now()-startTime)/speedDampner));
+                    offsetX -= 40;
+                    pts.push(new Point(-offsetX,(Date.now()-startTime)/speedDampner));
+                    console.log("RIGHT");
+                }
+            } else {
+                if(y < start.y){ //Up
+                   pts.push(new Point(-offsetX,(Date.now()-startTime)/speedDampner));
+                    ln.push(new Line(pts));
+                    pts = [];
+                    pts.push(new Point(0,0));
+                    offsetX = 0;
+                    startTime = Date.now();
+                    //ResetBarrierSpawning :)
+                    for(var i = 0; i< barriers.length; i++){
+                        barriers[i].extend = false;
+                    }
+                } else { //Down
+                    
+                }
+            }
+            
+        }
+        start.x = -1;
+    }
+
+    
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>

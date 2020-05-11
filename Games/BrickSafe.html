@@ -13,33 +13,88 @@
         }
         canvas{
             touch-action: none;
-            background-color: #DDD;
+            background-color: #222;
         }
 	</style>
 </head>
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
+    var speed = 1.5;
+    var paddleSpeed = 12;
+
 	var canvas = document.getElementById('canvas');	
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 	}
 	var ctx = canvas.getContext('2d');
+    
 
     function Ball(x,y){
         this.x = x; this.y = y;
+        this.dx = 1; this.dy = 1;
+        this.duplicate = true;
+        if(Math.random() < 0.5){
+            this.dx = -1;
+        }
+        if(Math.random() < 0.5){
+            this.dy = -1;
+        }
         this.draw = function(){
-            ctx.fillRect(this.x-10,this.y-10,20,20);
+            ctx.fillStyle='#ddd';
+            ctx.fillRect(this.x,this.y,40,40);
+        }
+
+        this.update = function(){
+            if(this.x < 0 || this.x+40 > canvas.width){
+                this.dx *= -1;
+            }
+            if(this.y < 0 || this.y+40 > canvas.height){
+                this.dy *= -1;
+            }
+            this.x += (this.dx*speed);
+            this.y += (this.dy*speed);
+
+            if(this.x > (innerWidth/4)*3 && this.duplicate){
+                b.push(new Ball(innerWidth/2, innerHeight/2));
+                this.duplicate = false;
+            } else if(this.x < innerWidth/4 && this.duplicate){
+                b.push(new Ball(innerWidth/2, innerHeight/2));
+                this.duplicate = false;
+            }
+            this.draw();
         }
     }
 
+    function Paddle(x,y){
+        this.x = x; this.y = y;
+        this.dy = this.y;
+        this.draw = function(){
+            ctx.fillStyle='#ddd';
+            ctx.fillRect(this.x,this.y,10,80);
+        }
 
+        this.update = function(){
+            
+            this.draw();
+        }
+    }
+
+    var b = [];
+    b.push(new Ball(innerWidth/2, innerHeight/2));
+
+    //var p = new Paddle(innerWidth/4,innerHeight/2);
     //*************************************************
     //*************************************************
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
+        for(var i = 0; i < b.length; i++){
+            b[i].update();    
+        }
+        
+        //p.update();   
 	}
     //*************************************************
     //*************************************************
@@ -59,6 +114,19 @@
     window.addEventListener('touchmove', inputMove,false);
     window.addEventListener('touchcancel',inputEnd,false);
     window.addEventListener('touchend',inputEnd,false);
+
+    window.addEventListener('keydown',function(evt){
+        switch(evt.key){
+            case 'ArrowUp':
+                p.y -= paddleSpeed;
+                break;
+            case 'ArrowDown':
+                p.y += paddleSpeed;
+                break;
+            default:
+                break;
+        }
+    });
     
     var start = {x:-1,y:-1};
     function inputStart(evt){
