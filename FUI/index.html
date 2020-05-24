@@ -25,6 +25,7 @@ function scaleCanvas(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
+var version = 'D_0003';
 var viewScale = 1;
 
 function Base(x,y){
@@ -69,6 +70,8 @@ function Update(){
         ctx.strokeStyle='#F00';
         ctx.strokeRect(touches[i].pageX-50,touches[i].pageY-50,100,100);
     }
+    
+    ctx.fillText(version,10,innerHeight-20);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
