@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>FUI</title>
+<style>
+    body{
+        margin:0;
+        touch-action: none;
+        position: fixed;
+        background-color: #131313;
+        overflow: hidden;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+    }
+</style>
+</head>
+<body>
+<canvas id='canvas'></canvas>
+<script type='text/javascript'>
+var zoomSensitivity = 40;
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+
+function scaleCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+var viewScale = 1;
+
+function Base(x,y){
+    this.x = x; this.y = y; 
+    this.draw = function(){
+        ctx.fillStyle='#dedede';
+        ctx.fillRect(this.x, this.y, 64,64);
+    }
+    
+    this.update = function(){
+        this.draw();
+    }
+}
+    
+var bases = [new Base(innerWidth/2-32,innerHeight/2-32)];
+    
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+function Update(){
+    window.requestAnimationFrame(Update);
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    //Scaling
+    if(viewScale < 0.1){
+        viewScale = 0.1;
+    } else if(viewScale > 4.0){
+        viewScale = 4.0;
+    }
+    ctx.setTransform(viewScale,0,0,viewScale,0,0);
+    var calcW = -(((innerWidth*viewScale)-innerWidth)/2)*(1/viewScale);
+    var calcH = -(((innerHeight*viewScale)-innerHeight)/2)*(1/viewScale);
+    ctx.translate(calcW,calcH);
+    ctx.save();
+    ctx.clearRect(-innerWidth*10,-innerHeight*10,innerWidth*20,innerHeight*20);
+    ctx.restore();
+    
+    for(var i = 0; i < bases.length;i++){
+        bases[i].update();
+    }
+    
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function getDistance(x1, y1, x2, y2){
+    return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
+}    
+
+/*INPUT SECTION*/
+window.addEventListener('resize',function(evt){
+   evt.preventDefault(); scaleCanvas(); 
+});
+window.addEventListener('wheel',function(evt){
+    viewScale -= (evt.deltaY/1000);
+    
+});
+    
+window.addEventListener('mousedown',inputStart,false);
+window.addEventListener('mousemove',inputMove,false);
+window.addEventListener('mouseup',inputEnd,false);
+
+window.addEventListener('touchstart',inputStart, false);
+window.addEventListener('touchmove', inputMove,false);
+window.addEventListener('touchcancel',inputEnd,false);
+window.addEventListener('touchend',inputEnd,false);
+
+var start = {x:-1,y:-1};
+var current = {x:-1,y:-1};
+var drag = {x1: -1, y1: -1, x2:-1,y2:-1,dist: -1};
+function inputStart(evt){
+    evt.preventDefault();
+    if(drag.x1 > -1){
+        //Just in case we don't clean up our pinch zoom nicely.
+        inputEnd();
+    }
+    if(evt.changedTouches != undefined){
+        var touches = evt.changedTouches;
+        if(touches.length > 1){
+            drag.x1 = touches[0].pageX;
+            drag.y1 = touches[0].pageY;
+            drag.x2 = touches[1].pageX;
+            drag.y2 = touches[1].pageY;
+            drag.dist = getDistance(drag.x1,drag.y1,drag.x2,drag.y2);
+        } else if(touches.length > 0){
+            start.x = touches[0].pageX;
+            start.y = touches[0].pageY;
+            current.x = start.x;
+            current.y = start.y;
+        }
+    } else {
+        start.x = evt.pageX;
+        start.y = evt.pageY;
+        current.x = start.x;
+        current.y = start.y;
+    }
+}
+
+function inputMove(evt){
+    evt.preventDefault();
+    if(start.x > -1){
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                current.x = touches[0].pageX;
+                current.y = touches[0].pageY;
+            }
+        } else {
+            current.x = evt.pageX;
+            current.y = evt.pageY;
+        }
+    } else if(drag.x1 > -1){
+        //Here we have 2 fingers on the screen
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 1){
+                var cDist = getDistance(touches[0].pageX, touches[0].pageY, touches[1].pageX, touches[1].pageY);
+                if(Math.abs(cDist-drag.dist) < zoomSensitivty){
+                    //Not a pinch/expand yet...
+                    var h = 0; var v = 0;
+                    //Did they move on the x
+                    h = drag.x1-touches[0].pageX;
+                    v = drag.y1-touches[0].pageY;
+                } else {
+                    //Pinch or expand?
+                    if(cDist > drag.dist){
+                        //Expand
+                        viewScale += 0.05;
+                    } else {
+                        //Pinch
+                        viewScale -= 0.05;
+                    }
+                }
+            } else {
+                //Removing one or more fingers during drag/zoom event cancels the event
+                inputEnd();
+            }
+        }
+    }
+}
+
+function inputEnd(){
+    start.x = -1;
+    drag.x1 = -1;
+}
+
+scaleCanvas();    
+Update();
+</script>
+</body>
+</html>
