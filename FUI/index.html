@@ -7,7 +7,7 @@
         margin:0;
         touch-action: none;
         position: fixed;
-        background-color: #131313;
+        background-color: #eee;
         overflow: hidden;
         -webkit-touch-callout: none !important;
         -webkit-user-select: none !important;
@@ -18,8 +18,8 @@
 <canvas id='canvas'></canvas>
 <script type='text/javascript'>
     
-var version = 'D_0004';
-var zoomSensitivity = 40;
+var version = 'D_0005';
+var zoomSensitivity = 10;
 var dragSensitivity = 50;
 
 var canvas = document.getElementById('canvas');
@@ -31,11 +31,12 @@ function scaleCanvas(){
 }
 
 var viewScale = 1;
+ctx.fillStyle='#dedede';
 
 function Base(x,y){
     this.x = x; this.y = y; 
     this.draw = function(){
-        ctx.fillStyle='#dedede';
+        //ctx.fillStyle='#dedede';
         ctx.fillRect(this.x, this.y, 64,64);
     }
     
@@ -67,16 +68,17 @@ function Update(){
     ctx.clearRect(-innerWidth*10,-innerHeight*10,innerWidth*20,innerHeight*20);
     ctx.restore();
     
-    for(var i = 0; i < bases.length;i++){
-        bases[i].update();
-    }
-    
     ctx.font = '24px sans-serif';
     for(var i = 0; i< ongoingTouches.length; i++){
         ctx.fillText(ongoingTouches[i].id + " @ "+Math.round(ongoingTouches[i].x) +","+ Math.round(ongoingTouches[i].y) + " from " + Math.round(ongoingTouches[i].px) + "," + Math.round(ongoingTouches[i].py),10,i*30+20);
     }
     
     ctx.fillText(version + " / " + ongoingTouches.length,10,innerHeight-20);
+    
+    
+    for(var i = 0; i < bases.length;i++){
+        bases[i].update();
+    }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -164,8 +166,10 @@ function touchMove(evt){
             if(Math.abs(orgDist-newDist) > zoomSensitivity){ //A zooming action has occured
                 if(newDist > orgDist){ //The points got further apart this is an expand or 'zoom-in' action
                     viewScale -= 0.1;
+                    ctx.fillStyle='#0F0';
                 } else if(orgDist > newDist){
                     viewScale += 0.1;
+                    ctx.fillStyle='#F00';
                 }
             } else {
                 //A drag action has occured. We'll use the offsets from touch 0 to move the objects in play
