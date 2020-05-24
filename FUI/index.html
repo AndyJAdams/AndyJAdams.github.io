@@ -18,9 +18,9 @@
 <canvas id='canvas'></canvas>
 <script type='text/javascript'>
     
-var version = 'D_0006';
+var version = 'D_0007';
 var zoomSensitivity = 10;
-var dragSensitivity = 25;
+var dragSensitivity = 15;
 
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
@@ -165,10 +165,10 @@ function touchMove(evt){
             var newDist = getDistance(ongoingTouches[0].x,ongoingTouches[0].y, ongoingTouches[1].x,ongoingTouches[1].y);
             if(Math.abs(orgDist-newDist) > zoomSensitivity){ //A zooming action has occured
                 if(newDist > orgDist){ //The points got further apart this is an expand or 'zoom-in' action
-                    viewScale -= 0.1;
+                    viewScale += 0.1;
                     ctx.fillStyle='#0F0';
                 } else if(orgDist > newDist){
-                    viewScale += 0.1;
+                    viewScale -= 0.1;
                     ctx.fillStyle='#F00';
                 }
             } else {
