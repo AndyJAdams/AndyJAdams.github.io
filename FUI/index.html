@@ -40,7 +40,7 @@ function Base(x,y){
 }
     
 var bases = [new Base(innerWidth/2-32,innerHeight/2-32)];
-    
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 function Update(){
     window.requestAnimationFrame(Update);
@@ -63,6 +63,12 @@ function Update(){
         bases[i].update();
     }
     
+    ctx.font = '24px sans-serif';
+    for(var i = 0; i < touches.length; i++){
+        ctx.fillText(touches[i].pageX +"," + touches[i].pageY, 10,i*30+30);
+        ctx.strokeStyle='#F00';
+        ctx.strokeRect(touches[i].pageX-50,touches[i].pageY-50,100,100);
+    }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +97,7 @@ window.addEventListener('touchend',inputEnd,false);
 var start = {x:-1,y:-1};
 var current = {x:-1,y:-1};
 var drag = {x1: -1, y1: -1, x2:-1,y2:-1,dist: -1};
+var touches = [];
 function inputStart(evt){
     evt.preventDefault();
     if(drag.x1 > -1){
@@ -98,7 +105,7 @@ function inputStart(evt){
         inputEnd();
     }
     if(evt.changedTouches != undefined){
-        var touches = evt.changedTouches;
+        touches = evt.changedTouches;
         if(touches.length > 1){
             drag.x1 = touches[0].pageX;
             drag.y1 = touches[0].pageY;
@@ -123,7 +130,7 @@ function inputMove(evt){
     evt.preventDefault();
     if(start.x > -1){
         if(evt.changedTouches != undefined){
-            var touches = evt.changedTouches;
+            touches = evt.changedTouches;
             if(touches.length > 0){
                 current.x = touches[0].pageX;
                 current.y = touches[0].pageY;
@@ -135,7 +142,7 @@ function inputMove(evt){
     } else if(drag.x1 > -1){
         //Here we have 2 fingers on the screen
         if(evt.changedTouches != undefined){
-            var touches = evt.changedTouches;
+            touches = evt.changedTouches;
             if(touches.length > 1){
                 var cDist = getDistance(touches[0].pageX, touches[0].pageY, touches[1].pageX, touches[1].pageY);
                 if(Math.abs(cDist-drag.dist) < zoomSensitivty){
