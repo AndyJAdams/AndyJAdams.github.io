@@ -25,7 +25,7 @@
 <canvas id='UI'></canvas>
 <script type='text/javascript'>
     
-var version = 'D_0009';
+var version = 'D_0010';
 var zoomSensitivity = 10;
 var dragSensitivity = 5;
 
@@ -95,6 +95,9 @@ function Update(){
         uctx.strokeStyle='#727272';
         uctx.strokeRect(start.x,start.y,current.x, current.y);
     }
+    
+    uctx.fillStyle='#dcdcdc88';
+    uctx.fillRect(innerWidth-79,11,68,68); //Draw base for home return button ... not sure I'm even going to use this feature. 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -197,7 +200,6 @@ function touchMove(evt){
             }
         } else if(ongoingTouches.length > 0){
             //Handle single input touches here
-            var h = 0; var v = 0; 
             if(ongoingTouches[0].x != current.x){
                 worldOffset.x += ongoingTouches[0].x-current.x;
                 current.x = ongoingTouches[0].x;
@@ -206,7 +208,6 @@ function touchMove(evt){
                 worldOffset.y += ongoingTouches[0].y-current.y;
                 current.y = ongoingTouches[0].y;
             }
-            console.log(h + "," + v);
             ctx.translate(Math.round(h),Math.round(v));
         }
     }
