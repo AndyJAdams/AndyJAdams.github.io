@@ -25,7 +25,7 @@
 <canvas id='UI'></canvas>
 <script type='text/javascript'>
     
-var version = 'D_0008';
+var version = 'D_0009';
 var zoomSensitivity = 10;
 var dragSensitivity = 5;
 
@@ -64,6 +64,7 @@ var bases = [new Base(innerWidth/2-32,innerHeight/2-32)];
 function Update(){
     window.requestAnimationFrame(Update);
     ctx.clearRect(0,0,innerWidth,innerHeight);
+    uctx.clearRect(0,0,innerWidth,innerHeight);
     
     //Scaling
     if(viewScale < 0.1){
@@ -220,6 +221,15 @@ function touchEnd(evt){
         if(idx >= 0){
             ongoingTouches.splice(idx,1);
         }
+    }
+    
+    if(ongoingTouches.length < 1){
+        start.x = -1;
+        current.x = -1;
+        if(selectionDraw){
+            //TODO: Make unit selection here
+        }
+        selectionDraw = false;
     }
 }
     
