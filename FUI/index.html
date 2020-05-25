@@ -7,37 +7,50 @@
         margin:0;
         touch-action: none;
         position: fixed;
-        background-color: #eee;
+        background-color: #232323;
         overflow: hidden;
         -webkit-touch-callout: none !important;
         -webkit-user-select: none !important;
+    }
+    
+    canvas{
+        position: absolute;
+        top:0px;
+        left:0px;
     }
 </style>
 </head>
 <body>
 <canvas id='canvas'></canvas>
+<canvas id='UI'></canvas>
 <script type='text/javascript'>
     
-var version = 'D_0007';
+var version = 'D_0008';
 var zoomSensitivity = 10;
-var dragSensitivity = 15;
+var dragSensitivity = 5;
 
 var canvas = document.getElementById('canvas');
+var ui = document.getElementById('UI');
+    
 var ctx = canvas.getContext('2d');
+var uctx = ui.getContext('2d');
 
 function scaleCanvas(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    ui.width = window.innerWidth;
+    ui.height = window.innerHeight;
 }
 
 var viewScale = 1;
-ctx.fillStyle='#dedede';
+var selectionDraw = false;
+var worldOffset = {x:0,y:0};
 
 function Base(x,y){
     this.x = x; this.y = y; 
     this.draw = function(){
-        //ctx.fillStyle='#dedede';
-        ctx.fillRect(this.x, this.y, 64,64);
+        ctx.fillStyle='#dedede';
+        ctx.fillRect(this.x+worldOffset.x, this.y+worldOffset.y, 64,64);
     }
     
     this.update = function(){
@@ -52,8 +65,6 @@ function Update(){
     window.requestAnimationFrame(Update);
     ctx.clearRect(0,0,innerWidth,innerHeight);
     
-    
-    
     //Scaling
     if(viewScale < 0.1){
         viewScale = 0.1;
@@ -61,6 +72,7 @@ function Update(){
         viewScale = 4.0;
     }
     ctx.setTransform(viewScale,0,0,viewScale,0,0);
+    
     var calcW = -(((innerWidth*viewScale)-innerWidth)/2)*(1/viewScale);
     var calcH = -(((innerHeight*viewScale)-innerHeight)/2)*(1/viewScale);
     ctx.translate(calcW,calcH);
@@ -68,16 +80,19 @@ function Update(){
     ctx.clearRect(-innerWidth*10,-innerHeight*10,innerWidth*20,innerHeight*20);
     ctx.restore();
     
-    ctx.font = '24px sans-serif';
-    for(var i = 0; i< ongoingTouches.length; i++){
-        ctx.fillText(ongoingTouches[i].id + " @ "+Math.round(ongoingTouches[i].x) +","+ Math.round(ongoingTouches[i].y) + " from " + Math.round(ongoingTouches[i].px) + "," + Math.round(ongoingTouches[i].py),10,i*30+20);
-    }
-    
-    ctx.fillText(version + " / " + ongoingTouches.length,10,innerHeight-20);
-    
-    
     for(var i = 0; i < bases.length;i++){
         bases[i].update();
+    }
+    
+    
+    /** UI BASED DRAW AREA **/
+    uctx.fillStyle='#121212';
+    uctx.font = '36px sans-serif';
+    uctx.fillText(version + " / " + ongoingTouches.length,10,innerHeight-20);
+    
+    if(selectionDraw){
+        uctx.strokeStyle='#727272';
+        uctx.strokeRect(start.x,start.y,current.x, current.y);
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,6 +152,10 @@ function touchStart(evt){
         //ongoingTouches.push(copyTouch(touches[i]));
         ongoingTouches.push(new Touch(touches[i].identifier, touches[i].pageX, touches[i].pageY, touches[i].pageX,touches[i].pageY));
     }
+    start.x =  ongoingTouches[0].x;
+    start.y =  ongoingTouches[0].y;
+    current.x = start.x; 
+    current.y = start.y;
 }
     
 function touchMove(evt){
@@ -166,17 +185,28 @@ function touchMove(evt){
             if(Math.abs(orgDist-newDist) > zoomSensitivity){ //A zooming action has occured
                 if(newDist > orgDist){ //The points got further apart this is an expand or 'zoom-in' action
                     viewScale += 0.1;
-                    ctx.fillStyle='#0F0';
                 } else if(orgDist > newDist){
                     viewScale -= 0.1;
-                    ctx.fillStyle='#F00';
                 }
             } else {
-                //A drag action has occured. We'll use the offsets from touch 0 to move the objects in play
+                //A drag action has occured. We'll use the offsets from touch 0 to draw a selection box
+                current.x = ongoingTouches[0].x;
+                current.y = ongoingTouches[0].y;
+                selectionDraw = true;
             }
         } else if(ongoingTouches.length > 0){
             //Handle single input touches here
-            
+            var h = 0; var v = 0; 
+            if(ongoingTouches[0].x != current.x){
+                worldOffset.x += ongoingTouches[0].x-current.x;
+                current.x = ongoingTouches[0].x;
+            }
+            if(ongoingTouches[0].y != current.y){
+                worldOffset.y += ongoingTouches[0].y-current.y;
+                current.y = ongoingTouches[0].y;
+            }
+            console.log(h + "," + v);
+            ctx.translate(Math.round(h),Math.round(v));
         }
     }
     
