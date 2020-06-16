@@ -21,7 +21,7 @@
 	<canvas id='canvas'></canvas>
 	<script>
 	var version = 0002;
-	var grid = {col:7, row:9};
+	var grid = {col:Math.floor(Math.random()*5)+2, row:Math.floor(Math.random()*6)+3};
 	var palettes = [
 	['#97352D','#DDD9A8','#36C9C6','#9BC1BC','#F5F9F0'],
 	['#4E3D42','#6D6466','#9F9F92','#C9D5B5','#E3DBDB'],
@@ -31,7 +31,7 @@
 	['#A5341C','#29335C','#F3A712','#86A16B','#C9F5F8'],
 	['#560510','#9D454A','#F5DBCB','#97967D','#A0D4A1']
 	];
-	var colorArray = palettes[5];// palettes[Math.floor(Math.random()*palettes.length)];
+	var colorArray = palettes[Math.floor(Math.random()*palettes.length)];
 	var spacing = 0;
 	var center = {x:-1, y:-1};
 	var tileScale = 0;
@@ -137,6 +137,36 @@
 		}
 	}
 
+	function menuBTN(x,y,w,h){
+		this.open = false; this.x1 = x; this.y1 = y;
+		this.x2 = this.x1+w; this.y2 = this.y1;
+		this.x3 = this.x1; this.y3 = this.y1+h;
+		this.x4 = this.x3+w; this.y4 = this.y3;
+		this.centerX = this.x1+(this.x2-this.x1)/2;
+		this.centerY = this.y1+(this.y3-this.y1)/2;
+		this.draw = function(){
+			ctx.strokeStyle='#00000088';
+			ctx.lineWidth = 4;
+			ctx.beginPath();
+			if(!this.open){
+				ctx.moveTo(this.x1, this.y1);
+				ctx.lineTo(this.x2,this.y2);
+				ctx.moveTo(this.x3, this.y3);
+				ctx.lineTo(this.x4, this.y4);
+			}else {
+				ctx.moveTo(this.x1, this.y1);
+				ctx.lineTo(this.x4, this.y4);
+				ctx.moveTo(this.x3,this.y3);
+				ctx.lineTo(this.x2, this.y2);
+			}
+			ctx.stroke();
+		}
+	}
+
+	var menuX = tiles[0][0].x+(tileScale/10);
+	var menuY = tiles[0][0].y-tileScale-spacing+(tileScale/10);
+	var menuW = tileScale-(tileScale/10)*2;
+	var menu = new menuBTN( menuX,menuY,menuW,menuW/2);
 
     //*************************************************
     //*************************************************
@@ -167,9 +197,16 @@
 		// ctx.fillStyle = '#000';
 		// ctx.fillText(tileScale, 5, 20);
 		// ctx.fillText(gridScale.x+"," + gridScale.y, 5, 30);
+
+		menu.draw();
 	}
     //*************************************************
     //*************************************************
+
+		function getDist(x1, y1, x2, y2){
+			return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
+		}
+
 
 	//*** INPUT SECTION **//
     window.addEventListener('resize',function(evt){
@@ -228,6 +265,9 @@
 					if(current.x > tiles[i][j].x && current.x < tiles[i][j].x+tileScale && current.y > tiles[i][j].y && current.y < tiles[i][j].y+tileScale){
 						tiles[i][j].hover = true;
 						console.log("HOVERED " + i + ", " + j);
+						if(menu != undefined){
+							menu.open = false;
+						}
 					} else {
 						tiles[i][j].hover = false;
 					}
@@ -236,6 +276,9 @@
 		}
 
     function inputEnd(){
+				if(getDist(current.x, current.y,menu.centerX, menu.centerY) < tileScale){
+					menu.open = !menu.open;
+				}
         start.x = -1;
     }
 
