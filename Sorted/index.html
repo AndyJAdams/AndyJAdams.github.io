@@ -1,0 +1,246 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>SORTED</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #2e2e2e;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+	var version = 0002;
+	var grid = {col:7, row:9};
+	var palettes = [
+	['#97352D','#DDD9A8','#36C9C6','#9BC1BC','#F5F9F0'],
+	['#4E3D42','#6D6466','#9F9F92','#C9D5B5','#E3DBDB'],
+	['#F9FDF7','#8997B2','#465F5D','#ADC2BF','#392A30'],
+	['#202820','#389397','#C9F6FC','#4C4295','#D0A9B2'],
+	['#000000','#FFFFFC','#BEB7A4','#FF9125','#FF3F00'],
+	['#A5341C','#29335C','#F3A712','#86A16B','#C9F5F8'],
+	['#560510','#9D454A','#F5DBCB','#97967D','#A0D4A1']
+	];
+	var colorArray = palettes[5];// palettes[Math.floor(Math.random()*palettes.length)];
+	var spacing = 0;
+	var center = {x:-1, y:-1};
+	var tileScale = 0;
+	var gridScale = {x:0,y:0};
+
+	var canvas = document.getElementById('canvas');
+  function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		center.x = innerWidth/2;
+		center.y = innerHeight/2;
+		tileScale = Math.round(innerWidth/15);//(grid.col*2);
+		if(innerHeight < innerWidth){
+			tileScale = Math.round(innerHeight/15);//(grid.row*2);
+		}
+		spacing = 15;
+		gridScale.x = tileScale*grid.col+(spacing*(grid.col-1));
+		gridScale.y = tileScale*grid.row+(spacing*(grid.row-1));
+	}
+	var ctx = canvas.getContext('2d');
+	scaleCanvas();
+
+	function Tile(x,y,v){
+		this.x = x; this.y = y; this.v = v;
+		this.n = []; this.hover = false;
+		this.draw = function(){
+			ctx.fillStyle=colorArray[this.v];
+			ctx.fillRect(this.x, this.y,tileScale, tileScale);
+
+			if(this.n.length > 0){
+				for(var i = 0; i < this.n.length; i++){
+					if(this.n[i] != undefined && this.n[i].v == this.v){
+						ctx.lineWidth = tileScale;
+						ctx.strokeStyle=colorArray[this.v];
+						ctx.beginPath();
+						ctx.moveTo(this.x+tileScale/2, this.y+tileScale/2);
+						ctx.lineTo(this.n[i].x+tileScale/2, this.n[i].y+tileScale/2);
+						ctx.stroke();
+					}
+				}
+			}
+
+			// ctx.fillStyle='#000';
+			// ctx.fillText(this.v, this.x+2,this.y+12);
+		}
+
+		this.update = function(){
+			this.n = getNeighbors(this);
+			this.draw();
+		}
+	}
+
+	var tiles = [];
+	for(var c =  0; c < grid.col; c++){
+		var column = [];
+		for(var r = 0; r < grid.row; r++){
+			 var x = center.x+((tileScale+spacing)*c)-(gridScale.x/2);
+			 var y = center.y+((tileScale+spacing)*r)-(gridScale.y/2);
+			 var rv = Math.floor(Math.random()*(colorArray.length-1));
+			 column.push(new Tile(x,y,rv));
+		}
+		tiles.push(column);
+	}
+
+
+
+	function getNeighbors(t){
+		var n = [undefined, undefined, undefined, undefined];
+		var row = getRow(t);
+		var col = getCol(t);
+		if(col > 0){ //Left
+			n[3] = tiles[col-1][row];
+		}
+		if(col < grid.col-1){ //Right
+			n[1] = tiles[col+1][row];
+		}
+		if(row > 0){ //Up
+			n[0] = tiles[col][row-1];
+		}
+		if(row < grid.row-1){ //Down
+			n[2] = tiles[col][row+1];
+		}
+		return n;
+	}
+
+	function getRow(t){
+		for(var i = 0; i< tiles.length; i++){
+			for(var j = 0; j < tiles[i].length; j++){
+				if(tiles[i][j] == t){
+					return j;
+				}
+			}
+		}
+	}
+
+	function getCol(t){
+		for(var i = 0; i< tiles.length; i++){
+			for(var j = 0; j < tiles[i].length; j++){
+				if(tiles[i][j] == t){
+					return i;
+				}
+			}
+		}
+	}
+
+
+    //*************************************************
+    //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		ctx.fillStyle = colorArray[colorArray.length-1];
+		ctx.fillRect(0,0,innerWidth,innerHeight);
+
+		// ctx.strokeStyle='#888';
+		// ctx.lineWidth = 2;
+		// ctx.beginPath();
+		// ctx.moveTo(center.x, 0);
+		// ctx.lineTo(center.x, innerHeight);
+		// ctx.moveTo(0, center.y);
+		// ctx.lineTo(innerWidth, center.y);
+		// ctx.stroke();
+
+
+
+		//ctx.fillRect(center.x-halfTile, center.y-halfTile,tileScale,tileScale);
+		for(var i = 0; i < tiles.length; i++){
+			for(var j = 0; j < tiles[i].length; j++){
+				tiles[i][j].update();
+			}
+		}
+		// ctx.fillStyle = '#000';
+		// ctx.fillText(tileScale, 5, 20);
+		// ctx.fillText(gridScale.x+"," + gridScale.y, 5, 30);
+	}
+    //*************************************************
+    //*************************************************
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+
+    var start = {x:-1,y:-1};
+		var current = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+				current.x = start.x;
+				current.y = start.y;
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+				setHovered();
+    }
+
+		function setHovered(){
+			for(var i = 0; i < tiles.length; i++){
+				for(var j = 0; j < tiles[i].length; j++){
+					if(current.x > tiles[i][j].x && current.x < tiles[i][j].x+tileScale && current.y > tiles[i][j].y && current.y < tiles[i][j].y+tileScale){
+						tiles[i][j].hover = true;
+						console.log("HOVERED " + i + ", " + j);
+					} else {
+						tiles[i][j].hover = false;
+					}
+				}
+			}
+		}
+
+    function inputEnd(){
+        start.x = -1;
+    }
+
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>

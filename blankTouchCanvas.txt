@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Brick Safe</title>
+	<title>BLANK CANVAS</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -20,19 +20,13 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
-	var canvas = document.getElementById('canvas');	
+	var canvas = document.getElementById('canvas');
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 	}
 	var ctx = canvas.getContext('2d');
 
-    function Ball(x,y){
-        this.x = x; this.y = y;
-        this.draw = function(){
-            ctx.fillRect(this.x-10,this.y-10,20,20);
-        }
-    }
 
 
     //*************************************************
@@ -49,8 +43,8 @@
         evt.preventDefault();
         scaleCanvas();
     });
-    
-    
+
+
     window.addEventListener('mousedown',inputStart,false);
     window.addEventListener('mousemove',inputMove,false);
     window.addEventListener('mouseup',inputEnd,false);
@@ -59,8 +53,9 @@
     window.addEventListener('touchmove', inputMove,false);
     window.addEventListener('touchcancel',inputEnd,false);
     window.addEventListener('touchend',inputEnd,false);
-    
+
     var start = {x:-1,y:-1};
+		var current = {x:-1,y:-1};
     function inputStart(evt){
         evt.preventDefault();
         if(evt.changedTouches != undefined){
@@ -73,29 +68,30 @@
             start.x = evt.pageX;
             start.y = evt.pageY;
         }
+				current.x = start.x;
+				current.y = start.y;
     }
-    
+
     function inputMove(evt){
         evt.preventDefault();
-        var x = -1; var y = -1;
         if(start.x > -1){
             if(evt.changedTouches != undefined){
                 var touches = evt.changedTouches;
                 if(touches.length > 0){
-                    x = touches[0].pageX;
-                    y = touches[0].pageY;
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
                 }
             } else {
-                x = evt.pageX;
-                y = evt.pageY;
+                current.x = evt.pageX;
+                current.y = evt.pageY;
             }
         }
     }
-    
+
     function inputEnd(){
         start.x = -1;
     }
-    
+
     scaleCanvas();
 	animate();
 	</script>
