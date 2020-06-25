@@ -1,0 +1,135 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>CamTest</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+				video{
+					display: none;
+				}
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<video id='v' autoplay></video>
+	<script>
+	var canvas = document.getElementById('canvas');
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	scaleCanvas();
+	var ctx = canvas.getContext('2d');
+
+	var video = document.getElementById('v');
+
+
+    //*************************************************
+    //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		ctx.drawImage(video,0,0,320,240);
+		var chunks = [];
+		for(var i = 32; i <= 320; i+=32){
+			var row = [];
+			for(var j = 24; j <= 240; j+=24){
+				var chunk = ctx.getImageData(i-32,j-34,i,j);
+				row.push(chunk);
+			}
+			chunks.push(row);
+		}
+		ctx.clearRect(0,0,innerWidth, innerHeight);
+		for(var i = 0; i < chunks.length; i++){
+			for(var j = 0; j < chunks[i].length; j++){
+				ctx.putImageData(chunks[i][j],i*32,j*24);
+			}
+		}
+
+	}
+    //*************************************************
+    //*************************************************
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+
+    var start = {x:-1,y:-1};
+		var current = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+				current.x = start.x;
+				current.y = start.y;
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+    }
+
+    function inputEnd(){
+        start.x = -1;
+    }
+
+		//When the page loads grab the camera and launch animate
+		document.addEventListener('DOMContentLoaded',function(){
+			video = document.getElementById('v');
+			video.addEventListener('play',function(){
+				animate();
+			},false);
+			const camConstraints = {
+				video: {width: {exact:320, height: 240}}
+			};
+			navigator.mediaDevices.getUserMedia(camConstraints).then((stream) => {video.srcObject = stream});
+		},false);
+
+  //   scaleCanvas();
+	// animate();
+	</script>
+</body>
+</html>

@@ -1,6 +1,4 @@
-<DOCTYPE html>
-<html lang="en">
-<head>
+<DOCTYPE html><html lang="en"><head>
 	<meta charset="UTF-8">
 	<title>SORTED</title>
 	<style type="text/css">
@@ -21,7 +19,8 @@
 	<canvas id='canvas'></canvas>
 	<script>
 	var version = 0002;
-	var grid = {col:Math.floor(Math.random()*5)+2, row:Math.floor(Math.random()*6)+3};
+	var grid = {col:Math.floor(Math.random()*4)+3, row:Math.floor(Math.random()*6)+3};
+	//var grid = {col:7, row:9};
 	var palettes = [
 	['#97352D','#DDD9A8','#36C9C6','#9BC1BC','#F5F9F0'],
 	['#4E3D42','#6D6466','#9F9F92','#C9D5B5','#E3DBDB'],
@@ -36,6 +35,12 @@
 	var center = {x:-1, y:-1};
 	var tileScale = 0;
 	var gridScale = {x:0,y:0};
+	var selected = undefined;
+	var selectedOffset = {x: 0, y:0};
+	var selectedRow = [];
+	var selectedCol = [];
+	var gridMin = {x:0,y:0};
+	var gridMax = {x:0,y:0};
 
 	var canvas = document.getElementById('canvas');
   function scaleCanvas(){
@@ -47,23 +52,30 @@
 		if(innerHeight < innerWidth){
 			tileScale = Math.round(innerHeight/15);//(grid.row*2);
 		}
-		spacing = 15;
+		spacing = 30;
 		gridScale.x = tileScale*grid.col+(spacing*(grid.col-1));
 		gridScale.y = tileScale*grid.row+(spacing*(grid.row-1));
 	}
 	var ctx = canvas.getContext('2d');
 	scaleCanvas();
 
+	function Point(x,y,c,r){
+		this.x = x; this.y = y; this.r = r; this.c = c;
+	}
+
 	function Tile(x,y,v){
 		this.x = x; this.y = y; this.v = v;
-		this.n = []; this.hover = false;
+		this.dx = this.x; this.dy = this.y;
+		this.n = [];
 		this.draw = function(){
 			ctx.fillStyle=colorArray[this.v];
 			ctx.fillRect(this.x, this.y,tileScale, tileScale);
 
-			if(this.n.length > 0){
+			var myRow = getRow(this);
+			var myCol = getCol(this);
+			if(this.n.length > 0 && myRow != getRow(selected) && myCol != getCol(selected)){
 				for(var i = 0; i < this.n.length; i++){
-					if(this.n[i] != undefined && this.n[i].v == this.v){
+					if(this.n[i] != undefined && this.n[i].v == this.v && getRow(this.n[i]) != getRow(selected) && getCol(this.n[i]) != getCol(selected)){
 						ctx.lineWidth = tileScale;
 						ctx.strokeStyle=colorArray[this.v];
 						ctx.beginPath();
@@ -74,8 +86,17 @@
 				}
 			}
 
-			// ctx.fillStyle='#000';
-			// ctx.fillText(this.v, this.x+2,this.y+12);
+			ctx.fillStyle='#000';
+			ctx.fillText(this.v, this.x+2,this.y+12);
+			ctx.fillText(this.x+"," + this.y, this.x+2, this.y+24);
+
+			ctx.beginPath();
+			ctx.lineWidth =2;
+			ctx.strokeStyle='#000';
+			ctx.moveTo(this.x, this.y);
+			var nearest = getNearest(this.x, this.y);
+			ctx.lineTo(nearest.x,nearest.y);
+			ctx.stroke();
 		}
 
 		this.update = function(){
@@ -85,14 +106,24 @@
 	}
 
 	var tiles = [];
+	var points = [];
 	for(var c =  0; c < grid.col; c++){
 		var column = [];
+		var pts = [];
 		for(var r = 0; r < grid.row; r++){
 			 var x = center.x+((tileScale+spacing)*c)-(gridScale.x/2);
 			 var y = center.y+((tileScale+spacing)*r)-(gridScale.y/2);
+			 if(c == 0 && r == 0){
+				 gridMin.x = x; gridMin.y = y;
+			 }
+			 if(c == grid.col-1 && r == grid.row-1){
+				 gridMax.x = x; gridMax.y = y;
+			 }
+			 pts.push(new Point(x,y,c,r));
 			 var rv = Math.floor(Math.random()*(colorArray.length-1));
 			 column.push(new Tile(x,y,rv));
 		}
+		points.push(pts);
 		tiles.push(column);
 	}
 
@@ -137,36 +168,54 @@
 		}
 	}
 
-	function menuBTN(x,y,w,h){
-		this.open = false; this.x1 = x; this.y1 = y;
-		this.x2 = this.x1+w; this.y2 = this.y1;
-		this.x3 = this.x1; this.y3 = this.y1+h;
-		this.x4 = this.x3+w; this.y4 = this.y3;
-		this.centerX = this.x1+(this.x2-this.x1)/2;
-		this.centerY = this.y1+(this.y3-this.y1)/2;
-		this.draw = function(){
-			ctx.strokeStyle='#00000088';
-			ctx.lineWidth = 4;
-			ctx.beginPath();
-			if(!this.open){
-				ctx.moveTo(this.x1, this.y1);
-				ctx.lineTo(this.x2,this.y2);
-				ctx.moveTo(this.x3, this.y3);
-				ctx.lineTo(this.x4, this.y4);
-			}else {
-				ctx.moveTo(this.x1, this.y1);
-				ctx.lineTo(this.x4, this.y4);
-				ctx.moveTo(this.x3,this.y3);
-				ctx.lineTo(this.x2, this.y2);
+	function calculateShift(){
+			var affected = [];
+			for(var i = 0; i < tiles.length; i++){
+					for(var j = 0; j < tiles[i].length; j++){
+							affected.push(tiles[i][j]);
+					}
 			}
-			ctx.stroke();
-		}
+			console.log(affected.length);
+			for(var i = 0; i < affected.length; i++){
+					//var close = getClosestPoint(affected[i].x+affected[i].dx,affected[i].y+affected[i].dy);
+					var close = getClosestPoint(affected[i].x,affected[i].y);
+					if(close != undefined){
+							affected[i].x = close.x;
+							affected[i].y = close.y;
+							affected[i].dx = 0;
+							affected[i].dy = 0;
+							if(affected[i].c != close.c){
+									console.log("C: " + affected[i].c + " to " + close.c);
+							}
+							if(affected[i].r != close.r){
+									console.log("R: " + affected[i].r + " to " + close.r);
+							}
+							affected[i].c = close.c;
+							affected[i].r = close.r;
+							tiles[close.c][close.r]=affected[i];
+
+					} else {
+							console.log("NO NEARBY POINT FOUND");
+					}
+			}
 	}
 
-	var menuX = tiles[0][0].x+(tileScale/10);
-	var menuY = tiles[0][0].y-tileScale-spacing+(tileScale/10);
-	var menuW = tileScale-(tileScale/10)*2;
-	var menu = new menuBTN( menuX,menuY,menuW,menuW/2);
+	function getClosestPoint(x,y){
+			var minDist = (innerWidth*innerHeight)*2;
+			var close = undefined;
+			for(var i = 0; i < points.length; i++){
+					for(var j = 0; j < points[i].length; j++){
+							var a = Math.pow(Math.abs(x-points[i][j].x),2);
+							var b = Math.pow(Math.abs(y-points[i][j].y),2);
+							var c = Math.sqrt(a+b);
+							if(c < minDist){
+									minDist = c;
+									close = points[i][j];
+							}
+					}
+			}
+			return close;
+	}
 
     //*************************************************
     //*************************************************
@@ -177,34 +226,148 @@
 		ctx.fillStyle = colorArray[colorArray.length-1];
 		ctx.fillRect(0,0,innerWidth,innerHeight);
 
-		// ctx.strokeStyle='#888';
-		// ctx.lineWidth = 2;
-		// ctx.beginPath();
-		// ctx.moveTo(center.x, 0);
-		// ctx.lineTo(center.x, innerHeight);
-		// ctx.moveTo(0, center.y);
-		// ctx.lineTo(innerWidth, center.y);
-		// ctx.stroke();
-
-
-
-		//ctx.fillRect(center.x-halfTile, center.y-halfTile,tileScale,tileScale);
 		for(var i = 0; i < tiles.length; i++){
 			for(var j = 0; j < tiles[i].length; j++){
 				tiles[i][j].update();
 			}
 		}
-		// ctx.fillStyle = '#000';
-		// ctx.fillText(tileScale, 5, 20);
-		// ctx.fillText(gridScale.x+"," + gridScale.y, 5, 30);
 
-		menu.draw();
+		if(selected != undefined){
+			//Draw affected col outline
+			var scol = getCol(selected);
+			var srow = getRow(selected);
+			ctx.strokeStyle='#000';
+			ctx.lineWidth = spacing/4;
+			if(dragDir == -1){
+					ctx.beginPath();
+					ctx.moveTo(tiles[scol][0].x-spacing/2,tiles[scol][0].y-spacing/2);
+					ctx.lineTo(tiles[scol][0].x+tileScale+spacing/2,tiles[scol][0].y-spacing/2);
+					ctx.lineTo(selected.x+tileScale+spacing/2,selected.y-spacing/2);
+					ctx.lineTo(tiles[tiles.length-1][srow].x+tileScale+spacing/2,tiles[tiles.length-1][srow].y-spacing/2);
+					ctx.lineTo(tiles[tiles.length-1][srow].x+tileScale+spacing/2,tiles[tiles.length-1][srow].y+tileScale+spacing/2);
+					ctx.lineTo(selected.x+tileScale+spacing/2,selected.y+tileScale+spacing/2);
+					ctx.lineTo(tiles[scol][tiles[scol].length-1].x+tileScale+spacing/2,tiles[scol][tiles[scol].length-1].y+tileScale+spacing/2);
+					ctx.lineTo(tiles[scol][tiles[scol].length-1].x-spacing/2,tiles[scol][tiles[scol].length-1].y+tileScale+spacing/2);
+					ctx.lineTo(selected.x-spacing/2,selected.y+tileScale+spacing/2);
+					ctx.lineTo(tiles[0][srow].x-spacing/2,tiles[tiles.length-1][srow].y+tileScale+spacing/2);
+					ctx.lineTo(tiles[0][srow].x-spacing/2,tiles[0][srow].y-spacing/2);
+					ctx.lineTo(selected.x-spacing/2,selected.y-spacing/2);
+					ctx.closePath();
+					ctx.stroke();
+			} else {
+				if(dragDir == 0){ //Horizontal
+					ctx.beginPath();
+					ctx.moveTo(tiles[tiles.length-1][srow].x+tileScale+spacing/2,tiles[tiles.length-1][srow].y-spacing/2);
+					ctx.lineTo(tiles[tiles.length-1][srow].x+tileScale+spacing/2,tiles[tiles.length-1][srow].y+tileScale+spacing/2);
+					ctx.lineTo(tiles[0][srow].x-spacing/2,tiles[tiles.length-1][srow].y+tileScale+spacing/2);
+					ctx.lineTo(tiles[0][srow].x-spacing/2,tiles[0][srow].y-spacing/2);
+					ctx.closePath();
+					ctx.stroke();
+					// for(var i = 0; i < selectedRow.length;i++){
+					// 	selectedRow[i].dx = selectedRow[i].x-(start.x-current.x);
+					// }
+					for(var i = 0; i < selectedRow.length; i++){
+						selectedRow[i].x = selectedRow[i].dx-(start.x-current.x);
+					}
+					//snapToNearest();
+				} else {
+					ctx.beginPath();
+					ctx.moveTo(tiles[scol][0].x-spacing/2,tiles[scol][0].y-spacing/2);
+					ctx.lineTo(tiles[scol][0].x+tileScale+spacing/2,tiles[scol][0].y-spacing/2);
+					ctx.lineTo(tiles[scol][tiles[scol].length-1].x+tileScale+spacing/2,tiles[scol][tiles[scol].length-1].y+tileScale+spacing/2);
+					ctx.lineTo(tiles[scol][tiles[scol].length-1].x-spacing/2,tiles[scol][tiles[scol].length-1].y+tileScale+spacing/2);
+					ctx.closePath();
+					ctx.stroke();
+					// for(var i = 0; i < selectedCol.length; i++){
+					// 	selectedCol[i].dy = selectedCol[i].y-(start.y-current.y);
+					// 	if(selectedCol[i].dy < gridMin.y-tileScale){
+					// 		selectedCol[i].y += gridScale.y;
+					// 		selectedCol[i].dy = selectedCol[i].y-(start.y-current.y);
+					// 	}
+					// }
+				}
+			}
+		}
 	}
     //*************************************************
     //*************************************************
 
 		function getDist(x1, y1, x2, y2){
 			return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
+		}
+
+		function getSelected(x,y){
+			for(var i = 0; i < tiles.length; i++){
+				for(var j = 0; j < tiles[i].length; j++){
+					var t = tiles[i][j];
+					if(t.x < x && t.x+tileScale > x && t.y < y && t.y+tileScale > y){
+						selectedOffset.x = x-t.x;
+						selectedOffset.y = y-t.y;
+						selectedRow = getSelectedRow(t);
+						selectedCol = getSelectedCol(t);
+						return t;
+					}
+				}
+			}
+		}
+
+		function getSelectedRow(t){
+			var row = [];
+			var r = getRow(t);
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0; j < tiles[i].length; j++){
+					if(j == r){
+						row.push(tiles[i][j]);
+					}
+				}
+			}
+			return row;
+		}
+
+		function getSelectedCol(t){
+			var col = [];
+			var c = getCol(t);
+			for(var i = 0;i < tiles.length; i++){
+				for(var j = 0; j < tiles[i].length; j++){
+					if(i == c){
+						col.push(tiles[i][j]);
+					}
+				}
+			}
+			return col;
+		}
+
+		function snapToNearest(){
+			for(var i = 0; i < tiles.length; i++){
+				for(var j = 0; j< tiles[i].length; j++){
+					var p = getNearest(tiles[i][j].x, tiles[i][j].y);
+					// ctx.beginPath();
+					// ctx.moveTo(p.x, p.y);
+					// ctx.lineTo(tempTiles[i][j].x, tempTiles[i][j].y);
+					// ctx.stroke();
+					console.log(i+","+j + " to " + p.c + "," + p.r);
+					tiles[i][j].x = p.x;
+					tiles[i][j].y = p.y;
+					tiles[i][j].dx = p.x;
+					tiles[i][j].dy = p.y;
+					tiles[p.c][p.r] = tiles[i][j];
+				}
+			}
+		}
+
+		function getNearest(x,y){
+			var minDist = gridScale.x*gridScale.y;
+			var closest = undefined;
+			for(var i = 0; i < points.length; i++){
+				for(var j = 0; j < points[i].length; j++){
+					var d = getDist(x,y,points[i][j].x, points[i][j].y) ;
+					if(d< minDist){
+						minDist = d;
+						closest = points[i][j];
+					}
+				}
+			}
+			return closest;
 		}
 
 
@@ -226,6 +389,7 @@
 
     var start = {x:-1,y:-1};
 		var current = {x:-1,y:-1};
+		var dragDir = -1;
     function inputStart(evt){
         evt.preventDefault();
         if(evt.changedTouches != undefined){
@@ -240,6 +404,8 @@
         }
 				current.x = start.x;
 				current.y = start.y;
+				selected = getSelected(start.x, start.y);
+				console.log(selected);
     }
 
     function inputMove(evt){
@@ -255,30 +421,28 @@
                 current.x = evt.pageX;
                 current.y = evt.pageY;
             }
+
+						//Do move selection code here.
+						if(selected != undefined){
+							var xDif = Math.abs(current.x-start.x);
+							var yDif = Math.abs(current.y-start.y);
+							if((xDif > tileScale/4 || yDif > tileScale/4)&& dragDir == -1){
+								if(xDif > yDif){
+									dragDir = 0;
+								} else {
+									dragDir = 1;
+								}
+							}
+						}
         }
-				setHovered();
     }
 
-		function setHovered(){
-			for(var i = 0; i < tiles.length; i++){
-				for(var j = 0; j < tiles[i].length; j++){
-					if(current.x > tiles[i][j].x && current.x < tiles[i][j].x+tileScale && current.y > tiles[i][j].y && current.y < tiles[i][j].y+tileScale){
-						tiles[i][j].hover = true;
-						console.log("HOVERED " + i + ", " + j);
-						if(menu != undefined){
-							menu.open = false;
-						}
-					} else {
-						tiles[i][j].hover = false;
-					}
-				}
-			}
-		}
-
     function inputEnd(){
-				if(getDist(current.x, current.y,menu.centerX, menu.centerY) < tileScale){
-					menu.open = !menu.open;
-				}
+				//snapToNearest();
+				calculateShift();
+				selected = undefined;
+				current.x = -1;
+				dragDir = -1;
         start.x = -1;
     }
 

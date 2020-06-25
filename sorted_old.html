@@ -20,7 +20,7 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
-    var grid = {rows: 8,columns: 6};
+    var grid = {rows: Math.floor(Math.random()*5)+2,columns: Math.floor(Math.random()*4)+3};
     var dragSensitivity = 50;
     var palettes = [
     ['#97352D','#DDD9A8','#9BC1BC','#F5F9F0','#36C9C6'],
@@ -35,10 +35,14 @@
 
 	var canvas = document.getElementById('canvas');
     var randPalette = Math.floor(Math.random()*palettes.length);
+		var cPalette = palettes[randPalette];
     var tileSize = {x:-1,y:-1};
     var tiles = [];
     var points = [];
-
+		var gridScale = {x:0,y:0};
+		var spacing = 0;
+		var center = {x:0,y:0};
+		var halfGrid = {x:0,y:0};
     //DEBUG ONLY
     // grid.rows = Math.floor(Math.random()*5)+5;
     // grid.columns = Math.floor(Math.random()*5)+5;
@@ -53,12 +57,19 @@
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 
-        tileSize.x = innerWidth/grid.columns;
-        tileSize.y = innerHeight/grid.rows;
+        tileSize = Math.floor(innerWidth/(grid.columns*2));
+				center.x = innerWidth/2;
+				center.y = innerHeight/2;
+        //tileSize.y = innerHeight/grid.rows;
+				gridScale.x = tileSize*grid.columns+(spacing*(grid.columns));
+				gridScale.y = tileSize*grid.rows+(spacing*(grid.rows));
+				halfGrid.x = gridScale.x/2;
+				halfGrid.y = gridScale.y/2;
         if(tiles.length < 1){
             buildGrid();
         }
         scaleGrid();
+				dragSensitivity = tileSize/4;
 	}
 
 	var ctx = canvas.getContext('2d');
@@ -71,17 +82,33 @@
         this.x = x; this.y = y; this.r = r; this.c = c; this.v = v;
         this.effected = false; this.dx = 0; this.dy = 0;
         this.draw = function(){
-            ctx.fillStyle=palettes[randPalette][this.v];
-            ctx.fillRect(this.x+this.dx, this.y+this.dy, tileSize.x+1, tileSize.y+1);
+            ctx.fillStyle=cPalette[this.v];
+            ctx.fillRect(this.x+this.dx, this.y+this.dy, tileSize+1, tileSize+1);
+
+						// var n = getNeighbors(this);
+						// if(!allCol.includes(this) && !allRow.includes(this)){
+						// 	for(var i = 0; i < n.length; i++){
+						// 		if(n[i] != undefined && n[i].v == this.v){
+						// 			if(!allCol.includes(n[i]) && !allRow.includes(n[i])){
+						// 				ctx.lineWidth = tileSize;
+						// 				ctx.strokeStyle=cPalette[this.v];
+						// 				ctx.beginPath();
+						// 				ctx.moveTo(this.x+this.dx+tileSize/2,this.y+this.dy+tileSize/2);
+						// 				ctx.lineTo(n[i].x+n[i].dx+tileSize/2,n[i].y+n[i].dy+tileSize/2);
+						// 				ctx.stroke();
+						// 			}
+						// 		}
+						// 	}
+						// }
 
             if(DEBUG){
-                ctx.fillStyle='#FFF';
-                ctx.fillText(this.c+","+this.r,this.x+this.dx+4,this.y+this.dy+20);
+                ctx.fillStyle='#000';
+                ctx.fillText(this.c+","+this.r+" "+this.v,this.x+this.dx+4,this.y+this.dy+20);
                 if(allCol.length > 0){
                     for(var i = 0; i < allCol.length; i++){
                         if(allCol[i] == this){
                             ctx.fillStyle='#000';
-                            ctx.fillRect(this.x+tileSize.x/2-10+this.dx,this.y+tileSize.y/2-10+this.dy,20,20);
+                            ctx.fillRect(this.x+tileSize/2-10+this.dx,this.y+tileSize/2-10+this.dy,20,20);
                         }
                     }
                 }
@@ -89,7 +116,7 @@
                     for(var i = 0; i < allRow.length; i++){
                         if(allRow[i] == this){
                             ctx.fillStyle='#000';
-                            ctx.fillRect(this.x+tileSize.x/2-10+this.dx,this.y+tileSize.y/2-10+this.dy,20,20);
+                            ctx.fillRect(this.x+tileSize/2-10+this.dx,this.y+tileSize/2-10+this.dy,20,20);
                         }
                     }
                 }
@@ -98,36 +125,36 @@
         }
 
         this.update = function(){
-            ctx.fillStyle=palettes[randPalette][this.v];
-            if(this.x+this.dx < 0){
-                if(this.x+this.dx+(tileSize.x/2) < 0){
+            ctx.fillStyle=cPalette[this.v];
+            if(this.x+this.dx < center.x-halfGrid.x){
+                if(this.x+this.dx+(tileSize/2) < center.x-halfGrid.x){
                     console.log("snapset left");
-                    this.x += innerWidth;
+                    this.x += gridScale.x;
                 } else {
-                    ctx.fillRect(innerWidth+(this.x+this.dx),this.y,tileSize.x+1,tileSize.y+1);
+                    ctx.fillRect(gridScale.x+(this.x+this.dx),this.y,tileSize+1,tileSize+1);
                 }
-            } else if(this.x+this.dx+tileSize.x > innerWidth){
-                if(this.x+this.dx+(tileSize.x/2) > innerWidth){
+            } else if(this.x+this.dx+tileSize >center.x+halfGrid.x){
+                if(this.x+this.dx+(tileSize/2) > center.x+halfGrid.x){
                     console.log("snapset right");
-                    this.x -= innerWidth;
+                    this.x -=gridScale.x;
                 } else {
-                    ctx.fillRect((this.x+this.dx)-innerWidth,this.y,tileSize.x+1,tileSize.y+1);
+                    ctx.fillRect((this.x+this.dx)-gridScale.x,this.y,tileSize+1,tileSize+1);
                 }
             }
 
-            if(this.y+this.dy-1 < 0){
-                if(this.y+this.dy+(tileSize.y/2) < 0){
+            if(this.y+this.dy < center.y-halfGrid.y){
+                if(this.y+this.dy+(tileSize/2) < center.y-halfGrid.y){
                     console.log("snapset up");
-                    this.y += innerHeight;
+                    this.y += gridScale.y;
                 } else {
-                    ctx.fillRect(this.x,innerHeight+(this.y+this.dy),tileSize.x+1,tileSize.y+1);
+                    ctx.fillRect(this.x,gridScale.y+(this.y+this.dy),tileSize+1,tileSize+1);
                 }
-            } else if(this.y+this.dy+tileSize.y > innerHeight){
-                if(this.y+this.dy+(tileSize.y/2) > innerHeight){
+            } else if(this.y+this.dy+tileSize > center.y+halfGrid.y){
+                if(this.y+this.dy+(tileSize/2) > center.y+halfGrid.y){
                     console.log("snapset down");
-                    this.y -= innerHeight;
+                    this.y -= gridScale.y;
                 } else {
-                    ctx.fillRect(this.x,(this.y+this.dy)-innerHeight,tileSize.x+1,tileSize.y+1);
+                    ctx.fillRect(this.x,(this.y+this.dy)-gridScale.y,tileSize+1,tileSize+1);
                 }
             }
             this.draw();
@@ -143,9 +170,9 @@
             var row = [];
             var p_row = [];
             for(var j = 0; j < grid.rows; j++){
-                var x = i*tileSize.x;
-                var y = j*tileSize.y;
-                var v = Math.floor(Math.random()*palettes[randPalette].length);
+                var x = i*tileSize+(center.x-halfGrid.x)+spacing*i+spacing/2;
+                var y = j*tileSize+(center.y-halfGrid.y)+spacing*j+spacing/2;
+                var v = Math.floor(Math.random()*(cPalette.length-1));
                 row.push(new Tile(x,y,v,i,j));
                 p_row.push(new Point(x,y,i,j));
             }
@@ -157,10 +184,10 @@
     function scaleGrid(){
         for(var i = 0; i < tiles.length; i++){
             for(var j = 0; j < tiles[i].length; j++){
-                tiles[i][j].x = i*tileSize.x;
-                tiles[i][j].y = j*tileSize.y;
-                points[i][j].x = i*tileSize.x;
-                points[i][j].y = j*tileSize.y;
+                tiles[i][j].x = i*tileSize+(center.x-halfGrid.x)+spacing*i+spacing/2;
+                tiles[i][j].y = j*tileSize+(center.y-halfGrid.y)+spacing*j+spacing/2;
+                points[i][j].x = i*tileSize+(center.x-halfGrid.x)+spacing*i+spacing/2;
+                points[i][j].y = j*tileSize+(center.y-halfGrid.y)+spacing*j+spacing/2;
             }
         }
     }
@@ -168,6 +195,7 @@
     var collections = [];
     function makeCollections(){
         collections = [];
+				return;
         for(var i = tiles.length-1; i > -1; i--){
             for(var j = tiles[i].length-1; j > -1; j--){
                 var col = -1;
@@ -242,7 +270,7 @@
         for(var i = 0; i < tiles.length; i++){
             for(var j = 0; j < tiles[i].length; j++){
                 var t = tiles[i][j];
-                if(x < t.x+tileSize.x && x > t.x && y < t.y+tileSize.y && y > t.y){
+                if(x < t.x+tileSize && x > t.x && y < t.y+tileSize && y > t.y){
                     selection = tiles[i][j];
                     break;
                 }
@@ -251,10 +279,12 @@
                 break;
             }
         }
-        effectedCol = [selection.c];
-        getEffectedCol();
-        effectedRow = [selection.r];
-        getEffectedRow();
+				if(selection != undefined){
+	        effectedCol = [selection.c];
+	        getEffectedCol();
+	        effectedRow = [selection.r];
+	        getEffectedRow();
+				}
     }
 
     function getEffectedCol(){
@@ -360,7 +390,6 @@
                 affected.push(tiles[i][j]);
             }
         }
-        console.log(affected.length);
         for(var i = 0; i < affected.length; i++){
             var close = getClosestPoint(affected[i].x+affected[i].dx,affected[i].y+affected[i].dy);
             if(close != undefined){
@@ -369,10 +398,10 @@
                 affected[i].dx = 0;
                 affected[i].dy = 0;
                 if(affected[i].c != close.c){
-                    console.log("C: " + affected[i].c + " to " + close.c);
+                  //  console.log("C: " + affected[i].c + " to " + close.c);
                 }
                 if(affected[i].r != close.r){
-                    console.log("R: " + affected[i].r + " to " + close.r);
+                  //  console.log("R: " + affected[i].r + " to " + close.r);
                 }
                 affected[i].c = close.c;
                 affected[i].r = close.r;
@@ -419,6 +448,23 @@
 
     // }
 
+		function getNeighbors(t){
+			var n = [undefined,undefined,undefined,undefined];
+			if(t.c -1 > -1){
+				n[3] = tiles[t.c-1][t.r];
+			}
+			if(t.c+1 < grid.columns){
+				n[1] = tiles[t.c+1][t.r];
+			}
+			if(t.r-1 > -1){
+				n[0] = tiles[t.c][t.r-1];
+			}
+			if(t.r+1 < grid.rows){
+				n[2] = tiles[t.c][t.r+1];
+			}
+			return n;
+		}
+
 
 //******************************************************************************************
 //******************************************************************************************
@@ -433,6 +479,9 @@
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		ctx.fillStyle=cPalette[cPalette.length-1];
+		ctx.fillRect(0,0,innerWidth,innerHeight);
 
         if(dir > -1){ //Move tiles
             if(dir == 0 || dir == 2){
@@ -459,17 +508,59 @@
             makeCollections();
         }
 
+
+				ctx.lineWidth = tileSize;
+				ctx.strokeStyle=cPalette[cPalette.length-1];
+				ctx.beginPath();
+				ctx.moveTo(center.x-halfGrid.x-(tileSize/2),center.y-halfGrid.y-(tileSize/2));
+				ctx.lineTo(center.x+halfGrid.x+(tileSize/2),center.y-halfGrid.y-(tileSize/2));
+				ctx.lineTo(center.x+halfGrid.x+(tileSize/2),center.y+halfGrid.y+(tileSize/2));
+				ctx.lineTo(center.x-halfGrid.x-(tileSize/2),center.y+halfGrid.y+(tileSize/2));
+				ctx.lineTo(center.x-halfGrid.x-(tileSize/2),center.y-halfGrid.y-(tileSize/2));
+				ctx.stroke();
+
         if(DEBUG){
-            ctx.fillStyle='#FFF';
-            for(var i = 0; i < collections.length; i++){
-                var out = i+":";
-                for(var j = 0; j < collections[i].length; j++){
-                    var t = collections[i][j];
-                    out += t.c+","+t.r + " - ";
-                }
-                ctx.fillText(out,50,i*20+15);
-            }
+						ctx.lineWidth = 2;
+            ctx.fillStyle='#000';
+						ctx.font = '14px sans-serif';
+          	ctx.fillText("GRID: " + grid.rows+","+grid.columns, 10, 30);
+						ctx.fillText('TS: '+tileSize,10,45);
+						ctx.fillText('Spacing: '+spacing,10,60);
+						ctx.fillStyle='#F00';
+						ctx.fillText('FPS: '+60,10,80);
+						ctx.fillStyle='#FF0';
+						ctx.fillText(center.x-halfGrid.x,10,tiles[0][0].y-3);
+						ctx.fillText(center.y-halfGrid.y,tiles[0][0].x+3,14);
+						ctx.fillStyle='#000';
+						ctx.fillText(gridScale.x,tiles[0][0].x,  tiles[0][0].y+gridScale.y+spacing+14);
+						ctx.fillText(gridScale.y,tiles[0][0].x+gridScale.x+spacing+3,tiles[0][0].y+14);
+
+						ctx.strokeStyle='#FFF';
+						ctx.beginPath();
+						ctx.moveTo(0,center.y);
+						ctx.lineTo(innerWidth,center.y);
+						ctx.moveTo(center.x,0);
+						ctx.lineTo(center.x,innerHeight);
+						ctx.stroke();
+
+						ctx.strokeStyle='#FF0';
+						ctx.beginPath();
+						ctx.moveTo(0,tiles[0][0].y);
+						ctx.lineTo(tiles[0][0].x,tiles[0][0].y);
+						ctx.moveTo(tiles[0][0].x,0);
+						ctx.lineTo(tiles[0][0].x,tiles[0][0].y);
+						ctx.stroke();
+
+						ctx.strokeStyle='#000';
+						ctx.beginPath();
+						ctx.moveTo(tiles[0][0].x, tiles[0][0].y+gridScale.y+spacing);
+						ctx.lineTo(tiles[0][0].x+gridScale.x, tiles[0][0].y+gridScale.y+spacing);
+						ctx.moveTo(tiles[0][0].x+gridScale.x+spacing,tiles[0][0].y);
+						ctx.lineTo(tiles[0][0].x+gridScale.x+spacing,tiles[0][0].y+gridScale.y);
+						ctx.stroke();
         }
+
+
 	}
 
 
@@ -489,6 +580,14 @@
         if(evt.key == 'd'){
             DEBUG = !DEBUG;
         }
+				if(evt.key == 'ArrowUp'){
+					spacing++;
+					scaleCanvas();
+				}
+				if(evt.key == 'ArrowDown'){
+					spacing--;
+					scaleCanvas();
+				}
     });
 
 
