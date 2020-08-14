@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js-master/build/three.js"></script>
+		<script>
+			var dragSensitivity = 30;
+
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			// var geometry = new THREE.BoxGeometry();
+			// var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			// var cube = new THREE.Mesh( geometry, material );
+			// scene.add( cube );
+			var geometry = new THREE.SphereGeometry( 2, 16, 16 );
+			var material = new THREE.MeshBasicMaterial( {wireframe:true, color: 0xffffff} );
+			var sphere = new THREE.Mesh( geometry, material );
+			scene.add( sphere );
+
+			var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			scene.add( directionalLight );
+
+
+			// var outgeo = new THREE.BoxGeometry();
+			// var material = new THREE.MeshBasicMaterial({color:0xffffff});
+			// var box = new THREE.Mesh(geometry, material);
+			// box.position.set(0.0,0.0,1);
+			// scene.add(box);
+
+			camera.position.z = 5;
+
+			pivot = new THREE.Group();
+			pivot.position.set(0.0,0.0,0);
+			scene.add(pivot);
+			pivot.add(camera);
+
+			var spin = {x: 0.001, y: 0.05, z:0.03};
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+
+				sphere.rotation.x += spin.x;
+				sphere.rotation.y += spin.y;
+				sphere.rotation.z += spin.z;
+
+				renderer.render( scene, camera );
+			};
+
+			animate();
+
+			function getDistance(x1, y1, x2, y2){
+				return Math.abs(Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2)));
+			}
+
+			window.addEventListener('mousedown',inputStart,false);
+			window.addEventListener('mousemove',inputMove,false);
+			window.addEventListener('mouseup',inputEnd,false);
+
+			var start = {x:-1,y:-1};
+			function inputStart(evt){
+				evt.preventDefault();
+				start.x = evt.pageX;
+				start.y = evt.pageY;
+			}
+
+			function inputMove(evt){
+				evt.preventDefault();
+				if(start.x > -1){ //Insure we've actually clicked
+
+				}
+			}
+
+			function inputEnd(evt){
+				if(start.x > -1){
+					spin.x -= (start.y-evt.pageY)/window.innerHeight;
+					spin.y -= (start.x-evt.pageX)/window.innerWidth;
+					console.log(spin.x);
+				}
+				start.x = -1;
+			}
+		</script>
+	</body>
+</html>
