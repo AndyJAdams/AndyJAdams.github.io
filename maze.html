@@ -1,0 +1,276 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>MAZE</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+        
+    /*
+    TODO:
+    -Camera Shake
+    -Lasers
+    -invinvable indicator
+    -scale out dots after leaving ring area
+    -vignette?
+    -mobile test
+*/
+	var canvas = document.getElementById('canvas');
+    var moveSpeed = 1;
+    var newSpeed = moveSpeed;
+    var center = {x: 0, y:0};
+    var radius = 0;    
+        
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+        center.x = innerWidth/2;
+        center.y = innerHeight/2;
+        radius = innerWidth/4;
+	}
+	var ctx = canvas.getContext('2d');
+    ctx.textAlign="center";
+   
+    function Player(a,r){
+        this.r = r;
+        this.angle = a;
+        this.x = 0;
+        this.y = 0;
+        this.invinceTimer = 0;
+        this.draw = function(){
+            ctx.fillStyle='#000';
+            ctx.beginPath();
+            var rad = degToRad(this.angle);
+            this.x = radius*Math.cos(rad);
+            this.y = radius*Math.sin(rad);
+            ctx.arc(this.x+center.x, this.y+center.y, this.r, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        
+        this.update = function(){
+            if(Date.now()>this.invinceTimer && this.r < innerHeight){
+                //Check collisions with obstacles
+                for(var i = 0; i< obstacles.length; i++){
+                    var d = getDist(this.x+center.x, this.y+center.y, obstacles[i].x, obstacles[i].y);
+                    
+                    if(d < this.r+obstacles[i].r){
+                        obstacles[i].resetVars();
+                        this.r -= 5;
+                        this.invinceTimer = Date.now()+ 2000;
+                        break;
+                    }
+                }
+            }
+            
+            if(this.r < innerHeight){
+                for(var i = 0; i < foods.length; i++){
+                    var d = getDist(this.x+center.x, this.y+center.y,foods[i].x, foods[i].y);
+                    if(d<this.r+foods[i].r){
+                        this.r+=5;
+                        foods[i].resetVars();
+                    }
+                }
+            }
+            this.angle+=moveSpeed;
+            this.draw();
+        }
+    }
+    
+    function Obstacle(){
+        this.end = Date.now()+Math.floor(Math.random()*6000)+2000;
+        this.r = 0; this.tr = Math.random()*50+10;
+        this.x = center.x+(Math.random()-0.5)*10; this.y = center.y+(Math.random()-0.5)*10;
+        this.ratio = {x: (Math.random()-0.5)*8, y:(Math.random()-0.5)*8};
+        this.reset = 0;
+        
+        this.draw = function(){
+            ctx.fillStyle='#F00';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y,this.r,0, 2*Math.PI);
+            ctx.fill();
+        }
+        
+        this.update = function(){
+            if(this.r < this.tr){
+                this.r += Math.abs(moveSpeed);
+            } else {
+                this.x += this.ratio.x;
+                this.y += this.ratio.y;
+            }
+            //If obstacle exceeds bounds
+            if(this.x > innerWidth || this.x < 0 || this.y > innerHeight+this.r*2 || this.y < -this.r*2 || Date.now() > this.end){
+                    this.resetVars();
+            }
+            if(this.reset > 3){
+                if(obstacles.length < 13){
+                    obstacles.push(new Obstacle());
+                }
+                this.reset = 0;
+            }
+            this.draw();
+        }
+        
+        this.resetVars = function(){
+            this.r = 0; 
+            this.tr = Math.random()*50+10;
+            this.x = center.x+(Math.random()-0.5)*10; this.y = center.y+(Math.random()-0.5)*10;
+            this.ratio = {x: (Math.random()-0.5)*8, y:(Math.random()-0.5)*8};
+            this.end = Date.now()+Math.floor(Math.random()*6000)+2000;
+            this.reset++;
+        }
+    }
+        
+    function Food(){
+        this.end = Date.now()+Math.floor(Math.random()*6000)+2000;
+        this.r = 0; this.tr = 10;
+        this.x = center.x+(Math.random()-0.5)*10; this.y = center.y+(Math.random()-0.5)*10;
+        this.ratio = {x: (Math.random()-0.5)*8, y:(Math.random()-0.5)*8};
+        this.reset = 0;
+        
+        this.draw = function(){
+            ctx.fillStyle='#000';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y,this.r,0, 2*Math.PI);
+            ctx.fill();
+        }
+        
+        this.update = function(){
+            if(this.r < this.tr){
+                this.r += Math.abs(moveSpeed);
+            } else {
+                this.x += this.ratio.x;
+                this.y += this.ratio.y;
+            }
+            //If obstacle exceeds bounds
+            if(this.x > innerWidth || this.x < 0 || this.y > innerHeight+this.r*2 || this.y < -this.r*2 || Date.now() > this.end){
+                    this.resetVars();
+            }
+            if(this.reset > 9){
+                if(foods.length < 20){
+                    foods.push(new Food());
+                }
+                this.reset = 0;
+            }
+            this.draw();
+        }
+        
+        this.resetVars = function(){
+            this.r = 0; 
+                    this.tr = 10;
+                    this.x = center.x+(Math.random()-0.5)*10; this.y = center.y+(Math.random()-0.5)*10;
+                    this.ratio = {x: (Math.random()-0.5)*8, y:(Math.random()-0.5)*8};
+                    this.end = Date.now()+Math.floor(Math.random()*6000)+2000;
+                    this.reset++;
+        }
+    }
+    //***********************************************
+    var player = undefined;
+    var obstacles = [];
+    var foods = [];
+    var startGame = false; 
+    var winner = false; 
+    var winTimer = 0;
+        //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        if(startGame && player.r > 1){
+            if(obstacles.length < 1){
+                obstacles.push(new Obstacle());
+            }
+            for(var i = 0; i < obstacles.length; i++){
+                obstacles[i].update();
+            }
+        }
+        
+        ctx.beginPath();
+        ctx.lineWidth=10; ctx.arc(center.x,center.y,innerWidth/4,0,2*Math.PI);
+        ctx.stroke();
+        
+        if(startGame && player.r > 1){
+            if(foods.length < 1){
+                foods.push(new Food());
+            }
+            for(var i = 0; i < foods.length; i++){
+                foods[i].update();
+            }
+            
+            if(moveSpeed != newSpeed){
+                if(moveSpeed > newSpeed){
+                    moveSpeed -= (moveSpeed-newSpeed)/player.r;
+                } else if(moveSpeed < newSpeed){
+                    moveSpeed += (newSpeed-moveSpeed)/player.r;
+                }
+            }
+            player.update();
+        } else{
+            //LOSER
+             ctx.textAlign="center";
+            ctx.font = "48px sans-serif";
+            ctx.fillText("PRESS TO START",center.x,center.y);
+            startGame = false;
+        }
+        
+        if(startGame && player.r > innerWidth/2){
+            obstacles = [];
+            foods = [];
+            if(!winner){
+                winTimer = Date.now()+2000;
+                winner = true;
+            }
+        }
+        
+        
+	}
+    //*************************************************
+        
+    function degToRad(a){
+        return a*(Math.PI/180);
+    }
+        
+    function getDist(x1, y1, x2, y2){
+        return Math.abs(Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2)));
+    }
+    //*************************************************
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+    window.addEventListener('keypress',inputStart);
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('touchstart',inputStart, false);
+
+    function inputStart(evt){
+        if(!startGame || winner){
+            if(Date.now() > winTimer){
+                player = new Player(Math.random()*360,30);
+                startGame = true;
+                winner = false;
+            }
+        }
+        newSpeed = -newSpeed;
+    }
+
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>
