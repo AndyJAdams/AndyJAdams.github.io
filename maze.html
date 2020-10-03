@@ -200,10 +200,10 @@
         }
         
         ctx.beginPath();
-        ctx.lineWidth=10; ctx.arc(center.x,center.y,innerWidth/4,0,2*Math.PI);
+        ctx.lineWidth=6; ctx.arc(center.x,center.y,innerWidth/4,0,2*Math.PI);
         ctx.stroke();
         
-        if(startGame && player.r > 1){
+        if(startGame && player.r > 6){
             if(foods.length < 1){
                 foods.push(new Food());
             }
