@@ -225,6 +225,8 @@
             ctx.font = "48px sans-serif";
             ctx.fillText("PRESS TO START",center.x,center.y);
             startGame = false;
+            obstacles = [];
+            foods = [];
         }
         
         if(startGame && player.r > innerWidth/2){
@@ -236,7 +238,8 @@
             }
         }
         
-        
+        ctx.font="12px sans-serif";
+        ctx.fillText("V 1.0.5 LD47", center.x, 15);
 	}
     //*************************************************
         
