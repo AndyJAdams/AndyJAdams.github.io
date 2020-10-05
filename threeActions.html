@@ -1,0 +1,441 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>3 Actions</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+        
+    /*
+    TODO:
+    -
+*/
+	var canvas = document.getElementById('canvas');
+    var center = {x: 0, y:0};   
+        
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+        center.x = innerWidth/2;
+        center.y = innerHeight/2;
+        
+	}
+	var ctx = canvas.getContext('2d');
+    var limit = {x:0,y:0};
+    
+    function Target(x,y){
+        this.x = x; this.y = y;
+        this.hit = false;
+        this.draw = function(){
+            if(!this.hit){
+                drawCirc(this.x,this.y,15,'#000');
+            } else {
+                drawCirc(this.x,this.y,15,'#0F0');
+            }
+        }
+        
+        this.update = function(){
+            this.draw();
+        }
+    }
+        
+    function Obstacle(x,y,r){
+        this.x = x; this.y = y; 
+        this.draw = function(){
+            drawCirc(this.x,this.y,15,'#F00');
+        }
+        
+        this.update = function(){
+            this.draw();
+        }
+    }
+        
+    function Start(x,y){
+        this.x = x; this.y = y;
+        this.draw = function(){
+            ctx.lineWidth=3;
+            ctx.strokeStyle='#000';
+            ctx.fillStyle='#DDD';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 15,0,2*Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+        }
+        
+        this.update = function(){
+            this.draw();
+        }
+    }
+        
+    function Point(x,y){
+        this.x = x;this.y = y;this.type= undefined;
+        this.draw = function(){
+            drawCirc(this.x, this.y,5,'#888');
+        }
+    }
+        
+    function Grid(x,y){
+        this.pts = [];
+        limit.x = ((x-1)*70)/2;
+        limit.y = ((y-1)*70)/2;
+        for(var i = 0; i < x; i++){
+            var row = [];
+            for(var j = 0; j < y; j++){
+                var px = (i*70)+center.x-(((x-1)*70)/2);
+                var py = (j*70)+center.y-(((y-1)*70)/2);
+                row.push(new Point(px,py));
+            }
+            this.pts.push(row);
+        }
+    }
+        
+    function Player(x,y,r,c){
+        this.x =x; this.y= y;
+        this.sx = this.x; this.sy = this.y;
+        this.tx = this.x; this.ty = this.y;
+        this.ci = -1;
+        this.draw = function(){
+            drawCirc(this.x, this.y,10,'#000');
+        }
+        
+        this.update = function(){
+            if(commands.length > 2){
+                //if we are on target get the next command
+                if(Math.abs(this.x-this.tx)<4 && Math.abs(this.y-this.ty)<4){
+                    //Get the next command
+                    this.ci++;
+                    if(this.ci > 2){
+                        this.ci = 0;
+                    }
+                    switch(commands[this.ci].dir){
+                        case 0:
+                            this.ty -= 70;
+                            break;
+                        case 1:
+                            this.tx += 70;
+                            break;
+                        case 2: 
+                            this.ty += 70;
+                            break;
+                        case 3:
+                            this.tx -= 70;
+                            break;
+                        default:
+                            break;
+                    }
+                    if(this.tx > center.x+limit.x){
+                        this.tx = center.x-limit.x;
+                        this.x = center.x-limit.x;
+                    }
+                    if(this.tx < center.x-limit.x){
+                        this.tx = center.x+limit.x;
+                        this.x = center.x+limit.x;
+                    }
+                    if(this.ty > center.y+limit.y){
+                        this.ty = center.y-limit.y;
+                        this.y = center.y-limit.y;
+                    }
+                    if(this.ty < center.y-limit.y){
+                        this.ty = center.y+limit.y;
+                        this.y = center.y+limit.y;
+                    }
+                } else {
+                    //MOVE TO NEXT COMMAND TARGET
+                    if(this.x < this.tx){
+                        this.x++;
+                    } else if(this.x > this.tx){
+                        this.x--;
+                    } else if(this.y < this.ty){
+                        this.y++;
+                    } else if(this.y > this.ty){
+                        this.y--;
+                    }
+                }
+            } else {
+                this.x = this.sx; 
+                this.y = this.sy;
+                this.tx = this.x; 
+                this.ty = this.y;
+                this.ci = -1;
+            }
+            this.draw();
+        }
+        
+        this.reset = function(){
+            this.x = this.sx; 
+            this.y = this.sy;
+            this.tx = this.x; 
+            this.ty = this.y;
+            this.ci = -1;
+        }
+    }
+        
+    function Level(){
+        var gx = Math.floor(Math.random()*8)+4;
+        var gy = Math.floor(Math.random()*8)+4;
+        this.grid = new Grid(gx,gy);
+        this.sx = Math.floor(Math.random()*this.grid.pts.length);
+        this.sy= Math.floor(Math.random()*this.grid.pts[this.sx].length);
+        this.start = new Start(this.grid.pts[this.sx][this.sy].x, this.grid.pts[this.sx][this.sy].y);
+        this.grid.pts[this.sx][this.sy].type = "Start";
+        
+        this.obsCount = Math.floor(Math.random()*10)+2;
+        this.targCount = Math.floor(Math.random()*4)+1;
+        
+        //Create obstacles
+        this.obs = [];
+        for(var i = 0; i < this.obsCount; i++){
+            var ox = Math.floor(Math.random()*this.grid.pts.length);
+            var oy= Math.floor(Math.random()*this.grid.pts[this.sx].length);
+            if(this.grid.pts[ox][oy].type == undefined){
+                this.obs.push(new Obstacle(this.grid.pts[ox][oy].x, this.grid.pts[ox][oy].y));
+                this.grid.pts[ox][oy].type="OBS";
+            } else {
+                i--;
+            }
+        }
+        
+        //Create targets
+        this.targs = [];
+        for(var i = 0; i < this.targCount; i++){
+            var tx = Math.floor(Math.random()*this.grid.pts.length);
+            var ty= Math.floor(Math.random()*this.grid.pts[this.sx].length);
+            if(this.grid.pts[tx][ty].type == undefined){
+                this.targs.push(new Target(this.grid.pts[tx][oy].x, this.grid.pts[tx][ty].y));
+                this.grid.pts[tx][ty].type="Targ";
+            } else {
+                i--;
+            }
+        }
+        
+        this.player = new Player(this.start.x, this.start.y);
+        
+        this.draw = function(){
+            //DEBUGGING
+            for(var i = 0; i < this.grid.pts.length; i++){
+                for(var j = 0; j < this.grid.pts[i].length; j++){
+                    this.grid.pts[i][j].draw();
+                }
+            }
+            
+            this.start.update();
+            //Draw obstacles
+            for(var i = 0; i < this.obs.length;i++){
+                this.obs[i].update();
+            }
+            //Draw targets
+            for(var i = 0; i < this.targs.length;i++){
+                this.targs[i].update();
+            }
+            
+            this.player.update();
+        
+        }
+        
+        this.update = function(){
+            for(var i = 0; i < this.obs.length; i++){
+                var o = this.obs[i];
+                var d= getDist(this.player.x, this.player.y,o.x, o.y);
+                if(d < 30){
+                    this.reset();
+                }
+            }
+            for(var i = 0; i < this.targs.length; i++){
+                var t = this.targs[i];
+                var d = getDist(this.player.x, this.player.y, t.x, t.y);
+                if(d < 30){
+                    t.hit = true;
+                }
+            }
+            this.draw();
+        }
+        
+        this.reset = function(){
+            for(var i = 0; i < this.targs.length; i++){
+                this.targs[i].hit = false;
+            }
+            commands = [];
+            this.player.reset();
+        }
+        
+    }
+        
+    function Command(d,x,y){
+        this.dir = d; this.x = x; this.y = y;
+        this.draw = function(){
+            ctx.lineWidth=2;
+            ctx.strokeStyle='#000';
+            ctx.beginPath();
+            switch(this.dir){
+                case 0:
+                    ctx.moveTo(this.x,this.y-25);
+                    ctx.lineTo(this.x,this.y+25);
+                    ctx.moveTo(this.x-10,this.y-15);
+                    ctx.lineTo(this.x,this.y-25);
+                    ctx.lineTo(this.x+10,this.y-15);
+                    break;
+                case 1:
+                    ctx.moveTo(this.x-25,this.y);
+                    ctx.lineTo(this.x+25,this.y);
+                    ctx.moveTo(this.x+15,this.y-10);
+                    ctx.lineTo(this.x+25,this.y);
+                    ctx.lineTo(this.x+15,this.y+10);
+                    break;
+                case 2:
+                    ctx.moveTo(this.x, this.y-25);
+                    ctx.lineTo(this.x, this.y+25);
+                    ctx.moveTo(this.x-10,this.y+15);
+                    ctx.lineTo(this.x,this.y+25);
+                    ctx.lineTo(this.x+10,this.y+15);
+                    break;
+                case 3:
+                    ctx.moveTo(this.x+25,this.y);
+                    ctx.lineTo(this.x-25,this.y);
+                    ctx.moveTo(this.x-15,this.y-10);
+                    ctx.lineTo(this.x-25,this.y);
+                    ctx.lineTo(this.x-15,this.y+10);
+                    break;
+                default:
+                    break;
+            }
+            ctx.stroke();
+        }
+    }
+        
+    function newGame(){
+        lvl = undefined;
+        commands = [];
+    }
+    
+    var lvl = undefined;
+    var commands = [];
+        //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        if(lvl == undefined){
+            lvl = new Level();
+        }
+        lvl.update();
+       
+        for(var i = 0; i < commands.length; i++){
+            commands[i].draw();
+        }
+        
+        drawCirc(20,40,15,'#F00');
+        drawCirc(20,75,15,'#000');
+        ctx.font='16px sans-serif';
+        ctx.fillText("Bad",45,45);
+        ctx.fillText("Good",45,80);
+        ctx.fillText("W-A-S-D",45,115);
+        ctx.fillText("Arrows",45,145);
+        ctx.fillText("3 Actions",45,175);
+        ctx.fillText("Repeats...",45,205);
+        ctx.fillText("Grid loops",45,235);
+        ctx.fillText("Backspace to edit",45,265);
+        ctx.fillText("Escape to clear",45,295);
+        ctx.fillText("Procedurally Generated",45,325);
+        ctx.fillText("May not be solveable - Sorry",45,355);
+        ctx.fillText("Refresh to regenerate",45,385);
+       
+        ctx.font="12px sans-serif";
+        ctx.fillText("Ver023 LD47 - ProcGen Looping Puzzle - 3 Actions", 10, 15);
+	}
+    //*************************************************
+        
+    function degToRad(a){
+        return a*(Math.PI/180);
+    }
+        
+    function radToDeg(r){
+        return r*(180/Math.PI);
+    }
+        
+    function getDist(x1, y1, x2, y2){
+        return Math.abs(Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2)));
+    }
+        
+    function getRadAngle(x1,y1,x2,y2){
+        return Math.atan2(y2-y1,x2-x1);
+    }
+        
+    function drawCirc(x,y,r,color='#000'){
+        ctx.fillStyle=color;
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,2*Math.PI);
+        ctx.fill();
+        ctx.closePath();
+    }
+    //*************************************************
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+        
+    window.addEventListener('keyup',function(evt){
+        
+        var cx = center.x+((commands.length+1)*70)-140;
+        var cy = 60;
+        switch(evt.code){
+            case 'KeyW':
+            case 'ArrowUp':
+                if(commands.length < 3){
+                    commands.push(new Command(0,cx,cy));
+                }
+                break;
+            case 'KeyD':
+            case 'ArrowRight':
+                if(commands.length < 3){
+                    commands.push(new Command(1,cx,cy));
+                }
+                break;
+            case 'KeyS':
+            case 'ArrowDown':
+                if(commands.length < 3){
+                    commands.push(new Command(2,cx,cy));
+                }
+                break;
+            case 'KeyA':
+            case 'ArrowLeft':
+                if(commands.length < 3){
+                    commands.push(new Command(3,cx,cy));
+                }
+                break;
+            case 'Backspace':
+            case 'Delete':
+                commands.pop();
+                break;
+            case 'Escape':
+                commands = [];
+                //newGame();
+                break;
+            default:
+                break;
+        } 
+    });
+
+
+    scaleCanvas();
+    animate();
+	</script>
+</body>
+</html>
