@@ -256,13 +256,22 @@
                     this.reset();
                 }
             }
+            var winner = true;
             for(var i = 0; i < this.targs.length; i++){
                 var t = this.targs[i];
                 var d = getDist(this.player.x, this.player.y, t.x, t.y);
                 if(d < 30){
                     t.hit = true;
                 }
+                if(!t.hit){
+                    winner = false;
+                }
             }
+            if(winner){
+                newGame();
+            }
+            
+            
             this.draw();
         }
         
@@ -356,7 +365,7 @@
         ctx.fillText("Refresh to regenerate",45,385);
        
         ctx.font="12px sans-serif";
-        ctx.fillText("Ver023 LD47 - ProcGen Looping Puzzle - 3 Actions", 10, 15);
+        ctx.fillText("Ver027 LD47 - ProcGen Looping Puzzle - 3 Actions", 10, 15);
 	}
     //*************************************************
         
