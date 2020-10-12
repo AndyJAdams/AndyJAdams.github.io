@@ -21,27 +21,13 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        var output = "PORT-VERT";
     function animate(){
         requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
-        var orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation;
-
-        if (orientation === "landscape-primary") {
-            output = "LAND-PRIME";
-        } else if (orientation === "landscape-secondary") {
-            output = "LAND-SECOND";
-        } else if (orientation === "portrait-secondary"){
-            output = "PORT-SECOND";
-        } else if (orientation === "portrait-primary") {
-            output = "PORT-PRIME";
-        } else if (orientation === undefined) {
-            output = "ORIENT LOST";
-        }
-
+        
         ctx.font = '50px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(output,innerWidth/2,innerHeight/2);
+        ctx.fillText(window.orientation,innerWidth/2,innerHeight/2);
     }
 
     var start = {x:-1,y:-1};
