@@ -1,0 +1,67 @@
+<DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ONION</title>
+<!--VERSION 0.001 9/14/2020 AA-->
+<style>
+    body{
+        margin:0;
+        overflow:hidden;
+    }
+    canvas{display:block;}
+</style>
+</head>
+<body>
+    <canvas></canvas>
+    <script>
+        var canvas = document.querySelector('canvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var output = "PORT-VERT";
+    function animate(){
+        requestAnimationFrame(animate);
+        ctx.clearRect(0,0,innerWidth,innerHeight);
+        var orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation;
+
+        if (orientation === "landscape-primary") {
+            output = "LAND-PRIME";
+        } else if (orientation === "landscape-secondary") {
+            output = "LAND-SECOND";
+        } else if (orientation === "portrait-secondary"){
+            output = "PORT-SECOND";
+        } else if (orientation === "portrait-primary") {
+            output = "PORT-PRIME";
+        } else if (orientation === undefined) {
+            output = "ORIENT LOST";
+        }
+
+        ctx.font = '50px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(output,innerWidth/2,innerHeight/2);
+    }
+
+    var start = {x:-1,y:-1};
+    window.addEventListener('mousedown',function(e){
+        start.x = e.pageX;
+        start.y = e.pageY;
+    });
+
+    window.addEventListener('mousemove',function(e){
+        if(start.x > -1){
+
+        }
+    });
+
+    window.addEventListener('mouseup',function(){
+        start.x = -1;
+    });
+
+    animate();
+
+    </script>
+</body>
+</html>
