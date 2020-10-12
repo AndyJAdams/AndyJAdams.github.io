@@ -20,14 +20,14 @@
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
+        var orient = {a:0,b:0,g:0};
     function animate(){
         requestAnimationFrame(animate);
         ctx.clearRect(0,0,innerWidth,innerHeight);
         
         ctx.font = '50px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(window.orientation,innerWidth/2,innerHeight/2);
+        ctx.fillText(orient.a+","+orient.b+","+orient.g,innerWidth/2,innerHeight/2);
     }
 
     var start = {x:-1,y:-1};
@@ -44,6 +44,12 @@
 
     window.addEventListener('mouseup',function(){
         start.x = -1;
+    });
+
+    window.addEventListener('deviceorientation',function(e){
+        orient.a = e.alpha;
+        orient.b = e.beta;
+        orient.g = e.gamma;
     });
 
     animate();
