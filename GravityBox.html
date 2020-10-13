@@ -1,0 +1,328 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>TumbleBox</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+    var tileScale = 50;
+    var center = {x:0,y:0};
+    var gridSize = {r:6,c:6};
+    var half = {x:0,y:0};
+	var canvas = document.getElementById('canvas');
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+        center.x = innerWidth/2;
+        center.y = innerHeight/2;
+        tileScale = (innerWidth*0.75)/gridSize.r;
+        if(innerHeight<innerWidth){
+            tileScale = (innerHeight*0.75)/gridSize.c;
+        }
+        half.x = (gridSize.c*tileScale)/2;
+        half.y = (gridSize.r*tileScale)/2;
+	}
+	var ctx = canvas.getContext('2d');
+
+    function GridPos(x,y,trueR,trueC){
+        this.x = x; this.y = y; this.block = undefined;
+        this.tr = trueR; this.tc = trueC;
+        this.draw=function(){
+            ctx.strokeRect(this.x,this.y,tileScale,tileScale);
+            if(this.block != undefined){
+                ctx.fillRect(this.x+3,this.y+3,tileScale-6,tileScale-6);
+            }
+        }
+        this.update = function(){
+            this.draw();
+        }
+
+        this.rotate = function(dir){
+            if(dir > 0){ //Right
+                var temp = this.tr;
+                this.tr = this.tc;
+                this.tc = temp;
+                if(this.tc+7<8){
+                    this.tc += 7;
+                } else {
+                    this.tc = 7-this.tc;
+                }
+
+            } else if(dir < 0){ //Left
+                var temp = this.tr;
+                this.tr = this.tc;
+                this.tc = temp;
+                if(this.tr+7 < 8){
+                    this.tr += 7;
+                } else {
+                    this.tr = 7-this.tr;
+                }
+            }
+        }
+    }
+
+    function Block(x,y,r,c){
+        this.x = x;this.y = y; this.v = 0;
+        this.r = r; this.c = c;
+        this.draw = function(){
+            ctx.fillRect(this.x+3, this.y+3,tileScale-6,tileScale-6)
+        }
+
+        this.update = function(){
+            this.draw();
+        }
+    }
+
+    scaleCanvas();
+    var grid = [];
+    for(var i = 0; i < gridSize.r; i++){
+        var col = [];
+        for(var j = 0; j < gridSize.c; j++){
+            col.push(new GridPos((j*tileScale)+center.x-half.x,(i*tileScale)+center.y-half.y,i,j));
+        }
+        grid.push(col);
+    }
+
+    var blocks=[];
+    function generateBlock(){
+        blocks.push(new Block(grid[2][4].x,grid[2][4].y,2,4));
+    }
+
+    function updateBlockPositions(){
+        if(blocks.length < 1){return;}
+        for(var i = 0; i < blocks.length; i++){
+            var deg = radToDeg(currentAngle);
+            if(deg < 0){
+                deg += 360;
+            }
+            //console.log(deg);
+            if(deg > 45 && deg < 135){
+                console.log('right '+deg);
+            } else if(deg > 135 && deg <225){
+                console.log('top '+deg);
+            } else if(deg > 225 && deg < 335){
+                console.log('left '+deg);
+            } else {
+                console.log('bottom '+deg);
+            }
+        }
+    }
+
+    
+
+    var desiredAngle = 0;
+    var currentAngle = 0;
+    var rotationSpeed = 5;
+    var rotationDirection = 1;
+    var updated = true;
+    var rotationEvent = false;
+    //*************************************************
+    //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+        for(var i = 0; i < grid.length; i++){
+            for(var j = 0; j < grid[i].length; j++){
+                grid[i][j].update();
+            }
+        }
+
+        if(Math.abs(currentAngle-desiredAngle)>degToRad(0.05)){
+            updated = false;
+            if(currentAngle < desiredAngle){
+                rotationDirection = 1;
+            } else if(currentAngle > desiredAngle){
+                rotationDirection = -1;
+            }
+            ctx.translate(center.x, center.y);
+            currentAngle += degToRad(rotationSpeed*rotationDirection);
+            ctx.rotate(degToRad(rotationSpeed*rotationDirection));
+            ctx.translate(-center.x, -center.y);
+            //console.log(currentAngle+","+desiredAngle);
+            rotationEvent = true;
+            
+        } else {
+
+            if(rotationEvent){
+                updateBlockPositions();
+                if(radToDeg(Math.abs(currentAngle))>330 && radToDeg(Math.abs(currentAngle)) < 410){
+                    currentAngle = 0; 
+                    desiredAngle = 0;
+                }
+                rotationEvent = false;
+            }
+
+            // if(!updated){
+            //     updateGridLocations(rotationDirection);
+            //     updated = true;
+            // }
+
+            if(blocks.length > 0){
+                for(var i = 0; i < blocks.length; i++){
+                    blocks[i].update();
+                }
+            } else {
+                generateBlock();
+            }
+        }
+
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('TOP',center.x,center.y-half.y-10);
+        ctx.fillText('BOTTOM',center.x,center.y+half.y+22);
+        ctx.fillText('LEFT',center.x-half.x-40,center.y+6);
+        ctx.fillText('RIGHT',center.x+half.x+40,center.y+6);
+	}
+    //*************************************************
+    //*************************************************
+
+
+    //*** HELPERS **//
+    function degToRad(d){
+        return d*(Math.PI/180);
+    }
+
+    function radToDeg(r){
+        return r*(180/Math.PI);
+    }
+
+    function getSelected(x,y){
+        for(var i = 0; i < grid.length; i++){
+            for(var j = 0; j < grid[i].length;j++){
+                var g = grid[i][j];
+                var tx = grid[g.tr][g.tc].x; //Get the rotated x position
+                var ty = grid[g.tr][g.tc].y; //Get the rotated y position
+                if(x > tx && x < tx+tileScale && y > ty && y < ty+tileScale){
+                    return g;
+                }
+            }
+        }
+        return undefined;
+    }
+
+	//*** INPUT SECTION **//
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+
+    var start = {x:-1,y:-1};
+	var current = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+				current.x = start.x;
+				current.y = start.y;
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+    }
+
+    function inputEnd(evt){
+        current.x = evt.pageX;
+        current.y = evt.pageY;
+        if(Math.abs(start.x-current.x) > 30){
+            if(start.x > current.x){
+                //Swipe right... spin left
+                desiredAngle+= degToRad(90);
+            } else if(start.x < current.x){
+                //Swipe left... spin right
+                desiredAngle-= degToRad(90);
+            }
+        } 
+        start.x = -1;
+
+    }
+
+    scaleCanvas();
+	animate();
+
+    function updateGridLocations(rd){
+        //So if the rotation of the grid is 90 to right the top left is now top right
+        //There must be a way to determine programatically the "true" x and y of the grid tile. 
+        //The closer to the edge a tile is the further the shift...my brain hurts. 
+        //The grids could have an idea of their index and when they rotate we shift them. So 0,0 would become 0,7 that's plus 7
+        //TEST: 0,3 swap x and y for 3,0 and add 7 to y for 3/7 let's see if this checks out...it does!
+        //TEST 2: 2,5 would become 5,9 (over 7, um 7-2?) for 5,5
+        //TEST 3: 3,6 == 6,3 (7-3) so: 6,4? YES!
+
+        //What about the other way?
+        //0,0 would become 7,0 so swap and add 7 to x?
+        //TEST 1: 0,3 swapped is 3,0 add 7 is 10,0 but over 7 we subtract from 7 so 4,0? YES
+        //TEST 2: 2,5 swap = 5,2 (7-5) ~ 2,2? YES
+        //TEST 3: 4,4 swap and subtract = 3,4? YES
+        //TEST 4: 6,6 swap and sub = 1,6? YES
+        //FINAL: 5,7 swap = 0,5
+        //Then swap again 0,5 /-> 5,0 ~ 2,0? YES
+        //So the formula is based on direction of the spin ...
+        //POSITIVE: Swap, add 7 to y (if over 7 subtract y from 7). Get the position of that block
+        //NEGATIVE: (AKA LEFT) Swap, add 7 to x (if over y subtract x from 7).
+        for(var i = 0; i < grid.length; i++){
+            for(var j = 0; j < grid[i].length; j++){
+                var g = grid[i][j].rotate(rd);
+            }
+        }
+    }
+
+    //IDEAS
+    /*
+
+    -blocks have arrows and once placed move in that direction until edge or other block stops them
+    -double direction blocks that slide back and forth with rotation. 
+    -blank blocks that fall with gravity (downward in screenspace)
+    -holes in the map or missing positions on the grid (possible daily challenge events?)
+    -power up blocks for groups of 5 or more
+    -countdown blocks decrementing on placement (or on rotation?? how would that play?)
+    -
+    */
+	</script>
+</body>
+</html>
