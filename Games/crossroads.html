@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>CamTest</title>
+	<title>Crossroads</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -15,49 +15,42 @@
             touch-action: none;
             background-color: #DDD;
         }
-				video{
-					display: none;
-				}
 	</style>
 </head>
 <body id='body'>
 	<canvas id='canvas'></canvas>
-	<video id='v' autoplay></video>
+    <script src='../Util/grid.js'></script>
 	<script>
 	var canvas = document.getElementById('canvas');
+    var gridSize ={rows:8,columns:5};
+    
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 	}
-	scaleCanvas();
 	var ctx = canvas.getContext('2d');
 
-	var video = document.getElementById('v');
-
-
+    var path = [];
+    var spacing = 60;
+    var grid = new Grid(gridSize.rows,gridSize.columns,spacing,spacing,innerWidth/2, innerHeight/2);
     //*************************************************
     //*************************************************
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
-
-		ctx.drawImage(video,0,0,320,240);
-		var chunks = [];
-		for(var i = 32; i <= 320; i+=32){
-			var row = [];
-			for(var j = 24; j <= 240; j+=24){
-				var chunk = ctx.getImageData(i-32,j-34,i,j);
-				row.push(chunk);
-			}
-			chunks.push(row);
-		}
-		ctx.clearRect(0,0,innerWidth, innerHeight);
-		for(var i = 0; i < chunks.length; i++){
-			for(var j = 0; j < chunks[i].length; j++){
-				ctx.putImageData(chunks[i][j],i*32,j*24);
-			}
-		}
-
+        
+        grid.draw(ctx);
+        
+        if(path.length > 0){
+            ctx.fillRect(path[0].x-10,path[0].y-10,20,20);
+            for(var i = 1; i < path.length; i++){
+                ctx.beginPath();
+                ctx.moveTo(path[i-1].x, path[i-1].y);
+                ctx.lineTo(path[i].x, path[i].y);
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
 	}
     //*************************************************
     //*************************************************
@@ -79,7 +72,7 @@
     window.addEventListener('touchend',inputEnd,false);
 
     var start = {x:-1,y:-1};
-		var current = {x:-1,y:-1};
+    var current = {x:-1,y:-1};
     function inputStart(evt){
         evt.preventDefault();
         if(evt.changedTouches != undefined){
@@ -92,8 +85,10 @@
             start.x = evt.pageX;
             start.y = evt.pageY;
         }
-				current.x = start.x;
-				current.y = start.y;
+        current.x = start.x;
+        current.y = start.y;
+        
+        path.push(grid.getClosestPos(start.x, start.y));
     }
 
     function inputMove(evt){
@@ -109,27 +104,37 @@
                 current.x = evt.pageX;
                 current.y = evt.pageY;
             }
+            if(path.length > 0){
+                var close = grid.getClosestPos(current.x, current.y);
+                if(path.length > 1){
+                    var penultimate = path[path.length-2];
+                    if(close.x == penultimate.x && close.y == penultimate.y){
+                        path.pop();
+                        return;
+                    }
+                }
+                for(var i = 0; i < path.length; i++){
+                    if(close.x == path[i].x && close.y ==path[i].y){
+                        return;
+                    }
+                }
+                var last = path[path.length-1];
+                var d = Math.abs(Math.sqrt(Math.pow(last.x-close.x,2)+Math.pow(last.y-close.y,2)));
+                if(d < spacing*1.25 && (last.x == close.x || last.y == close.y)){
+                    path.push(close);
+                }
+            }
+            
         }
     }
 
     function inputEnd(){
         start.x = -1;
+        path = [];
     }
 
-		//When the page loads grab the camera and launch animate
-		document.addEventListener('DOMContentLoaded',function(){
-			video = document.getElementById('v');
-			video.addEventListener('play',function(){
-				animate();
-			},false);
-			const camConstraints = {
-				video: {width: {exact:320, height: 240}}
-			};
-			navigator.mediaDevices.getUserMedia(camConstraints).then((stream) => {video.srcObject = stream});
-		},false);
-
-  //   scaleCanvas();
-	// animate();
+    scaleCanvas();
+	animate();
 	</script>
 </body>
 </html>

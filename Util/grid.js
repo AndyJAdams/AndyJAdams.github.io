@@ -7,6 +7,7 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
     this.spacing = {x:spacing_x,y:spacing_y};
     this.origin = {x:origin_x,y:origin_y};
     this.centered = centered;
+    this.pos = [];
 
     this.build = function(){
         this.pos = [];
@@ -24,6 +25,7 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
             }
             this.pos.push(col);
         }
+        console.log('grid created '+this.rows + "," + this.columns + "- " + this.pos.length);
     }
 
     this.scale = function(origin_x = this. origin.x,origin_y = this.origin.y,spacing_x = this.spacing.x, spacing_y = this.spacing.y){
@@ -46,10 +48,10 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         var closestDistance = 14000000;
         var out = this.pos[0][0];
         for(var i = 0; i < this.pos.length; i++){
-            for(var j = 0; j < this.position[i].length; i++){
+            for(var j = 0; j < this.pos[i].length; j++){
                 var px = this.pos[i][j].x;
                 var py = this.pos[i][j].y;
-                var distance = Math.Abs(Math.Sqrt(Math.pow(px-x,2)+Math.pow(py-y,2)));
+                var distance = Math.abs(Math.sqrt(Math.pow(px-x,2)+Math.pow(py-y,2)));
 
                 if(distance < closestDistance){
                     closestDistance = distance;
@@ -98,6 +100,10 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
 
     //Should *IDEALLY* only be used for debug purposes and associated to a canvas / ctx refers to the context2d object onto which the grid should be drawn. 
     this.draw = function(ctx){
+        if(ctx == undefined){
+            console.warn("Grid Draw Requires a context");
+            return;
+        }
         ctx.fillStyle='#00000088';
         for(var i = 0; i < this.pos.length;i++){
             for(var j = 0; j < this.pos[i].length; j++){
@@ -181,7 +187,7 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         }
         this.scale();
     }
-
+    
     this.build();
 }
 
