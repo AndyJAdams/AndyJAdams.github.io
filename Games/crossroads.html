@@ -13,7 +13,7 @@
         }
         canvas{
             touch-action: none;
-            background-color: #DDD;
+            background-color: #7180AC;
         }
 	</style>
 </head>
@@ -29,10 +29,52 @@
 		canvas.height = window.innerHeight;
 	}
 	var ctx = canvas.getContext('2d');
+        
+    var colors = ['#2B4570','#A8D0DB','#E49273','#A37A74'];
+        
+    function Node(pos,length,colorIndex){
+        this.length = length;
+        this.path = [];
+        this.path.push(pos);
+        this.colorIndex = colorIndex;
+        this.draw = function(){
+            ctx.strokeStyle= colors[this.colorIndex];
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = spacing*0.9;
+            //Draw path
+            ctx.beginPath();
+            ctx.moveTo(this.path[0].x, this.path[0].y);
+            for(var i = 1; i < this.path.length; i++){
+                ctx.lineTo(path[i].x, path[i].y);
+            }
+            ctx.stroke();
+            ctx.closePath();
+            //Draw beginning circle
+            ctx.fillStyle=colors[this.colorIndex];
+            ctx.beginPath();
+            ctx.arc(this.path[0].x, this.path[0].y, spacing/2, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        }
+        
+        this.update = function(){
+            this.draw();
+        }
+    }
 
     var path = [];
     var spacing = 60;
     var grid = new Grid(gridSize.rows,gridSize.columns,spacing,spacing,innerWidth/2, innerHeight/2);
+    
+    var nodes = [];
+    function generatePuzzle(){
+        for(var i = 0; i < 3; i++){
+            var rx = Math.random()*innerWidth;
+            var ry = Math.random()*innerHeight;
+            nodes.push(new Node(grid.getClosestPos(rx,ry),Math.floor(Math.random()*3)+1,i));
+        }
+    }
     //*************************************************
     //*************************************************
 	function animate(){
@@ -44,12 +86,21 @@
         if(path.length > 0){
             ctx.fillRect(path[0].x-10,path[0].y-10,20,20);
             for(var i = 1; i < path.length; i++){
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = spacing;
                 ctx.beginPath();
                 ctx.moveTo(path[i-1].x, path[i-1].y);
                 ctx.lineTo(path[i].x, path[i].y);
                 ctx.stroke();
                 ctx.closePath();
             }
+        }
+        if(nodes.length < 1){
+            generatePuzzle();
+        }
+        for(var i = 0;i < nodes.length; i++){
+            nodes[i].update();
         }
 	}
     //*************************************************
