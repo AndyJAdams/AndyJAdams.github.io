@@ -1,36 +1,75 @@
 <doctype html>
-<html><head><title>AJA</title></head>
+<html>
+    <head>
+        <title>AJA</title>
+        <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@700&display=swap" rel="stylesheet">
 <style>
-body{margin:0; overflow:hidden;background-color:#fff;}
+    body{
+        margin:0;
+        color: #000;
+        font-family: 'Josefin Sans','sans-serif';
+    }
+    #nav{
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        width: 100%;
+        height: 50px;
+        background-color: #FFF;
+    }
+    #nav a{
+        text-decoration: none;
+        color: #000;
+    }
+    img {
+        width:100%;
+        height: auto;
+    }
+    h1{
+        margin-left: 10px;
+    }
+    
+    ul{
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        position: absolute;
+        top: 32px;
+        right: 5%;
+    }
+    
+    li {
+        float: right;
+    }
+    
+    li a{
+        display: block;
+        width: 60px;
+    }
 </style>
+</head>
 <body>
-	<canvas id='canvas'></canvas>
-	<script type='text/javascript'>
-	var canvas = document.getElementById('canvas');
-	var ctx = canvas.getContext('2d');
-
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
-
-	function Tile(x,y,w,h){
-		this.x = x; this.y = y; this.h = h; this.w = w;
-		this.draw = function(){
-
-		}
-	}
-
-	var i = 0;
-	function animate(){
-		requestAnimationFrame(animate);
-		ctx.clearRect(0,0,innerWidth,innerHeight);
-
-		
-	}
-
-	function getDistance(x1,y1,x2,y2){
-		return Math.sqrt(Math.pow(Math.abs(x1-x2),2)+Math.pow(Math.abs(y1-y2),2));
-	}
-	animate();
-	</script>
+    <div id='nav'>
+        <a href="#top"><h1>Andy J Adams</h1></a>
+        <ul id='menu'>
+        <li><a href='#Contact'>Contact</a></li>
+        <li><a href='#About'>About</a></li>
+        <li><a href='#Work'>Work</a></li>
+        </ul>
+    </div>
+    <img  id='top' src='./IMG/IMG_0676.JPG'/>
+    <div id='Work' style='width: 100%; height: 600px; '>
+        <p>WORK: Under construction ... </p>
+    </div>
+    <div id='About'  style='width: 100%; height: 600px; background-color: #CCC'>
+        <p>ABOUT: Under construction ... </p>
+    </div>
+    <div id='Contact' style='width: 100%; height: 600px;background-color: #666'>
+        <p> CONTACT: Under construction ...</p>
+        
+    </div>
 </body>
 </html>
