@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>BLANK CANVAS</title>
+	<title>noodles</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -18,8 +18,10 @@
 	</style>
 </head>
 <body id='body'>
+    <canvas></canvas>
+    <script src='../Util/grid.js'></script>
 	<script>
-	var canvas = document.getElementById('canvas');
+	var canvas = document.querySelector('canvas');
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
@@ -33,6 +35,7 @@
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
+        drawTitle();
 	}
     //*************************************************
     //*************************************************
@@ -90,7 +93,37 @@
     function inputEnd(){
         start.x = -1;
     }
-
+        
+    function drawTitle(){
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = '20';
+        
+        ctx.beginPath();
+        //N
+        ctx.moveTo(100,100);
+        ctx.lineTo(100,60);
+        ctx.lineTo(140,60);
+        ctx.lineTo(140,100);
+        //O
+        ctx.moveTo(170,100);
+        ctx.lineTo(200,100);
+        ctx.lineTo(200,60);
+        ctx.lineTo(170,60);
+        ctx.lineTo(170,100);
+        //O
+        ctx.moveTo(260,60);
+        ctx.lineTo(230,60);
+        ctx.lineTo(230,100);
+        ctx.lineTo(260,100);
+        ctx.lineTo(260,60);
+        //D
+        ctx.moveTo(290,100);
+        ctx.lineTo(290,60);
+        
+        ctx.stroke();
+        ctx.closePath();
+    }
     scaleCanvas();
 	animate();
 	</script>
