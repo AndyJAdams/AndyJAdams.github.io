@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Crossroads</title>
+	<title>Project Dash</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -23,85 +23,123 @@
 	<script>
 	var canvas = document.getElementById('canvas');
     var gridSize ={rows:8,columns:5};
-    
+    var grid = undefined;
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 	}
 	var ctx = canvas.getContext('2d');
-        
-    var colors = ['#2B4570','#A8D0DB','#E49273','#A37A74'];
-        
-    function Node(pos,length,colorIndex){
-        this.length = length;
-        this.path = [];
-        this.path.push(pos);
-        this.colorIndex = colorIndex;
+
+    function Player(r,c){
+        console.log("Player at " + r + "," + c);
+        this.r = r; this.c = c;
+        this.tr = this.r; this.tc = this.c;
+        this.x = grid.pos[this.r][this.c].x;
+        this.y = grid.pos[this.r][this.c].y;
+        this.tx = this.x; this.ty = this.y;
+        this.dir = -1;
         this.draw = function(){
-            ctx.strokeStyle= colors[this.colorIndex];
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.lineWidth = spacing*0.9;
-            //Draw path
-            ctx.beginPath();
-            ctx.moveTo(this.path[0].x, this.path[0].y);
-            for(var i = 1; i < this.path.length; i++){
-                ctx.lineTo(path[i].x, path[i].y);
-            }
-            ctx.stroke();
-            ctx.closePath();
-            //Draw beginning circle
-            ctx.fillStyle=colors[this.colorIndex];
-            ctx.beginPath();
-            ctx.arc(this.path[0].x, this.path[0].y, spacing/2, 0, 2*Math.PI);
-            ctx.fill();
-            ctx.closePath();
+            ctx.fillRect(this.x-16,this.y-16,32,32);
+						ctx.fillText(this.dir, 10,10);
         }
-        
+
         this.update = function(){
+            if(this.x > this.tx){
+                this.x-= (this.x-this.tx)/10;
+            } else if(this.x < this.tx){
+                this.x += (this.tx-this.x)/10;
+            }
+            if(this.y > this.ty){
+                this.y-= (this.y-this.ty)/10;
+            } else if(this.y < this.ty){
+                this.y+= (this.ty-this.y)/10;
+            }
+
+            if(Math.abs(this.x-this.tx) < 2 && Math.abs(this.y-this.ty) < 2){
+                this.dir = -1;
+            }
             this.draw();
+        }
+
+        this.move = function(dir){
+            if(this.dir > -1){
+                return;
+            }
+            this.dir = dir;
+            switch(this.dir){
+                case 0: //UP - negative in the row
+                    for(var i = this.r; i > -1; i--){
+                        //Here we'd iterate and stop at the next wall
+                    }
+                    this.tr = 0;
+                    this.ty = grid.pos[0][this.c].y;
+                    break;
+                case 1: //RIGHT - positive in the colum
+                    for(var i = this.c; i < grid.columns; i++){
+                        //Here we iterate and stop at the next wall
+                    }
+                    this.tc = grid.columns-1;
+                    this.tx = grid.pos[this.r][grid.columns-1].x;
+                    break;
+                case 2: //DOWN - positive in the row
+                    for(var i = this.r; i < grid.rows; i++){
+                        //Here we iterate and stop at the next wall
+                    }
+                    this.tr = grid.rows-1;
+                    this.ty = grid.pos[grid.rows-1][this.c].y;
+                    break;
+                case 3: //LEFT - negative in the column
+                    for(var i = this.c; i > -1; i--){
+                        //Here we'd iterate to the next wall
+                    }
+                    this.tc = 0;
+                    this.tx = grid.pos[this.r][0].x;
+                    break;
+                default:
+                    this.dir = -1;
+                    break;
+            }
         }
     }
 
-    var path = [];
-    var spacing = 60;
-    var grid = new Grid(gridSize.rows,gridSize.columns,spacing,spacing,innerWidth/2, innerHeight/2);
-    
-    var nodes = [];
-    function generatePuzzle(){
-        for(var i = 0; i < 3; i++){
-            var rx = Math.random()*innerWidth;
-            var ry = Math.random()*innerHeight;
-            nodes.push(new Node(grid.getClosestPos(rx,ry),Math.floor(Math.random()*3)+1,i));
-        }
+		function DEBUG(){
+			this.msg = [];
+			this.draw = function(){
+				for(var i = 0; i < this.msg.length; i++){
+					ctx.fillStyle='#FFF';
+					ctx.fillText(this.msg[i],10,20+(i*12));
+				}
+			}
+
+			this.log = function(msg){
+				this.msg.push(msg.toString());
+			}
+		}
+
+    var player = undefined;
+		var debug = new DEBUG();
+
+    function buildGrid(){
+        gridSize.rows = Math.floor(Math.random()*6)+6;
+        gridSize.columns = Math.floor(Math.random()*4)+5;
+        grid = new Grid(gridSize.rows, gridSize.columns,64,64,innerWidth/2,innerHeight/2);
+        console.log(grid.rows+"x"+grid.columns);
+        player = new Player(Math.floor(Math.random()*grid.rows),Math.floor(Math.random()*grid.columns));
     }
     //*************************************************
     //*************************************************
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
-        
-        grid.draw(ctx);
-        
-        if(path.length > 0){
-            ctx.fillRect(path[0].x-10,path[0].y-10,20,20);
-            for(var i = 1; i < path.length; i++){
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.lineWidth = spacing;
-                ctx.beginPath();
-                ctx.moveTo(path[i-1].x, path[i-1].y);
-                ctx.lineTo(path[i].x, path[i].y);
-                ctx.stroke();
-                ctx.closePath();
-            }
+
+        if(grid == undefined){
+            buildGrid();
+        } else {
+            grid.draw(ctx,32);
+            player.update();
         }
-        if(nodes.length < 1){
-            generatePuzzle();
-        }
-        for(var i = 0;i < nodes.length; i++){
-            nodes[i].update();
-        }
+
+				debug.draw();
 	}
     //*************************************************
     //*************************************************
@@ -138,8 +176,7 @@
         }
         current.x = start.x;
         current.y = start.y;
-        
-        path.push(grid.getClosestPos(start.x, start.y));
+
     }
 
     function inputMove(evt){
@@ -155,34 +192,33 @@
                 current.x = evt.pageX;
                 current.y = evt.pageY;
             }
-            if(path.length > 0){
-                var close = grid.getClosestPos(current.x, current.y);
-                if(path.length > 1){
-                    var penultimate = path[path.length-2];
-                    if(close.x == penultimate.x && close.y == penultimate.y){
-                        path.pop();
-                        return;
-                    }
-                }
-                for(var i = 0; i < path.length; i++){
-                    if(close.x == path[i].x && close.y ==path[i].y){
-                        return;
-                    }
-                }
-                var last = path[path.length-1];
-                var d = Math.abs(Math.sqrt(Math.pow(last.x-close.x,2)+Math.pow(last.y-close.y,2)));
-                if(d < spacing*1.25 && (last.x == close.x || last.y == close.y)){
-                    path.push(close);
-                }
-            }
-            
         }
     }
 
     function inputEnd(){
+        var d = Math.hypot(Math.abs(start.x-current.x),Math.abs(start.y-current.y));
+        if(d > 16){
+            if(Math.abs(start.x-current.x) > Math.abs(start.y-current.y)){
+                //Horizontal
+                if(start.x < current.x){//right
+                    player.move(1);
+                } else { //left
+                    player.move(3);
+                }
+            } else {
+                //Vertical
+                if(start.y < current.y){ //down
+                    player.move(2);
+                } else {
+                    player.move(0);
+                }
+            }
+        }
         start.x = -1;
         path = [];
     }
+
+
 
     scaleCanvas();
 	animate();

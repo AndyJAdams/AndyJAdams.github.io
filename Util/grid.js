@@ -25,7 +25,6 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
             }
             this.pos.push(col);
         }
-        console.log('grid created '+this.rows + "," + this.columns + "- " + this.pos.length);
     }
 
     this.scale = function(origin_x = this. origin.x,origin_y = this.origin.y,spacing_x = this.spacing.x, spacing_y = this.spacing.y){
@@ -99,16 +98,18 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
     }
 
     //Should *IDEALLY* only be used for debug purposes and associated to a canvas / ctx refers to the context2d object onto which the grid should be drawn. 
-    this.draw = function(ctx){
+    this.draw = function(ctx,radius = 1){
         if(ctx == undefined){
             console.warn("Grid Draw Requires a context");
             return;
         }
-        ctx.fillStyle='#00000088';
         for(var i = 0; i < this.pos.length;i++){
             for(var j = 0; j < this.pos[i].length; j++){
-                ctx.fillRect(this.pos[i][j].x-1, this.pos[i][j].y-1,3,3);
-                ctx.closePath();
+                ctx.fillStyle='#00000088';
+                ctx.fillRect(this.pos[i][j].x-radius, this.pos[i][j].y-radius,radius*2,radius*2);
+                
+                ctx.fillStyle='#FFF';
+                ctx.fillText(i+","+j,this.pos[i][j].x-radius,this.pos[i][j].y-radius+10);
             }
         }
     }
