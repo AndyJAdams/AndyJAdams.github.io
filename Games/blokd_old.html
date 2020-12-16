@@ -1,0 +1,796 @@
+<!DOCTYPE html><html><head>
+<title>BLOK'D</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<style>
+  body{
+    margin: 0;
+  }
+  #grid td{
+    border-width: 2px; 
+    border-style: solid; 
+    border-color: #545454; 
+    border-radius: 8px; 
+    font-family: helvetica, sans-serif; 
+    font-size: 18pt;
+  }
+  #Panel {
+    text-align:center;
+    margin: auto;
+  }
+  #debugTXT{
+    bottom: 0;
+    position: fixed;
+  }
+  #content{
+    margin: auto;
+  }
+</style></head>
+<!--User visible shtuff-->
+<body style="background-color: #ffffff; color: #545454;">
+<div id='content'>
+  <div id='buttons'>
+    <div id='settingsBTN' style='width: 65px; height: 65px; border-radius: 8px; background-color: #DDDDDD; margin-top:5px; box-shadow: 0 5px 0 #CBCBCB;'>
+    <img id="settingsBTN_icon" src="https://d30y9cdsu7xlg0.cloudfront.net/png/1241-200.png" style="width: 40px; height:40px; margin: 12px;"/>
+    </div>
+    <div id='restartBTN' style='width: 65px; height: 100px; border-radius: 8px; background-color: rgb(245,130,49); margin-top: 5px; box-shadow: 0 5px 0 #c24112;'>
+      <img id="restartBTN" src="https://d30y9cdsu7xlg0.cloudfront.net/png/5045-200.png" style="width: 40px; height:40px; position: relative; left: 13px; top: 45px;"/>
+    </div>
+  </div>
+<div id="Panel" style="margin-top: -30px;">
+  <p id="score" style="font-family: helvetica, sans-serif;font-size: 24pt;"><b>0</b></p>
+  <table id="grid" style="margin-top: 10px;" cellspacing="6"></table><br/>
+  <div id="restart">
+    <h2 id="status" style="font-family: helvetica, sans-serif;">GAME OVER</h2>  
+  </div>  
+  
+  <table id="nav" style="width:320px; height:30px; margin-left: auto; margin-right: auto; border-color: #00FF00;" cellspacing="6"><tr>
+    <td id="future2" style="width: 20px; height:30px; background-color: #000000;border-radius: 8px; border-color: #bbb473; font-family: helvetica, sans-serif; font-size: 16pt;"></td>
+    <td id="future1" style="width: 50px; height:30px; background-color: #000000;border-radius: 8px; border-color: #bbb473; font-family: helvetica, sans-serif; font-size: 16pt;"></td>
+    <td id="nextBlock" style="width:120px; height:30px; background-color: #ffffff;border-radius: 8px; border-color: #bbb473; font-family: helvetica, sans-serif; font-size: 16pt;"></td>
+    <td id="skipBTN" style="width: 120px; height: 30px; border-style:solid; border-radius: 5px; border-color: #545454; box-shadow: 0px 3px 0px #545454; font-family: helvetica, sans-serif;"><b>SKIP -5</b></td></tr></table><br/>
+    <table id="swatch" style="margin-left: auto; margin-right: auto; "></table>
+
+</div>
+
+
+<div id='settingsPanel' style='width:350px; height: 570px; background-color: #cccccc; position:absolute; top: -20px; border-radius: 15px; box-shadow: 0 10px 0 #aeaeae;'>
+  
+  <div id='musicBTN' style='width:250px; height: 70px; background-color: #11C433; position:absolute; top: 40px; left: 50px; box-shadow: 0 10px 0 #00A211; border-radius: 10px;'>
+    <h3 id='musicTxt' style='font-family: helvetica, sans-serif; font-size: 14pt; color: #000000; text-align: center;margin-top: 27px;'>MUSIC/SFX : ON</h3>
+  </div>
+  <div id='colorAssist' style='width:250px; height: 70px; background-color: #A71128; position:absolute; top: 130px; left: 50px; box-shadow: 0 10px 0 #730014; border-radius: 10px;'>
+    <h3 id='colorTxt' style='font-family: helvetica, sans-serif; font-size: 14pt; color: #000000; text-align: center;margin-top: 27px;'>COLORBLIND: OFF</h3>
+  </div>
+  <div id='nightModeBTN' style='width: 250px; height: 70px; background-color: #777777; position: absolute; top: 220px; left: 50px; box-shadow: 0 10px 0 #555555; border-radius: 10px;'>
+    <h3 id='nightTxt' style='font-family: helvetica, sans-serif; font-size: 14pt; color: #000000; text-align: center;margin-top: 27px;'>NIGHT MODE: OFF</h3>
+  </div>
+  <div id='difficultyBTN' style='width: 250px; height: 70px; background-color: #85c136; position: absolute; top: 310px; left: 50px; box-shadow: 0 10px 0 #63a714; border-radius: 10px;'>
+    <h3 id='difficultyTxt' style='font-family: helvetica, sans-serif; font-size: 14pt; color: #000000; text-align: center;margin-top: 27px;'>DIFFICULTY: EASY</h3>
+  </div>
+  <div id='feedbackBTN' style='width: 250px; height: 70px; background-color: #444477; position: absolute; top: 400px; left: 50px; box-shadow: 0 10px 0 #111144; border-radius: 10px;'>
+    <h3 style='font-family: helvetica, sans-serif; font-size: 18pt; color: #FFFFFF; position: absolute; top: 0px; left: 55px;'>FEEDBACK</h3>
+  </div>
+  <div id='exitSettingsBTN' style='width: 60px; height: 50px; background-color: #666666; position: absolute; top: 490px; left: 150px; box-shadow: 0 10px 0 #000000; border-radius: 10px;'>
+    <h3 style='font-family: helvetica, sans-serif; font-size: 26pt; color: #000000; position: absolute; top: -29px; left: 18px;'>X</h3>
+  </div>
+</div>  
+
+<audio id="blok" src="http://freesound.org/data/previews/95/95265_861714-lq.mp3"></audio>
+<audio id="error" src="http://freesound.org/data/previews/14/14817_40665-lq.mp3"></audio>
+<audio id="skip" src="http://freesound.org/data/previews/41/41633_433684-lq.mp3"></audio>
+<audio id="bgMusic" src="http://freesound.org/data/previews/325/325108_4548252-lq.mp3" loop></audio>
+</div>
+<script>
+$(document).ready(function(){
+  //dropout the intro then scroll away.
+  bgMusic.play();
+  //Hide Extras
+  $('#settingsPanel').hide();
+  $('#restart').hide();
+  //Global Vars
+  var blockSFX = document.getElementById('blok'); blockSFX.volume = 0.4;
+  var errorSFX = document.getElementById('error'); errorSFX.volume = 0.4;
+  var skipSFX = document.getElementById('skip'); skipSFX.volume = 0.4;
+  var bgmusic = document.getElementById('bgMusic'); bgMusic.volume = 0.2;
+  var highest = 0;
+  var score = 0;
+  var gridSize =5;
+  var num = -1;
+  var winner = false;
+  var music = true;
+  var colorAssist = false;
+  var nightMode = false;
+  var winflash;
+  var fut1; var fut2;
+  var blokSize = 270/gridSize;
+  var difficulty = 0;
+  var colorArray = ["rgb(0,0,0)", "rgb(230,25,75)", "rgb(60,180,75)", "rgb(255,225,25)", "rgb(0,130,200)", "rgb(245,130,49)"];
+  var dropArray = [
+    "#000000", "#c4082f", "#2da137", "#eed412", "#0054a3", "#c24112", "#640c83", "#31c2c2", "#c216b1", "#a0c218", "#773a05", "#400000", "#505050", "#505000", "#CCCCCC"
+  ];
+  //Build the game area
+  GenerateGrid();
+  UpdateSwatch();
+  RandomizeGrid();
+  CheckGrid(false);
+  //Let's pick a starting placement color
+  num = GetRandomNumber();
+  //assign it to the "nextBlock" div
+  $('#nextBlock').css("background-color", colorArray[num]);
+  $('#nextBlock').attr('name',num);
+  $('#nextBlock').css("box-shadow", "0px 3px 0px "+dropArray[num]);
+  //assign the upcoming colors
+  fut1 = GetRandomNumber();
+  fut2 = GetRandomNumber();
+  $('#future1').css("background-color", colorArray[fut1]);
+  $('#future1').css("box-shadow", "0px 3px 0px "+dropArray[fut1]);
+  $('#future2').css("background-color", colorArray[fut2]);
+  $('#future2').css("box-shadow", "0px 3px 0px "+dropArray[fut2]);
+  //Main Gameplay input
+  if(!winner){
+    $('#grid').on('mouseover','td',MouseOver).on('mouseout', 'td', MouseOut).on('click','td', ApplyColor);
+  }
+
+  $('#difficultyBTN').click(function(){ //Change difficulty in cyclic fashion
+    difficulty++;
+    if(difficulty > 3){
+      difficulty = 0;
+    }
+    switch(difficulty){
+      case 0:
+        $(this).css('background-color','#99cc00');
+        $(this).css('box-shadow', ' 0 10px 0 #608000');
+        $('#difficultyTxt').html('DIFFICULTY: EASY');
+        //$('#Panel').css('left', '12px');
+        gridSize = 5;
+        break;
+      case 1:
+        $(this).css('background-color','#ffcc00');
+        $(this).css('box-shadow', ' 0 10px 0 #b38f00');
+        $('#difficultyTxt').html('DIFFICULTY: MEDIUM');
+        //$('#Panel').css('left', '10px');
+        gridSize = 6;
+        break;
+      case 2:
+        $(this).css('background-color','#cc3300');
+        $(this).css('box-shadow', ' 0 10px 0 #802000');
+        $('#difficultyTxt').html('DIFFICULTY: HARD');
+        //$('#Panel').css('left', '5px');
+        gridSize = 7
+        break;
+      case 3:
+        $(this).css('background-color','#d9d9d9');
+        $(this).css('box-shadow', ' 0 10px 0 #b3b3b3');
+        $('#difficultyTxt').html('DIFFICULTY: INSANE');
+        //$('#Panel').css('left', '15px');
+        gridSize = 4;
+        break;
+      default:
+        $(this).css('background-color','#99cc00');
+        $(this).css('box-shadow', ' 0 10px 0 #608000');
+        $('#difficultyTxt').html('DIFFICULTY: EASY');
+        gridSize = 5;
+        break;
+    }
+    winner = false;
+    RebuildGrid();
+  });
+
+  $('#nightModeBTN').click(function(){ //Toggle on/off night mode
+    if(nightMode){
+      //NIGHT MODE TURNING OFF / SCREEN BRIGHT
+      $(this).css('background-color', '#777777');
+      $(this).css('box-shadow', '0 10px 0 #555555')
+      $('#brightness_img').attr('src','https://d30y9cdsu7xlg0.cloudfront.net/png/25998-200.png');
+      $('#settingsPanel').css('background-color', '#CCCCCC');
+      $('#settingsPanel').css('box-shadow', '0 10px 0 #aeaeae');
+      $('body').css('background-color', '#ffffff');
+      $('body').css('color', '#545454');
+      $('#skipBTN').css('box-shadow', '0 3px 0 #545454');
+      $('#skipBTN').css('border-color', '#545454');
+      ApplyLighting('#545454','#ffffff');
+      nightMode = false;
+      $('#nightTxt').html('NIGHT MODE: OFF');
+    } else {
+      //SCREEN DARK
+      $(this).css('background-color', '#EEEEEE');
+      $(this).css('box-shadow', '0 10px 0 #cccccc');
+      $('#brightness_img').attr('src','https://d30y9cdsu7xlg0.cloudfront.net/png/11690-200.png')
+      $('#settingsPanel').css('background-color', '#545454');
+      $('#settingsPanel').css('box-shadow', '0 10px 0 #313131');
+      $('body').css('background-color', '#757575');
+      $('body').css('color', '#000000');
+      $('#skipBTN').css('box-shadow', '0 3px 0 #000000');
+      $('#skipBTN').css('border-color', '#000000');
+      ApplyLighting('#434343', '#757575');
+      nightMode = true;
+      $('#nightTxt').html('NIGHT MODE: ON');
+    }
+  });
+
+  
+
+  $('#settingsBTN').click(function(){ //Show the settings panel
+    $('#settingsPanel').slideToggle();
+  });
+
+  $('#exitSettingsBTN').click(function(){ //Close the settings panel
+    $('#settingsPanel').slideToggle();
+  });
+
+  $('#skipBTN').click(function(){ //User chooses to skip this color.
+    if(score > 4){ //Do we have points to spend?
+      AddScore(-5); //Take the toll and get a new color
+      GetNextColor();
+      if(music){
+        skipSFX.play();
+      }
+    } else { //Not enough points
+      $('#score').effect("bounce", "fast");
+    }
+  });
+
+  $('#musicBTN').click(function(){ //Toggle sound effects and background music
+    if(music){
+      music = false;
+      blockSFX.pause();
+      skipSFX.pause();
+      errorSFX.pause();
+      bgMusic.pause();
+      $(this).css('background-color', '#A71128');
+      $(this).css('box-shadow', '0 10px 0 #730014');
+      $('#musicTxt').html('MUSIC/SFX : OFF');
+    } else {
+      music = true;
+      bgMusic.play();
+      $(this).css('background-color', '#11C433');
+      $(this).css('box-shadow', '0 10px 0 #00A211');
+      $('#musicTxt').html('MUSIC/SFX : ON');
+    }
+  });
+
+  $('#colorAssist').click(function(){ //Toggle colorblind mode
+    if(!colorAssist){
+      colorAssist = true;
+      ApplyColorAssist();
+      $(this).css('background-color', '#11C433');
+      $(this).css('box-shadow', '0 10px 0 #00A211');
+      $('#colorTxt').html('COLORBLIND: ON');
+    } else {
+      colorAssist = false;
+      RemoveColorAssist();
+      $(this).css('background-color', '#A71128');
+      $(this).css('box-shadow', '0 10px 0 #730014');
+      $('#colorTxt').html('COLORBLIND: OFF');
+    }
+  });
+
+  $('#restartBTN').click(function(){ //Reload a new game board
+    winner = false;
+    RESET();
+  });
+
+  function MouseOver(){
+    if($(this).attr("name") == "open"){
+      $(this).css("background-color", colorArray[num]);
+    }
+  }
+  function MouseOut(){
+    if($(this).attr('name') == "open"){
+      $(this).stop();
+      if(!nightMode){
+        $(this).css("background-color", "#ffffff");
+      } else {
+        $(this).css('background-color', '#757575')
+      }
+      $(this).css("border-width", "2");
+    }
+  }
+  function ApplyColor(){
+    if(!winner){
+      if($(this).attr('name') == 'open'){
+          $(this).css("background-color", colorArray[num]);
+          $(this).attr("name",num);
+          $(this).css("border-width", "0");
+          $(this).css("box-shadow", "0px 3px 0px "+dropArray[num]);
+          $(this).css('width',blokSize);
+          $(this).css('height',blokSize);
+          $(this).css('timestamp',Date.now());
+          if(music){
+            blockSFX.play();
+          }
+          if(colorAssist){
+            $(this).html(""+num);
+            if(num == 0){
+              $(this).css("color", '#ffffff');
+            } else {
+              $(this).css("color", '#000000');
+            }
+          }
+          CheckGrid(true);
+          GetNextColor();
+      } else {
+        $(this).effect("bounce","fast");
+        if(music){
+          errorSFX.play();
+        }
+      }
+    }
+  }
+
+  function RebuildGrid(){ //Rebuild the entire grid - Used during difficulty change
+    $('#grid').html('');
+    GenerateGrid();
+    RESET();
+  }
+  
+  function GetNextColor(){ //Cylce through incoming colors - set new 
+    num = fut1;
+    $('#nextBlock').css("background-color", colorArray[num]);
+    $('#nextBlock').attr('name',num);
+    $('#nextBlock').css("box-shadow", "0px 3px 0px "+dropArray[num]);
+    if(colorAssist){
+      $('#nextBlock').html(num);
+      if(num == 0){
+        $('#nextBlock').css('color','#ffffff');
+      } else {
+        $('#nextBlock').css('color','#000000');
+      }
+    }
+    fut1 = fut2;
+    fut2 = GetRandomNumber();
+    $('#future1').css("background-color", colorArray[fut1]);
+    $('#future1').css("box-shadow", "0px 3px 0px "+dropArray[fut1]);
+    $('#future2').css("background-color", colorArray[fut2]);
+    $('#future2').css("box-shadow", "0px 3px 0px "+dropArray[fut2]);
+  }
+  
+  function RESET(){ //Reset current gameboard state
+    winner = false;
+    clearInterval(winflash);
+    colorArray = [
+      "rgb(0,0,0)", "rgb(230,25,75)", "rgb(60,180,75)", "rgb(255,225,25)", "rgb(0,130,200)", "rgb(245,130,49)"
+    ];
+    for(var c = 0; c < gridSize; c++){
+      for(var i = 0; i < gridSize; i++){
+        var t = $('td#'+i+"."+c);
+        if(!nightMode){
+          t.css("background-color", "#ffffff");
+        } else {
+          t.css('background-color', '#757575')
+        }
+        t.attr("name","open");
+        t.css("border-width", "2");
+        t.css("box-shadow", "");
+        t.css('width', (blokSize-4));
+        t.css('height', (blokSize-4));
+        t.html('');
+        t.css('color',"#000000");
+      }
+    }
+    RandomizeGrid();
+    CheckGrid(false);
+    $('#restart').hide();
+    $('#nav').show();
+    //Let's pick a starting placement color
+    num = GetRandomNumber();
+    //assign it to the "nextBlock" div
+    $('#nextBlock').css("background-color", colorArray[num]);
+    $('#nextBlock').attr('name',num);
+    $('#nextBlock').css("box-shadow", "0px 3px 0px "+dropArray[num]);
+    if(colorAssist){
+      $('#nextBlock').html(num);
+      if(num == 0){
+        $('#nextBlock').css('color','#ffffff');
+      } else {
+        $('#nextBlock').css('color','#000000');
+      }
+    }
+    fut1 = GetRandomNumber();
+    fut2 = GetRandomNumber();
+    $('#future1').css("background-color", colorArray[fut1]);
+    $('#future1').css("box-shadow", "0px 3px 0px "+dropArray[fut1]);
+    $('#future2').css("background-color", colorArray[fut2]);
+    $('#future2').css("box-shadow", "0px 3px 0px "+dropArray[fut2]);
+    SetScore(0);
+    UpdateSwatch();
+    if(nightMode){
+      ApplyLighting('#434343', '#757575');
+    } else {
+      ApplyLighting('#545454','#ffffff');
+    }
+  }
+  
+  function RandomizeGrid(){ //Define map settings and prepopulate the grid
+    var limit = (gridSize*gridSize)*0.72;
+    if(gridSize == 6){
+      var rblok = $('td#'+2+"."+2)
+      rblok.css('border-color', '#ffffff00');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+2+"."+3);
+      rblok.css('border-color', '#ffffff00');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+3+"."+2);
+      rblok.css('border-color', '#ffffff00');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+3+"."+3);
+      rblok.css('border-color', '#ffffff00');
+      rblok.attr("name", 'blank');
+        
+    } else if(gridSize == 7){
+      var rblok = $('td#'+0+"."+0)
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+1+"."+1);
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+3+"."+3);
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+5+"."+5);
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+6+"."+6);
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+0+"."+6);
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+1+"."+5);
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+5+"."+1);
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+      rblok= $('td#'+6+"."+0)
+      rblok.css('border-color', '#ffffff');
+      rblok.attr("name", 'blank');
+    }
+    for(var i = 0; i < limit; i++){
+      var randX = Math.floor(Math.random()*gridSize);
+      var randY = Math.floor(Math.random()*gridSize);
+      var rblok = $('td#'+randX+"."+randY);
+      if(rblok.attr('name')=='open'){
+        var randNum = GetRandomNumber();
+        rblok.css("background-color", colorArray[randNum]);
+        rblok.attr("name", randNum);
+        rblok.css("border-width", "0");
+        rblok.css('width',blokSize);
+        rblok.css('height',blokSize);
+        rblok.css("box-shadow", "0px 3px 0px "+dropArray[randNum]);
+        if(colorAssist){
+          rblok.html(randNum);
+          if(randNum == 0){
+            rblok.css('color','#ffffff');
+          } else {
+            rblok.css('color','#000000');
+          }
+        }
+      }
+    }
+  }
+  
+  function ApplyColorAssist(){ //Show colorblind indicators
+    for(var c = 0; c < gridSize; c++){
+      for(var i = 0; i < gridSize; i++){
+        var t = $('td#'+i+"."+c);
+        if(t.attr('name') != 'open'){
+          var n = parseInt(t.attr('name'));
+          t.html(n);
+          if(n == 0){
+            t.css('color', '#ffffff');
+          } else {
+            t.css('color', '#000000');
+          }
+        }
+      }
+    } 
+    var num = parseInt($('#nextBlock').attr('name'));
+    $('#nextBlock').html(num);
+    if(num == 0){
+      $('#nextBlock').css('color','#ffffff');
+    } else {
+      $('#nextBlock').css('color','#000000');
+    }
+  }
+
+  function RemoveColorAssist(){ //Turn off colorblind indicators
+    for(var c = 0; c < gridSize; c++){
+      for(var i = 0; i < gridSize; i++){
+        var t = $('td#'+i+"."+c);
+        t.html('');
+        t.css('color','#000000');
+      }
+    }
+    $('#nextBlock').html('');
+    $('#nextBlock').css('color','#000000');
+  }
+
+  function ApplyLighting(color, bgColor){ //Apply nightmode coloring
+    for(var c = 0; c < gridSize; c++){
+      for(var i = 0; i < gridSize; i++){
+        var t = $('td#'+i+"."+c);
+        if(t.attr('name') == 'open'){
+          t.css('border-color', color);
+          t.css('background-color', bgColor)
+        } else if(t.attr('name')=='blank'){
+          t.css('border-color',bgColor);
+          t.css('background-color',bgColor);
+        }
+      }
+    } 
+  }
+  
+  function GetRandomNumber(){ //Return a random number within color array bounds
+    return Math.floor(Math.random() * colorArray.length);
+  }
+
+  function CheckGrid(p){ //Scans the grid to find matches of 3 or more.
+    //Horizontal
+    var matches = [];
+    for(var c = 0; c < gridSize; c++){
+      for(var i = 0; i < gridSize-2; i++){
+        $('td#'+i+'.'+c).each(function(){
+          if($(this).attr("name") != "open" ){
+            var group = ['td#'+i+'.'+c];
+            var blok = $(this);
+            var count = 1;
+            var startIndex = i;
+            var cls = blok.attr("class");
+            for(var x = 1; x < gridSize-i; x++){
+              if($('td#'+(i+x)+'.'+c).attr('name') != "open" && $('td#'+(i+x)+'.'+c).css('background-color') == blok.css('background-color')){
+                group.push('td#'+(i+x)+'.'+c);
+                count++;  
+              } else {
+                break;
+              } 
+            }
+            if(count > 2){
+              for(var g = 0; g < group.length;g++){
+                if(!matches.includes(group[g])){
+                  matches.push(group[g]);
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+    //Vertical
+    for(var c = 0; c < gridSize-2; c++){
+      for(var i = 0; i < gridSize; i++){
+        $('td#'+i+'.'+c).each(function(){
+          if($(this).attr("name") != "open" ){
+            var bunch = ['td#'+i+'.'+c];
+            var blok = $(this);
+            var count = 1;
+            var startIndex = i;
+            var cls = blok.attr("class");
+            for(var x = 1; x < gridSize-c; x++){
+              if($('td#'+i+'.'+(c+x)).attr('name') != "open" && $('td#'+i+'.'+(c+x)).css('background-color') == blok.css('background-color')){
+                bunch.push('td#'+i+'.'+(c+x));
+                count++;  
+              } else {
+                break;
+              } 
+            }
+            if(count > 2){
+              for(var b = 0; b < bunch.length; b++){
+                if(!matches.includes(bunch[b])){
+                  matches.push(bunch[b]);
+                }
+              }
+            }
+            
+          }
+        });
+      }
+    }
+
+    if(matches.length > 2){
+      var scoreToAdd = matches.length;
+      if(matches.length>4){ //Match of 5 
+        scoreToAdd += 2;
+      } else if(matches.length > 3){ //Match of 4
+        scoreToAdd += 1;
+      }
+      for(var m = 0; m < matches.length; m++){
+        var t = $('' + matches[m]);
+        if(!nightMode){
+          t.css("background-color", "#ffffff");
+          t.css('border-color', '#545454');
+        } else {
+          t.css('background-color', '#757575')
+          t.css('border-color', '#434343');
+        }
+        t.attr("name","open");
+        t.css("border-width", "2");
+        t.css("box-shadow", "");
+        t.css('width', (blokSize-4));
+        t.css('height', (blokSize-4));
+        t.html('');
+        t.css('color',"#000000");
+      }
+      if(p == true){
+        AddScore(scoreToAdd);
+      }
+    }
+
+    //Now let's check the grid if there are no open bloks --- you lose
+    if(CheckForJam()){
+      $('#nav').hide(); 
+      $('#restart').show();   
+      $('#status').html("GAME OVER<br/> Highest Score: " + highest);
+    }
+
+    //Now let's check if you actually won the game (aka no set bloks)
+    if(CheckForWin()){
+      winner = true; 
+      //$('#nav').hide();
+      $('#status').html("WINNER!<br/> Highest Score: " + highest);
+      $('#restart').show();
+      winflash = setInterval(function(){
+        //This is a repeating function that causes the grid to light up like a disco floor. 
+        for(var c = 0; c < gridSize; c++){
+          for(var i = 0; i < gridSize; i++){
+            if($('td#'+i+"."+c).attr('name') != 'blank'){
+              var rand = Math.floor(Math.random()*colorArray.length);
+              $('td#'+i+"."+c).css("background-color",colorArray[rand]);
+            }
+          }
+        }
+      }, 500);
+    }
+  }
+
+  function GenerateGrid(){ //Generates the starting grid of table cells
+    var gridSTR = "";
+    blokSize = 270/gridSize;
+    for(var c = 0; c < gridSize; c++){
+      gridSTR +="<tr>";
+      for(var i = 0; i < gridSize; i++){
+        gridSTR += '<td id="'+i+'" name="open" class="'+c+'" timestamp="'+Date.now()+'" style="width:'+(blokSize-4)+'px; height:'+(blokSize-4)+'px;"></td>';
+      }
+      gridSTR += "</tr>";
+    }
+    $('#grid').html(gridSTR);
+    if(nightMode){
+      ApplyLighting('#434343', '#757575');
+    } else {
+      ApplyLighting('#545454','#ffffff');
+    }
+  }
+
+  function CheckForWin(){ //Did you win the game?
+    for(var c = 0; c < gridSize; c++){
+      for(var i = 0; i < gridSize; i++){
+        if($('td#'+i+"."+c).attr("name") != "open"){
+          if($('td#'+i+"."+c).attr("name") != "blank"){
+            return false;
+          }
+        }
+      }
+    } 
+    return true;
+  }
+
+  function CheckForJam(){ //Are all bloks taken? Too bad...
+    for(var c = 0; c < gridSize; c++){
+      for(var i = 0; i < gridSize; i++){
+        if($('td#'+i+"."+c).attr("name") == "open"){
+          return false;
+        }
+      }
+    } 
+    return true;
+  }
+  
+  function SetScore(s){ //Force score to certain quantity
+    score = s;
+    $('#score').html("<b>"+score+"</b>");
+  }
+
+  function AddScore(s){ //Add to score incrementally
+    score += s;
+    if(score >= 110 && !colorArray.includes("rgb(255,255,255)")){
+      colorArray.push("rgb(255,255,255)");
+    } else if(score >= 90 && !colorArray.includes("rgb(128,128,0)")){
+      colorArray.push("rgb(128,128,0)");
+    } else if(score >= 75 && !colorArray.includes("rgb(128,128,128)")){
+      colorArray.push("rgb(128,128,128)");
+    } else if(score >= 68 && !colorArray.includes("rgb(128,0,0)")){
+      colorArray.push("rgb(128,0,0)");
+    } else if(score >= 56 && !colorArray.includes("rgb(170,110,40)")){
+      colorArray.push("rgb(170,110,40)");
+    } else if(score >= 43 && !colorArray.includes("rgb(210,245,60)")){
+      colorArray.push("rgb(210,245,60)");
+    } else if(score >= 31 && !colorArray.includes("rgb(240,50,230)")){
+      colorArray.push("rgb(240,50,230)");
+    } else if(score >= 20 && !colorArray.includes("rgb(70,240,240)")){
+      colorArray.push("rgb(70,240,240)");
+    } else if(score >= 9 && !colorArray.includes("rgb(145,30,180)")){
+      colorArray.push("rgb(145,30,180)");
+    }
+
+    if(score > highest){
+      highest = score;
+    }
+    $('#score').html("<b>"+score+"</b>");
+    UpdateSwatch();
+  }
+
+  function UpdateSwatch(){ //Update the display of unlocked colors
+    var swatchTML = "";
+    for(var a = 0; a < colorArray.length; a++){
+      swatchTML += '<th style="width:10px;height:10px;background-color:'+colorArray[a]+'; border-style: solid; border-width:2px; border-radius: 4px; border-color:'+colorArray[a]+';"></th>';
+    }
+    $('#swatch').html(swatchTML);
+  }
+
+});
+</script>
+</body>
+<!--End of line
+VersionNOTES:
+0.1.0 - First release
+
+0.1.1 - Updated to use Jquery UI for bounce animations and audio tags
+
+0.1.2 - Removed audio and used border radius to round block edges
+
+0.1.3 - Added skip option for negative points
+
+0.1.4 - Added drop shadow on bloks and lowered contrast on empty spaces. Favicon and title icon added
+
+0.1.5 - Added win scenario w/ empty board
+
+0.1.6 - Added updating tile swatch for player reference / increased scale of next color blok
+
+0.1.7 - Changed font styling to helvetica, sans-serif. Other optimizations to UI
+
+0.1.8 - LD Sumbission version. Added "small print" at bottom of screen
+
+0.1.9 - Microsoft edge compatiblity and xbox one browser support added. 
+
+0.2.0 - Added color blind assistance w/ numbers and toggle switch.
+
+0.2.1 - Added cross match support . Two intersecting lines of 3 will clear both (rare but useful). 
+
+0.2.2 - Final LD Submission
+
+_________________________________________  POST LD40 COMPO  _______________________________________
+
+0.2.3 - Added music and soundfx
+
+0.2.4 - Reset button clears game and map not refreshing page
+
+0.2.5 - Added music on/off button
+
+0.2.6 - Added highest score. This does reset if you leave the page. Will look into stashing this in the cookies of the browser somehow...
+
+0.2.7 - Added combos for 4 and 5 combos. 4 blok matches = 5 points, 5 block matches = 7 points.
+
+0.2.8 - Fixed bug where winning and hitting reset would not stop the board flashing. (CLEAR INTERVAL CALL)
+
+0.2.9 - Added Settings Menu w/ sound button and colorblind toggle
+
+0.3.0 - Added Night mode for late night gaming
+
+0.3.1 - Added 4 stages of difficulty to increase replay value
+
+0.3.2 - Restyled Settings menu w/ horizontal bar buttons
+
+0.3.3 - Fixed various bugs related to night mode and blank spaces
+
+0.3.4 - Moved to .on() calls for tile placement due to TD wipe/load during difficulty changes
+
+0.3.5 - Removed all current debugs and console output
+
+0.3.6 - Added base splash screen. May need polish
+
+0.3.7 - 
+
+-->
+</html>
