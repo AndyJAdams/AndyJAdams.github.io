@@ -1,5 +1,5 @@
 function ScreenShaker(context){
-    this.intensity = 0; this.elapsedFrames = 0; 
+    this.intensity = 0; this.elapsedFrames = 0;
     this.totalFrames = 0;
     this.ctx = context;
     this.x = 0;
@@ -32,8 +32,9 @@ function ScreenShaker(context){
             this.newShake = true;
             this.intensity = 0;
             this.elapsedFrames = this.totalFrames = 0;
+            return false;
         }
-        
+
     }
 
 }
