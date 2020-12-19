@@ -108,7 +108,8 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
                 ctx.fillStyle='#00000088';
                 ctx.fillRect(this.pos[i][j].x-radius, this.pos[i][j].y-radius,radius*2,radius*2);
 
-                ctx.fillStyle='#FFF';
+                ctx.fillStyle='#000';
+                ctx.font = '12px sans-serif';
                 ctx.fillText(i+","+j,this.pos[i][j].x-radius,this.pos[i][j].y-radius+10);
             }
         }
