@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>BLANK CANVAS</title>
+	<title>Blank Canvas</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -38,19 +38,11 @@
     //*************************************************
     //*************************************************
 
-		//DictionaryAPI
-		function checkWord(word){
-			const Http = new XMLHttpRequest();
-			var url = 'https://api.dictionaryapi.dev/api/v2/entries/en/'+word;
-			Http.open("GET",url);
-			Http.send();
-		}
-
-		Http.onreadystatechange=(e) =>{
-			console.log(Http.responseText);
-		}
-
 	//*** INPUT SECTION **//
+	window.addEventListener('key',funciton(e){
+		console.log(e.key);
+	});
+
     window.addEventListener('resize',function(evt){
         evt.preventDefault();
         scaleCanvas();
