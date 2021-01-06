@@ -18,8 +18,9 @@
 	</style>
 </head>
 <body id='body'>
+<canvas></canvas>
 	<script>
-	var canvas = document.getElementById('canvas');
+	var canvas = document.querySelector('canvas');
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
@@ -36,6 +37,18 @@
 	}
     //*************************************************
     //*************************************************
+
+		//DictionaryAPI
+		function checkWord(word){
+			const Http = new XMLHttpRequest();
+			var url = 'https://api.dictionaryapi.dev/api/v2/entries/en/'+word;
+			Http.open("GET",url);
+			Http.send();
+		}
+
+		Http.onreadystatechange=(e) =>{
+			console.log(Http.responseText);
+		}
 
 	//*** INPUT SECTION **//
     window.addEventListener('resize',function(evt){

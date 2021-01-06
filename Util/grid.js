@@ -65,10 +65,10 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         var closestDistance = 14000000;
         var out = 0;
         for(var i = 0; i < this.pos.length; i++){
-            for(var j = 0; j < this.position[i].length; i++){
+            for(var j = 0; j < this.pos[i].length; j++){
                 var px = this.pos[i][j].x;
                 var py = this.pos[i][j].y;
-                var distance = Math.Abs(Math.Sqrt(Math.pow(px-x,2)+Math.pow(py-y,2)));
+                var distance = Math.abs(Math.sqrt(Math.pow(px-x,2)+Math.pow(py-y,2)));
 
                 if(distance < closestDistance){
                     closestDistance = distance;
@@ -83,10 +83,10 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         var closestDistance = 14000000;
         var out = 0;
         for(var i = 0; i < this.pos.length; i++){
-            for(var j = 0; j < this.position[i].length; i++){
+            for(var j = 0; j < this.pos[i].length; j++){
                 var px = this.pos[i][j].x;
                 var py = this.pos[i][j].y;
-                var distance = Math.Abs(Math.Sqrt(Math.pow(px-x,2)+Math.pow(py-y,2)));
+                var distance = Math.abs(Math.sqrt(Math.pow(px-x,2)+Math.pow(py-y,2)));
 
                 if(distance < closestDistance){
                     closestDistance = distance;
@@ -97,7 +97,7 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         return out;
     }
 
-    //Should *IDEALLY* only be used for debug purposes and associated to a canvas / ctx refers to the context2d object onto which the grid should be drawn. 
+    //Should *IDEALLY* only be used for debug purposes and associated to a canvas / ctx refers to the context2d object onto which the grid should be drawn.
     this.draw = function(ctx,radius = 1){
         if(ctx == undefined){
             console.warn("Grid Draw Requires a context");
@@ -107,8 +107,9 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
             for(var j = 0; j < this.pos[i].length; j++){
                 ctx.fillStyle='#00000088';
                 ctx.fillRect(this.pos[i][j].x-radius, this.pos[i][j].y-radius,radius*2,radius*2);
-                
-                ctx.fillStyle='#FFF';
+
+                ctx.fillStyle='#000';
+                ctx.font = '12px sans-serif';
                 ctx.fillText(i+","+j,this.pos[i][j].x-radius,this.pos[i][j].y-radius+10);
             }
         }
@@ -119,10 +120,10 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         this.rows = this.columns;
         this.columns = tr;
         this.build();
-        
+
     }
 
-    
+
 
     this.addRowToEnd = function(){
         this.rows++;
@@ -167,7 +168,7 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
     this.addColumnToBeginning = function(){
         this.columns++;
         for(var i = 0; i < this.pos.length;i++){
-            
+
             this.pos[i].unshift(new Pos(0,0));
         }
         this.scale();
@@ -188,7 +189,7 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         }
         this.scale();
     }
-    
+
     this.build();
 }
 
