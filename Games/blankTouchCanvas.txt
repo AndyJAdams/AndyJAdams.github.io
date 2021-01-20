@@ -38,19 +38,11 @@
     //*************************************************
     //*************************************************
 
-		//DictionaryAPI
-		function checkWord(word){
-			const Http = new XMLHttpRequest();
-			var url = 'https://api.dictionaryapi.dev/api/v2/entries/en/'+word;
-			Http.open("GET",url);
-			Http.send();
-		}
-
-		Http.onreadystatechange=(e) =>{
-			console.log(Http.responseText);
-		}
-
 	//*** INPUT SECTION **//
+    window.addEventListener('keyup',function(e){
+        console.log(e.keyCode);
+    });
+    
     window.addEventListener('resize',function(evt){
         evt.preventDefault();
         scaleCanvas();
