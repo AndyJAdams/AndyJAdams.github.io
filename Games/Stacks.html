@@ -29,9 +29,9 @@
 	var ctx = canvas.getContext('2d');
     var selected = undefined;
     var selectionOffset = {x:0,y:0};
-    var g = new Grid(3,3,130,145,innerWidth/2, innerHeight/2-100);
+    var g = new Grid(4,8,130,145,innerWidth/2, innerHeight/2-100);
     var newTilePos = {x:innerWidth/2, y: innerHeight/2+200};
-    var colors = ['#177E89','#61E786','#DB3A34','#FFC857'];
+    var colors = ['#177E89','#61E786','#DB3A34','#FFC857','#DCDCDC','#9155ab'];
         
     var slots = [];
     function Slot(x,y){
@@ -40,6 +40,9 @@
         this.draw = function(){
             ctx.strokeStyle='#DDD';
             ctx.strokeRect(this.x-54,this.y-54,108,108);
+            for(var i = 0; i < this.tiles.length; i++){
+                this.tiles[i].update();
+            }
         }
     }    
     
@@ -47,18 +50,25 @@
     function Tile(x,y,v){
         this.x = x;this.y =y; this.v = v;
         this.tx = this.x; this.ty = this.y;
-        
+        this.drawn = false;
         this.draw = function(){
             ctx.fillStyle='#00000066';
-            ctx.fillRect(this.tx-48,this.ty-48,96,100);
+            ctx.fillRect(this.tx-48,this.ty-44,96,96);
             ctx.fillStyle=colors[this.v];
             ctx.fillRect(this.tx-48,this.ty-48,96,96);
 //            ctx.strokeStyle='#DDD';
 //            ctx.strokeRect(this.tx-48,this.ty-48,96,96);
+            this.drawn = true;
         }
         
         this.update = function(){
-            this.draw();
+            if(!this.drawn){
+                this.draw();
+            }
+        }
+        
+        this.cycle = function(){
+            this.drawn = false;
         }
         
     }
@@ -67,6 +77,18 @@
         for(var i = 0; i < g.rows; i++){
             for(var j = 0; j < g.columns; j++){
                 slots.push(new Slot(g.pos[i][j].x, g.pos[i][j].y));
+            }
+        }
+        //Now we are going to populate the grid with some random tiles
+        for(var i = 0; i < Math.floor((g.columns*g.rows)*2); i++){
+            //Find a random slot
+            var s = slots[Math.floor(Math.random()*slots.length)];
+            if(s.tiles.length < 3){ //Make sure there is room
+                var t = new Tile(s.x,s.y-(s.tiles.length*10),getTileColor());
+                tiles.push(t);
+                s.tiles.push(t);
+            } else {
+                i--;
             }
         }
         MakeNewTile();
@@ -94,15 +116,51 @@
         for(var i = 0; i < tiles.length; i++){
             tiles[i].update();
         }
+        
+        for(var i = 0; i < tiles.length; i++){
+            tiles[i].cycle();
+        }
 	}
     //*************************************************
     //*************************************************
-
+    function validateGrid(){
+        var cleared = true;
+        for(var i = 0; i < slots.length; i++){
+            //First we remove the completed stacks
+            if(slots[i].tiles.length > 2){
+                if(checkStack(slots[i])){
+                    for(var j = 0; j < slots[i].tiles.length; j++){
+                        var t = tiles.indexOf(slots[i].tiles[j]);
+                        tiles.splice(t,1);
+                    }
+                    slots[i].tiles = [];
+                }
+            }
+            //Now we check if the entire grid is clear
+            if(slots[i].tiles.length > 0){
+                cleared = false;
+            }
+        }
+        return cleared;
+    }
+        
+    function checkStack(s){
+        if(s.tiles.length < 3){
+            return false;
+        }
+        if(s.tiles[0].v == s.tiles[1].v && s.tiles[0].v == s.tiles[2].v){
+            return true;
+        }
+        return false;
+    }
+        
     function getSelected(x,y){
         for(var i = 0; i < slots.length; i++){
             if(x < slots[i].x+54 && x >  slots[i].x-54 && y < slots[i].y+54 && y > slots[i].y-54){
                 if(slots[i].tiles.length > 0){
-                    return slots[i].tiles[slots[i].tiles.length-1];
+                    var t = slots[i].tiles[slots[i].tiles.length-1];
+                    slots[i].tiles.pop();
+                    return t;
                 }
             }
         }
@@ -113,7 +171,7 @@
         }
         return undefined;
     }
-        
+
 	//*** INPUT SECTION **//
     window.addEventListener('keyup',function(e){
         console.log(e.keyCode);
@@ -155,7 +213,6 @@
         if(selected != undefined){
             selectionOffset.x = selected.x-current.x;
             selectionOffset.y = selected.y-current.y;
-            console.log(selected);
         }
     }
 
@@ -198,6 +255,9 @@
             }
             selected.tx = selected.x;
             selected.ty = selected.y;
+        }
+        if(validateGrid()){
+            console.log("YAY");
         }
         selected = undefined;
     }
