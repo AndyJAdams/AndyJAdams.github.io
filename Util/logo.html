@@ -1,0 +1,431 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Andy_Logo</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+						overflow: hidden;
+        }
+	</style>
+</head>
+<body id='body'>
+<canvas></canvas>
+	<script>
+	var canvas = document.querySelector('canvas');
+	var center = {x: 0,y:0};
+  function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		center.x = innerWidth/2;
+		center.y = innerHeight/2;
+	}
+	var ctx = canvas.getContext('2d');
+  scaleCanvas();
+    //*************************************************
+    //*************************************************
+	var radius = 48;
+	var length = 270;
+	var width = 60;
+	var angleOffset = 0;
+	var subAngleOffset = 0;
+	var anchorOffset = 0;
+	var radToggle = false;
+	var lenToggle = false;
+	var wToggle = false;
+	var lineCount = 3;
+	var animation = -1;
+	var stage = 0;
+	var timer = Date.now()+3000;
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+		var p1 = {
+				x: Math.cos((90+angleOffset)*Math.PI/180)*radius+center.x,
+				y: Math.sin((90+angleOffset)*Math.PI/180)*radius+center.y};
+
+		ctx.lineWidth = width;
+		ctx.strokeStyle='#FFFFFF';
+		for(var i = 0; i < lineCount; i++){
+			var p2 = {
+					x: Math.cos((0+subAngleOffset)*Math.PI/180)*(length/2)+p1.x,
+					y: Math.sin((0+subAngleOffset)*Math.PI/180)*(length/2)+p1.y
+			};
+
+			var p3 = {
+					x: Math.cos((180+subAngleOffset)*Math.PI/180)*(length/2)+p1.x,
+					y: Math.sin((180+subAngleOffset)*Math.PI/180)*(length/2)+p1.y
+			};
+
+			ctx.beginPath();
+			ctx.moveTo(p2.x, p2.y);
+			ctx.lineTo(p3.x,p3.y);
+			ctx.stroke();
+
+			ctx.translate(center.x, center.y);
+			ctx.rotate(Math.floor(360/lineCount)*Math.PI/180);
+			ctx.translate(-center.x,-center.y);
+
+		}
+
+		if(Date.now() >timer && animation < 0){
+			animation = Math.floor(Math.random()*7);
+		}
+
+		switch(animation){
+			case -1:
+				break;
+			case 0:
+				switch(stage){
+						case 0:
+							if(radius < 120){
+								radius+=2;
+							} else {
+								if(length > 30){
+									length-=5;
+								} else {
+									stage++;
+								}
+							}
+							break;
+						case 1:
+							if(subAngleOffset < 360){
+								subAngleOffset += 10;
+								angleOffset += 10;
+							} else {
+								if(length < 270){
+									length+= 5;
+								} else {
+									stage++;
+									subAngleOffset = angleOffset = 0;
+								}
+							}
+							break;
+						case 2:
+							if(radius > 48){
+								radius--;
+							} else {
+								radius = 48;
+								stage++;
+							}
+							break;
+						default:
+							stage = 0;
+							timer = Date.now()+12000;
+							animation = -1;
+							break;
+				}
+				break;
+			case 1:
+				switch(stage){
+					case 0:
+						if(width > 4){
+								width--;
+						} else{
+							if(radius > -60){
+								radius -= 2;
+							} else {
+								stage++;
+							}
+						}
+						break;
+					case 1:
+						if(subAngleOffset > -180){
+								subAngleOffset-=2;
+								if(length > 120){
+										length -= 10;
+								}
+								// angleOffset++;
+						} else {
+								stage++;
+								subAngleOffset = angleOffset = 0;
+						}
+						break;
+					case 2:
+							if(width < 60){
+								width+= 0.5;
+
+							} else {
+								if(radius < 48){
+									radius += 2;
+
+								} else {
+									if(length < 270){
+										length += 10;
+									} else {
+										stage++;
+										radius = 48;
+										length = 270;
+									}
+								}
+							}
+							break;
+							default:
+								stage = 0;
+								timer = Date.now()+12000;
+								animation = -1;
+								break;
+				}
+				break;
+			case 2:
+				switch(stage){
+					case 0:
+						if(angleOffset < 90){
+							angleOffset++;
+						} else {
+								stage++;
+						}
+						break;
+					case 1:
+						if(subAngleOffset < 90){
+							subAngleOffset++;
+							angleOffset ++;
+						} else {
+							stage++;
+						}
+						break;
+					case 2:
+						if(radius < 180){
+							radius++;
+						} else {
+							if(length > 10){
+								length-=10;
+							} else {
+								stage++;
+							}
+						}
+						break;
+					case 3:
+						if(subAngleOffset >0){
+							subAngleOffset-=2;
+							angleOffset -=2;
+						} else {
+							stage++;
+						}
+						break;
+					case 4:
+						if(angleOffset >0){
+							angleOffset--;
+						} else {
+							if(radius > 48){
+								radius -=2;
+							} else {
+								if(length < 270){
+									length+=10;
+								} else {
+									stage++;
+								}
+							}
+
+						}
+						break;
+					// case 5:
+					// 	console.log(length + "/" + subAngleOffset + " / " + angleOffset);
+					// 	break;
+					default:
+						stage = 0;
+						timer = Date.now()+12000;
+						subAngleOffset = angleOffset = 0;
+						radius = 48;
+						animation =-1;
+						break;
+				}
+				break;
+			case 3:
+				switch(stage){
+					case 0:
+						if(length > 20){
+							length-=10;
+						} else {
+
+								if(subAngleOffset < 360){
+									subAngleOffset+=9;
+									angleOffset += 9;
+									radius-=4;
+								} else{
+									stage++;
+								}
+						}
+						break;
+					case 1:
+						if(radius < 120){
+							radius += 10;
+						} else {
+							if(length < 270){
+								length+=10;
+							} else {
+
+									stage++;
+							}
+						}
+						break;
+					case 2:
+						if(subAngleOffset >0){
+							subAngleOffset -=5;
+							angleOffset -= 5;
+						} else {
+							if(width > 60){
+								width-=2;
+							} else {
+								if(radius > 48){
+									radius -= 2;
+								} else {
+									stage++;
+								}
+							}
+						}
+						break;
+					default:
+						radius = 48;
+						length = 270;
+						angleOffset  = subAngleOffset = 0;
+						stage = 0;
+						timer = Date.now()+12000;
+						animation = -1;
+						break;
+				}
+				break;
+			case 4:
+				switch(stage){
+					case 0:
+						if(length > 180){
+							length--;
+						} else {
+							if(width < 320){
+								width += 10;
+							} else {
+								if(subAngleOffset < 720){
+									subAngleOffset += 6;
+									angleOffset += 6;
+								} else {
+									stage++;
+								}
+							}
+						}
+						break;
+					case 1:
+						if(length < 270){
+							length+= 5;
+						} else {
+							if(width > 10){
+								width -= 2;
+							} else {
+								if(radius < 140){
+									radius += 4;
+								} else {
+									if(subAngleOffset > 360){
+										subAngleOffset -= 6;
+										angleOffset -= 6;
+									} else {
+										stage++;
+									}
+								}
+							}
+						}
+						break;
+					case 2:
+						if(width < 60){
+								width +=4;
+						} else {
+							if(radius > 48){
+								radius -= 2;
+							} else {
+								stage++;
+							}
+						}
+						break;
+					default:
+						width = 60;
+						subAngleOffset = angleOffset = 0;
+						length = 270;
+						stage = 0;
+						timer = Date.now()+12000;
+						animation = -1;
+						break;
+				}
+				break;
+			case 5:
+				switch(stage){
+					case 0:
+						if(radius < 144){
+							radius += 4;
+						} else {
+							stage++;
+						}
+						break;
+					case 1:
+						if(length > 10){
+							length-=4;
+						} else {
+							if(radius > -96){
+								radius -= 4;
+							} else {
+								if(subAngleOffset < 60){
+									subAngleOffset += 2;
+									angleOffset += 2;
+								} else {
+									stage++;
+								}
+							}
+						}
+						break;
+					case 2:
+						if(length < 270){
+							length+= 4;
+						} else {
+							if(radius < -48){
+								radius += 4;
+							} else {
+								stage++;
+							}
+						}
+						break;
+					default:
+						subAngleOffset = angleOffset = 0;
+						length = 270;
+						radius = 48;
+						stage = 0;
+						timer = Date.now()+12000;
+						animation = -1;
+						break;
+				}
+				break;
+			default:
+				console.log('skip '+animation);
+				animation = -1;
+				timer = Date.now()+1000;
+				break;
+		}
+
+		ctx.setTransform(1,0,0,1,0,0);
+	}
+
+	function resetVars(){
+		var radius = 48;
+		var length = 270;
+		var width = 60;
+		var angleOffset = 0;
+		var subAngleOffset = 0;
+		var anchorOffset = 0;
+		var radToggle = false;
+		var lenToggle = false;
+		var wToggle = false;
+		var lineCount = 3;
+		var animation = -1;
+		var stage = 0;
+		var timer = Date.now()+3000;
+	}
+    //*************************************************
+    //*************************************************
+	window.addEventListener('resize',function(e){
+		e.preventDefault();
+		scaleCanvas();
+		resetVars();
+	});
+
+	animate();
+	</script>
+</body>
+</html>
