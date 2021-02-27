@@ -7,19 +7,21 @@
 		body{
             margin: 0;
             overflow: hidden;
-            background-color: #000;
         }
         img{
             width: 100%;
-            opacity: 0.4;
+            height: 100%;
         }
 	</style>
     <script src='../Util/tmi.min.js'></script>
     <script src='../Util/chat.js'></script>
 </head>
 <body id='body'>
-    <img id='imgbg' src="https://i.giphy.com/media/1yT902UqU5fcFxjLbH/source.gif"/>
+    <img id='imgbg' src=""/>
 	<script>
+    var gifQueue = [];
+        
+    var timer = 0;
     function update(){
         window.requestAnimationFrame(update);
          for(var i = 0; i < messages.length; i++){
@@ -32,13 +34,24 @@
                          if(strData[0] == "!gif"){
                              //Change chat bg gif
                              var url = "https://i.giphy.com/"+strData[1]+"/source.gif";
-                             document.getElementById("imgbg").src = url;
+                             gifQueue.push(url);
+                             //document.getElementById("imgbg").src = url;
                          }
                      }
                  }
                  messages[i].shown = true;
              }
          }
+        
+        if(Date.now() > timer){
+            if(gifQueue.length > 0){
+                document.getElementById("imgbg").src = gifQueue[0];
+                timer = Date.now()+5000;
+                gifQueue.shift();
+            } else {
+                document.getElementById("imgbg").src = "";
+            }
+        }
     }
         
     update();

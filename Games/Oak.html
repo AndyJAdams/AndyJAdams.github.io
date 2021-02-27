@@ -1,0 +1,218 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>OAK</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #DDD;
+        }
+	</style>
+</head>
+<body id='body'>
+<canvas></canvas>
+	<script>
+	var canvas = document.querySelector('canvas');
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+	}
+	var ctx = canvas.getContext('2d');
+    var m = {x: -1, y:-1};
+    var branches = [];
+    function Branch(x,y,p = undefined){
+        this.x = x; this.tx = this.x;
+        this.y = y; this.ty = this.y;
+        this.grown = false; this.parent = p;
+        this.angle = 0; this.rad = 20;
+        this.off = [];
+        this.draw = function(){
+            if(this.grown){
+                ctx.beginPath();
+                ctx.strokeStyle='#000';
+                ctx.lineWidth = 10;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.tx, this.ty);
+                ctx.stroke();
+            } else {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y,this.rad,0,2*Math.PI);
+                ctx.fill();
+                ctx.strokeStyle='#DDD';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+        
+        this.update = function(){
+            var d= Math.abs(Math.sqrt(Math.pow(this.x-m.x,2)+Math.pow(this.y-m.y,2)));
+            if(d > 100){
+                this.rad = 5;
+            } else{
+                this.rad = 15*(1-(d/100))+5;
+            }
+            if(this.parent == undefined){
+                this.rad = 20;
+            }
+            this.draw();
+        }
+        
+        this.grow = function(x = undefined,y= undefined){
+            if(x == undefined || y == undefined){
+                if(this.parent != undefined){
+                    this.angle = this.parent.angle + ((Math.random()-0.5)*2);
+                } else {
+                    this.angle = Math.random()*2*Math.PI;
+                }
+                this.tx = Math.cos(this.angle)*90+this.x;
+                this.ty = Math.sin(this.angle)*90+this.y;
+            } else {
+                //Get the angle from where the pointer lands
+                //var angleRadians = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                this.angle = Math.atan2(y-this.y,x-this.x);
+                this.tx = x; this.ty = y;
+            }
+            var length = Math.abs(Math.sqrt(Math.pow(this.x-this.tx,2)+Math.pow(this.y-this.ty,2)));
+            for(var i = 0; i < Math.floor(length/50);i++){
+                var a = Math.cos(this.angle)*(i*50)+this.x;
+                var b = Math.sin(this.angle)*(i*50)+this.y;
+                var n = new Branch(a,b,this);
+                branches.push(n);
+                this.off.push(n);
+            }
+            if(length > 50){
+                var a = Math.cos(this.angle)*length+this.x;
+                var b = Math.sin(this.angle)*length+this.y;
+                var n = new Branch(a,b,this);
+                branches.push(n);
+                this.off.push(n);
+            }
+            //Add one point at the end of every branch
+            this.grown = true;
+        }
+    }
+
+    //*************************************************
+    //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+        
+        ctx.fillRect(-10,innerHeight/2,innerWidth+10,innerHeight);
+        
+        if(branches.length < 1){
+            branches.push(new Branch(innerWidth/2, innerHeight/2));
+        }
+        
+        for(var i = 0; i < branches.length; i++){
+            branches[i].update();
+        }
+        
+        if(selected != undefined && start.x > -1){
+            ctx.beginPath();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5,15]);
+            ctx.moveTo(selected.x,selected.y);
+            ctx.lineTo(current.x, current.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        
+	}
+    //*************************************************
+    //*************************************************
+
+	//*** INPUT SECTION **//
+    window.addEventListener('keyup',function(e){
+        console.log(e.keyCode);
+    });
+    
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+
+    var start = {x:-1,y:-1};
+    var current = {x:-1,y:-1};
+    var selected = undefined;
+        
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+        current.x = start.x;
+        current.y = start.y;
+        //Did we click on a branch?
+        var closest = innerWidth*innerHeight;
+        for(var i = 0; i < branches.length; i++){
+            if(!branches[i].grown){
+                var d = Math.abs(Math.sqrt(Math.pow(current.x-branches[i].x,2)+Math.pow(current.y-branches[i].y,2)));
+                if(d < closest && d < 50){
+                    closest = d;
+                    selected = branches[i];
+                }
+            }
+        }
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+        m.x = evt.pageX;
+        m.y = evt.pageY;
+    }
+
+    function inputEnd(){
+        if(selected != undefined){
+            if(current.y < innerHeight/2){
+                selected.grow(current.x, current.y);
+            }
+        }
+        selected = undefined;
+        start.x = -1;
+    }
+
+    scaleCanvas();
+	animate();
+	</script>
+</body>
+</html>

@@ -13,7 +13,7 @@
         }
         canvas{
             touch-action: none;
-            background-color: #DDD;
+            background-color: #000;
         }
 	</style>
 </head>
@@ -26,9 +26,26 @@
 		canvas.height = window.innerHeight;
 	}
 	var ctx = canvas.getContext('2d');
+    scaleCanvas();
 
+    function Player(x,y,r){
+        this.x = x; this.y = y; this.r = r;
+        this.dx = 0; this.dy = 0;
+        this.draw = function(){
+            ctx.strokeStyle='#FFF';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI);
+            ctx.stroke();
+        }
 
+        this.update = function(){
+            this.x += this.dx;
+            this.y += this.dy;
+            this.draw();
+        }
+    }
 
+    var p =
     //*************************************************
     //*************************************************
 	function animate(){
@@ -39,9 +56,9 @@
     //*************************************************
 
 	//*** INPUT SECTION **//
-	window.addEventListener('key',funciton(e){
-		console.log(e.key);
-	});
+    window.addEventListener('keyup',function(e){
+        console.log(e.keyCode);
+    });
 
     window.addEventListener('resize',function(evt){
         evt.preventDefault();
@@ -95,8 +112,6 @@
     function inputEnd(){
         start.x = -1;
     }
-
-    scaleCanvas();
 	animate();
 	</script>
 </body>
