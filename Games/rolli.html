@@ -13,174 +13,28 @@
             color: #000;
             overflow: hidden;
         }
-        canvas{
-            touch-action: none;
-            background-color: #fcad03;
-        }
-        button{
-            width: 160px;
-            height: 60px;
-            border-color: #000;
-            border: 6px solid;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%,-50%);
-            font: 28pt sans-serif;
-            background-color: transparent;
-        }
 	</style>
 </head>
 <body id='body'>
     <button id='accelAuthBTN' onclick="getAccelPerm()">ROLLI</button>
-<canvas></canvas>
+    <p id='data'></p>
 	<script>
-        console.log(navigator.userAgent);
-    function DEBUG(){
-        this.msg = [];
-        this.msg.push("LOG-OPEN " + Date());
-        this.log = function(msg){
-            this.msg.push(msg);
-        }
-        
-        this.draw = function(){
-            ctx.font = '24px sans-serif';
-            for(var i = this.msg.length-1; i > -1; i--){
-                ctx.fillText(this.msg[i],10,i*15);
-            }
-        }
-    }
-    var Debug = new DEBUG();
-        
+    var logData = [];
+    var data = document.getElementById('data');
+    data.innerText = logData;
     function getAccelPerm(){
-        DeviceMotionEvent.requestPermission().then(response => {
+        DeviceMotionEvent.requestPermission().then(response =>{
            if(response == 'granted'){
-               //Add motion listener
                window.addEventListener('devicemotion',function(evt){
-                 console.log(evt);
-                 Debug.log(evt);
+                   logData.push(evt);
                });
-               window.addEventListener('deviceorientation',function(evt){
-                   console.log(evt);
-                   Debug.log(evt);
+               window.addEventListener('deviceorientation',function(){
+                  logData.push(evt); 
                });
-               animate();
-           }
+           } 
         });
     }
-        
-	var canvas = document.querySelector('canvas');
-    function scaleCanvas(){
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
-	}
-	var ctx = canvas.getContext('2d');
-    scaleCanvas();
-    var affectWorld = false;
-    var aw = {x:0,y:0};
-
-    function Ball(x,y,r){
-        this.x = x; this.y = y;
-        this.r = r;
-        this.dx = 0; this.dy = 0;
-        
-        this.draw = function(){
-            ctx.fillStyle='#000';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI);
-            ctx.fill();
-        }
-        
-        this.update = function(){
-            this.x += aw.x;
-            this.y += aw.y;
-            
-            //Horizontal bounds
-            if(this.x-this.r < 0 || this.x+this.r > innerWidth){
-                this.dx = !this.dx;
-            }
-            //Bottom bounds
-            if(this.y+this.r > innerHeight){
-                this.dy = -this.dy/2;
-            } else if(this.y > innerHeight/2){
-                this.y = innerHeight/2;
-                affectWorld = true;
-            }
-            
-        }
-    }
-        
-    var b = new Ball(innerWidth/2,innerHeight*0.7, 15);  
-    //*************************************************
-    //*************************************************
-	function animate(){
-		window.requestAnimationFrame(animate);
-		ctx.clearRect(0,0,innerWidth,innerHeight);
-        
-        b.update();
-	}
-    //*************************************************
-    //*************************************************
-
-	//*** INPUT SECTION **//
-    window.addEventListener('keyup',function(e){
-        console.log(e.keyCode);
-    });
-
-    window.addEventListener('resize',function(evt){
-        evt.preventDefault();
-        scaleCanvas();
-    });
-
-
-    window.addEventListener('mousedown',inputStart,false);
-    window.addEventListener('mousemove',inputMove,false);
-    window.addEventListener('mouseup',inputEnd,false);
-
-    window.addEventListener('touchstart',inputStart, false);
-    window.addEventListener('touchmove', inputMove,false);
-    window.addEventListener('touchcancel',inputEnd,false);
-    window.addEventListener('touchend',inputEnd,false);
-
-    var start = {x:-1,y:-1};
-		var current = {x:-1,y:-1};
-    function inputStart(evt){
-        evt.preventDefault();
-        if(evt.changedTouches != undefined){
-            var touches = evt.changedTouches;
-            if(touches.length > 0){
-                start.x = touches[0].pageX;
-                start.y = touches[0].pageY;
-            }
-        } else {
-            start.x = evt.pageX;
-            start.y = evt.pageY;
-        }
-				current.x = start.x;
-				current.y = start.y;
-    }
-
-    function inputMove(evt){
-        evt.preventDefault();
-        if(start.x > -1){
-            if(evt.changedTouches != undefined){
-                var touches = evt.changedTouches;
-                if(touches.length > 0){
-                    current.x = touches[0].pageX;
-                    current.y = touches[0].pageY;
-                }
-            } else {
-                current.x = evt.pageX;
-                current.y = evt.pageY;
-            }
-        }
-    }
-
-    function inputEnd(){
-        start.x = -1;
-    }
-    Debug.draw();
-	//animate();
+    
 	</script>
 
 </body>
