@@ -23,14 +23,16 @@
     var data = document.getElementById('data');
     logData.push("LOG_OPEN");
     data.innerText = logData;
+        
     function getAccelPerm(){
+        document.querySelector('body').style.color = '#F00';
         DeviceMotionEvent.requestPermission().then(response =>{
            if(response == 'granted'){
-               window.addEventListener('devicemotion',function(evt){
-                   logData.push(evt);
-               });
-               window.addEventListener('deviceorientation',function(){
-                  logData.push(evt); 
+//               window.addEventListener('devicemotion',function(evt){
+//                   logData.push(evt);
+//               });
+               window.addEventListener('deviceorientation',function(evt){
+                  logData.push(evt.alpha); 
                });
            } 
         });
