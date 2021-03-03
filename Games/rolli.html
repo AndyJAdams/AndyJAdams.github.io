@@ -16,11 +16,12 @@
 	</style>
 </head>
 <body id='body'>
-    <button id='accelAuthBTN' onclick="getAccelPerm()">ROLLI</button>
-    <p id='data'></p>
+    <button id='accelAuthBTN' onclick="getAccelPerm()" style='width: 200px; height: 80px;'>ROLLI</button>
+    <p id='data'>HERE</p>
 	<script>
     var logData = [];
     var data = document.getElementById('data');
+    logData.push("LOG_OPEN");
     data.innerText = logData;
     function getAccelPerm(){
         DeviceMotionEvent.requestPermission().then(response =>{
