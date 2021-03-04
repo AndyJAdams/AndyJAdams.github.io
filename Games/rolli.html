@@ -38,7 +38,7 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P015";
+            const VERSION = "P016";
             var sensitivity = 0.7;
             
             var can = document.querySelector('canvas');
@@ -57,7 +57,7 @@
             ctx.fillText(VERSION,innerWidth-5,20);
             
             function Ball(x,y,r){
-                this.x = x; this.y = y; this.r = r;
+                this.x = x; this.y = y; this.r = r; this.dx = 0; this.dy = 0;
                 this.radPercent = {x:(this.r/innerWidth)*100,y:(this.r/innerHeight)*100};
                 this.draw = function(){
                     ctx.fillStyle='#FFF';
@@ -70,16 +70,19 @@
                 }
                 
                 this.update = function(){
+                    this.dx += vx;
+                    this.dy += vy;
+                    
                     if(this.x-this.r < 0 || this.x+this.r > innerWidth){
-                        px = Math.max(this.radPercent.x, Math.min(100-this.radPercent.x, px));
-                        vx = -vx;   
+                        this.x = Math.max(this.r,Math.min(innerWidth-this.r,this.x));
+                        this.dx = -this.dx;
                     }
                     if(this.y+this.r > innerHeight || this.y-this.r < 0){
-                        py = Math.max(this.radPercent.y, Math.min(100-this.radPercent.y,py));
-                        vy = -vy;
+                        this.y = Math.max(this.r,Math.min(innerHeight-this.r,this.y));
+                        this.dy = -this.dy;
                     }
-                    this.x = innerWidth*(px/100);
-                    this.y = innerHeight*(py/100);
+                    this.x += this.dx;
+                    this.y += this.dy;
                     this.draw();
                 }
             }
@@ -123,27 +126,8 @@
                 vx = vx + leftToRight_degrees * updateRate*2; 
                 vy = vy + frontToBack_degrees * updateRate;
                 
-                vy *= sensitivity;
-                vx *= sensitivity;
-
-                // Update position and clip it to bounds
-                px = px + vx*.5;
-//                 if (px > 98 || px < 0){ 
-//                     px = Math.max(0, Math.min(100, px)) // Clip px between 0-98
-//                     vx = 0;
-//                 }
-
-                py = py + vy*.5;
-//                 if (py > 98 || py < 0){
-//                     py = Math.max(0, Math.min(98, py)) // Clip py between 0-98
-//                     vy = 0;
-//                 }
-
-                //dot = document.getElementsByClassName("indicatorDot")[0]
-                //dot.setAttribute('style', "left:" + (px) + "%;" + "top:" + (py) + "%;");
-
-                //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
-                //document.getElementById('log').innerHTML="X:"+(innerWidth*(px/100))+",Y:"+(innerHeight*(py/100));
+                vy = (vy*0.5)*sensitivity;
+                vx = (vx*0.5)*sensitivity;
             }
             animate();
         </script>
