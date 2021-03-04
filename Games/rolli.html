@@ -59,6 +59,9 @@
                 }
                 this.print = function(msg){
                     this.arr.push(msg);   
+                    if(this.arr.length > 50){
+                        this.arr.shift();   
+                    }
                 }
             }
             
