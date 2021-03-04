@@ -31,15 +31,23 @@
                 border: 0px solid;
                 background-color: transparent;
             }
+            p{
+                width: 100%;
+                position: absolute;
+                top: 5%;
+                left: 5%;
+                color: #000;
+            }
         </style>
     </head>
     <body style="background-color:lightblue;">
         <canvas></canvas>
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
+        <p id='log'></p>
         <!--<div class="indicatorDot" style="left:30%; top:30%;"></div>-->
 
         <script>
-            const VERSION = "P003"
+            const VERSION = "P004"
             
             var can = document.querySelector('canvas');
             var ctx = can.getContext('2d');
@@ -51,25 +59,7 @@
             var vx = 0.0; // Velocity x and y
             var vy = 0.0;
             var updateRate = 1/60; // Sensor refresh rate
-            
-            function LOG(){
-                this.arr = [];
-                this.arr.push('log open' + Date());
-                this.display = function(){
-                    for(var i = this.arr.length-1; i > -1; i--){
-                        ctx.textAlign = 'start';
-                        ctx.fillText(this.arr[i],10,i*15);   
-                    }
-                }
-                this.print = function(msg){
-                    this.arr.push(msg);   
-                    if(this.arr.length > 50){
-                        this.arr.shift();   
-                    }
-                }
-            }
-            
-            var log = new LOG();
+
             ctx.textAlign = 'end';
             ctx.fillText(VERSION,innerWidth-5,20);
             
@@ -80,8 +70,6 @@
                 ctx.beginPath();
                 ctx.arc(innerWidth*(px/100),innerHeight*(py/100),15,0,2*Math.PI);
                 ctx.fill();
-                
-                log.display();
                 
                 ctx.fillText(VERSION,innerWidth-5,20);
             }
@@ -119,7 +107,7 @@
                             //dot.setAttribute('style', "left:" + (px) + "%;" + "top:" + (py) + "%;");
 
                             //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
-                            log.print("x:"+px +" ,y:" + py);
+                            document.getElementById('log').innerHTML="X:"+px+",Y:"+py;
                         });
                         animate();
                     }
