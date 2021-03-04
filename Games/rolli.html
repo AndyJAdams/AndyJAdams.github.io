@@ -13,9 +13,31 @@
             border-radius: 50%;
             position:fixed;
         }
+            body{
+                margin: 0;
+                position: fixed;
+                overflow: hidden;
+            }
+            canvas{
+                background-color: #fcad03;
+            }
+            
+            button{
+                height: 50px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+                border: 4px solid;
+            }
         </style>
 
     <script>
+        var can = document.querySelector('canvas');
+        var ctx = can.getContext('2d');
+        can.width = window.innerWidth;
+        can.height = window.innerHeight;
+        
         var px = 50; // Position x and y
         var py = 50;
         var vx = 0.0; // Velocity x and y
@@ -51,8 +73,8 @@
                             vy = 0;
                         }
 
-                        dot = document.getElementsByClassName("indicatorDot")[0]
-                        dot.setAttribute('style', "left:" + (px) + "%;" +
+                        //dot = document.getElementsByClassName("indicatorDot")[0]
+                        //dot.setAttribute('style', "left:" + (px) + "%;" +
                                                       "top:" + (py) + "%;");
                         
                         //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
@@ -64,7 +86,9 @@
     </script>
     </head>
     <body style="background-color:lightblue;">
-        <button id="accelPermsButton"  style="height:50px;" onclick="getAccel()"><h1>Get Accelerometer Permissions</h1></button>
-        <div class="indicatorDot" style="left:30%; top:30%;"></div>
+        <canvas></canvas>
+        <button id="accelPermsButton" onclick="getAccel()"><h1>Get Accelerometer Permissions</h1></button>
+        <!--<div class="indicatorDot" style="left:30%; top:30%;"></div>-->
+        
     </body>
 </html>
