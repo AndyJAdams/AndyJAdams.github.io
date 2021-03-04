@@ -38,7 +38,7 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P014";
+            const VERSION = "P015";
             var sensitivity = 0.7;
             
             var can = document.querySelector('canvas');
@@ -58,6 +58,7 @@
             
             function Ball(x,y,r){
                 this.x = x; this.y = y; this.r = r;
+                this.radPercent = {x:(this.r/innerWidth)*100,y:(this.r/innerHeight)*100};
                 this.draw = function(){
                     ctx.fillStyle='#FFF';
                     ctx.strokeStyle='#000';
@@ -69,16 +70,16 @@
                 }
                 
                 this.update = function(){
-                    this.x = innerWidth*(px/100);
-                    this.y = innerHeight*(py/100);
                     if(this.x-this.r < 0 || this.x+this.r > innerWidth){
-                        px = Math.max(0, Math.min(100, px));
+                        px = Math.max(this.radPercent.x, Math.min(100-this.radPercent.x, px));
                         vx = -vx;   
                     }
                     if(this.y+this.r > innerHeight || this.y-this.r < 0){
-                        py = Math.max(0, Math.min(100,py));
+                        py = Math.max(this.radPercent.y, Math.min(100-this.radPercent.y,py));
                         vy = -vy;
                     }
+                    this.x = innerWidth*(px/100);
+                    this.y = innerHeight*(py/100);
                     this.draw();
                 }
             }
