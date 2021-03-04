@@ -38,7 +38,7 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P016";
+            const VERSION = "P017";
             var sensitivity = 0.7;
             
             var can = document.querySelector('canvas');
@@ -52,9 +52,8 @@
             var vy = 0.0;
             var updateRate = 1/60; // Sensor refresh rate
             var accelAuth = false;
+            var maxSpeed = 20;
             
-            ctx.textAlign = 'end';
-            ctx.fillText(VERSION,innerWidth-5,20);
             
             function Ball(x,y,r){
                 this.x = x; this.y = y; this.r = r; this.dx = 0; this.dy = 0;
@@ -72,14 +71,16 @@
                 this.update = function(){
                     this.dx += vx;
                     this.dy += vy;
+                    this.dx = Math.max(-maxSpeed,Math.min(maxSpeed,this.dx));
+                    this.dy = Math.max(-maxSpeed,Math.min(maxSpeed,this.dy));
                     
                     if(this.x-this.r < 0 || this.x+this.r > innerWidth){
                         this.x = Math.max(this.r,Math.min(innerWidth-this.r,this.x));
-                        this.dx = -this.dx;
+                        this.dx = -(this.dx*0.7);
                     }
                     if(this.y+this.r > innerHeight || this.y-this.r < 0){
                         this.y = Math.max(this.r,Math.min(innerHeight-this.r,this.y));
-                        this.dy = -this.dy;
+                        this.dy = -(this.dy*0.7);
                     }
                     this.x += this.dx;
                     this.y += this.dy;
@@ -99,7 +100,12 @@
                     b.update();
                     
                     ctx.fillStyle='#000';
+                    ctx.textAlign = 'end';
                     ctx.fillText("live- "+VERSION,innerWidth-5,20);
+                    
+                    ctx.textAlign = 'start';
+                    ctx.fillText("vx: " + vx,10,10);
+                    ctx.fillText("vy: " + vy,10,30);
                 }
             }
 
