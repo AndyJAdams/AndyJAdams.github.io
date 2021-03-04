@@ -38,7 +38,7 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P013";
+            const VERSION = "P014";
             var sensitivity = 0.7;
             
             var can = document.querySelector('canvas');
@@ -72,9 +72,11 @@
                     this.x = innerWidth*(px/100);
                     this.y = innerHeight*(py/100);
                     if(this.x-this.r < 0 || this.x+this.r > innerWidth){
+                        px = Math.max(0, Math.min(100, px));
                         vx = -vx;   
                     }
                     if(this.y+this.r > innerHeight || this.y-this.r < 0){
+                        py = Math.max(0, Math.min(100,py));
                         vy = -vy;
                     }
                     this.draw();
