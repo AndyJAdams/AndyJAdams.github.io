@@ -47,7 +47,7 @@
         <!--<div class="indicatorDot" style="left:30%; top:30%;"></div>-->
 
         <script>
-            const VERSION = "P006"
+            const VERSION = "P007"
             
             var can = document.querySelector('canvas');
             var ctx = can.getContext('2d');
@@ -68,11 +68,11 @@
                 ctx.clearRect(0,0,innerWidth,innerHeight);
                 
                 ctx.beginPath();
-                ctx.arc(innerWidth*(px/100),innerHeight*(py/100),15,0,2*Math.PI);
+                ctx.arc(innerWidth*(px/100),innerHeight*(py/100),50,0,2*Math.PI);
                 ctx.fillStyle='#000';
                 ctx.fill();
                 
-                ctx.fillText(VERSION,innerWidth-5,20);
+                ctx.fillText("live- "+VERSION,innerWidth-5,20);
             }
 
             function getAccel(){
