@@ -49,6 +49,21 @@
             var vy = 0.0;
             var updateRate = 1/60; // Sensor refresh rate
             
+            function LOG(){
+                this.arr = [];
+                this.arr.push('log open' + Date());
+                this.display = function(){
+                    for(var i = this.arr.length-1; i > -1; i--){
+                        ctx.fillText(this.arr[i],10,i*15);   
+                    }
+                }
+                this.print = function(msg){
+                    this.arr.push(msg);   
+                }
+            }
+            
+            var log = new LOG();
+            
             function animate(){
                 document.requestAnimationFrame('animate');
                 ctx.clearRect(0,0,innerWidth,innerHeight);
@@ -56,6 +71,8 @@
                 ctx.beginPath();
                 ctx.arc(innerWidth*(px/100),innerHeight*(py/100),15,0,2*Math.PI);
                 ctx.fill();
+                
+                log.draw();
             }
 
             function getAccel(){
@@ -91,7 +108,7 @@
                             //dot.setAttribute('style', "left:" + (px) + "%;" + "top:" + (py) + "%;");
 
                             //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
-
+                            log.print("x:"+px +" ,y:" + py);
                         });
                         animate();
                     }
