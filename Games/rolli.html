@@ -47,7 +47,7 @@
         <!--<div class="indicatorDot" style="left:30%; top:30%;"></div>-->
 
         <script>
-            const VERSION = "P004"
+            const VERSION = "P005"
             
             var can = document.querySelector('canvas');
             var ctx = can.getContext('2d');
@@ -64,7 +64,7 @@
             ctx.fillText(VERSION,innerWidth-5,20);
             
             function animate(){
-                document.requestAnimationFrame('animate');
+                window.requestAnimationFrame('animate');
                 ctx.clearRect(0,0,innerWidth,innerHeight);
                 
                 ctx.beginPath();
@@ -107,6 +107,7 @@
                             //dot.setAttribute('style', "left:" + (px) + "%;" + "top:" + (py) + "%;");
 
                             //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
+                            document.getElementById('accelPermsButton').style.visibility = 'hidden';
                             document.getElementById('log').innerHTML="X:"+px+",Y:"+py;
                         });
                         animate();
