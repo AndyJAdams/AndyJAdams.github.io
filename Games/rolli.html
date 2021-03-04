@@ -38,7 +38,8 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P009";
+            const VERSION = "P011";
+            var sensitivity = 10;
             
             var can = document.querySelector('canvas');
             can.width = window.innerWidth;
@@ -73,40 +74,45 @@
                     if (response == 'granted') {
                         accelAuth = true;
                    // Add a listener to get smartphone orientation 
-                       // in the alpha-beta-gamma axes (units in degrees)
-                        window.addEventListener('deviceorientation',(event) => {
-                            // Expose each orientation angle in a more readable way
-                            rotation_degrees = event.alpha;
-                            frontToBack_degrees = event.beta;
-                            leftToRight_degrees = event.gamma;
-
-                            // Update velocity according to how tilted the phone is
-                            // Since phones are narrower than they are long, double the increase to the x velocity
-                            vx = vx + leftToRight_degrees * updateRate*2; 
-                            vy = vy + frontToBack_degrees * updateRate;
-
-                            // Update position and clip it to bounds
-                            px = px + vx*.5;
-                            if (px > 98 || px < 0){ 
-                                px = Math.max(0, Math.min(98, px)) // Clip px between 0-98
-                                vx = 0;
-                            }
-
-                            py = py + vy*.5;
-                            if (py > 98 || py < 0){
-                                py = Math.max(0, Math.min(98, py)) // Clip py between 0-98
-                                vy = 0;
-                            }
-
-                            //dot = document.getElementsByClassName("indicatorDot")[0]
-                            //dot.setAttribute('style', "left:" + (px) + "%;" + "top:" + (py) + "%;");
-
-                            //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
-                            document.getElementById('accelPermsButton').style.visibility = 'hidden';
-                            document.getElementById('log').innerHTML="X:"+(innerWidth*(px/100))+",Y:"+(innerHeight*(py/100));   
-                        });
+                        window.addEventListener('deviceorientation',trackOrient,false);
                     }
                 });
+            }
+            
+            function trackOrient(event){
+                // in the alpha-beta-gamma axes (units in degrees)
+                // Expose each orientation angle in a more readable way
+                rotation_degrees = event.alpha;
+                frontToBack_degrees = event.beta;
+                leftToRight_degrees = event.gamma;
+
+                // Update velocity according to how tilted the phone is
+                // Since phones are narrower than they are long, double the increase to the x velocity
+                vx = vx + leftToRight_degrees * updateRate*2; 
+                vy = vy + frontToBack_degrees * updateRate;
+                
+                vy = vy/sensitivity;
+                vx = vx/sensitivity;
+
+                // Update position and clip it to bounds
+                px = px + vx*.5;
+                if (px > 98 || px < 0){ 
+                    px = Math.max(0, Math.min(98, px)) // Clip px between 0-98
+                    vx = 0;
+                }
+
+                py = py + vy*.5;
+                if (py > 98 || py < 0){
+                    py = Math.max(0, Math.min(98, py)) // Clip py between 0-98
+                    vy = 0;
+                }
+
+                //dot = document.getElementsByClassName("indicatorDot")[0]
+                //dot.setAttribute('style', "left:" + (px) + "%;" + "top:" + (py) + "%;");
+
+                //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
+                document.getElementById('accelPermsButton').style.visibility = 'hidden';
+                document.getElementById('log').innerHTML="X:"+(innerWidth*(px/100))+",Y:"+(innerHeight*(py/100));
             }
             animate();
         </script>
