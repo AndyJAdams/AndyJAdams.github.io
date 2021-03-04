@@ -47,7 +47,7 @@
         <!--<div class="indicatorDot" style="left:30%; top:30%;"></div>-->
 
         <script>
-            const VERSION = "P007"
+            const VERSION = "P008";
             
             var can = document.querySelector('canvas');
             var ctx = can.getContext('2d');
@@ -59,25 +59,28 @@
             var vx = 0.0; // Velocity x and y
             var vy = 0.0;
             var updateRate = 1/60; // Sensor refresh rate
-
+            var accelAuth = false;
+            
             ctx.textAlign = 'end';
             ctx.fillText(VERSION,innerWidth-5,20);
             
             function animate(){
                 window.requestAnimationFrame('animate');
                 ctx.clearRect(0,0,innerWidth,innerHeight);
-                
-                ctx.beginPath();
-                ctx.arc(innerWidth*(px/100),innerHeight*(py/100),50,0,2*Math.PI);
-                ctx.fillStyle='#000';
-                ctx.fill();
-                
-                ctx.fillText("live- "+VERSION,innerWidth-5,20);
+                if(accelAuth){
+                    ctx.beginPath();
+                    ctx.arc(innerWidth*(px/100),innerHeight*(py/100),50,0,2*Math.PI);
+                    ctx.fillStyle='#000';
+                    ctx.fill();
+
+                    ctx.fillText("live- "+VERSION,innerWidth-5,20);
+                }
             }
 
             function getAccel(){
                 DeviceMotionEvent.requestPermission().then(response => {
                     if (response == 'granted') {
+                        accelAuth = true;
                    // Add a listener to get smartphone orientation 
                        // in the alpha-beta-gamma axes (units in degrees)
                         window.addEventListener('deviceorientation',(event) => {
@@ -111,10 +114,10 @@
                             document.getElementById('accelPermsButton').style.visibility = 'hidden';
                             document.getElementById('log').innerHTML="X:"+(innerWidth*(px/100))+",Y:"+(innerHeight*(py/100));
                         });
-                        animate();
                     }
                 });
             }
+            animate();
         </script>
     </body>
 </html>
