@@ -38,8 +38,8 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P011";
-            var sensitivity = 10;
+            const VERSION = "P012";
+            var sensitivity = 2;
             
             var can = document.querySelector('canvas');
             can.width = window.innerWidth;
@@ -112,7 +112,7 @@
 
                 //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
                 document.getElementById('accelPermsButton').style.visibility = 'hidden';
-                document.getElementById('log').innerHTML="X:"+(innerWidth*(px/100))+",Y:"+(innerHeight*(py/100));
+                //document.getElementById('log').innerHTML="X:"+(innerWidth*(px/100))+",Y:"+(innerHeight*(py/100));
             }
             animate();
         </script>
