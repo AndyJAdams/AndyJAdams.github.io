@@ -38,8 +38,8 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P012";
-            var sensitivity = 2;
+            const VERSION = "P013";
+            var sensitivity = 0.7;
             
             var can = document.querySelector('canvas');
             can.width = window.innerWidth;
@@ -56,15 +56,43 @@
             ctx.textAlign = 'end';
             ctx.fillText(VERSION,innerWidth-5,20);
             
+            function Ball(x,y,r){
+                this.x = x; this.y = y; this.r = r;
+                this.draw = function(){
+                    ctx.fillStyle='#FFF';
+                    ctx.strokeStyle='#000';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y,this.r, 0, 2*Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                
+                this.update = function(){
+                    this.x = innerWidth*(px/100);
+                    this.y = innerHeight*(py/100);
+                    if(this.x-this.r < 0 || this.x+this.r > innerWidth){
+                        vx = -vx;   
+                    }
+                    if(this.y+this.r > innerHeight || this.y-this.r < 0){
+                        vy = -vy;
+                    }
+                    this.draw();
+                }
+            }
+            
+            var b = new Ball(innerWidth/2,innerHeight*0.7,30);
             function animate(){
                 window.requestAnimationFrame(animate);
                 ctx.clearRect(0,0,innerWidth,innerHeight);
                 if(accelAuth){
-                    ctx.beginPath();
-                    ctx.arc(innerWidth*(px/100),innerHeight*(py/100),50,0,2*Math.PI);
+//                     ctx.beginPath();
+//                     ctx.arc(innerWidth*(px/100),innerHeight*(py/100),50,0,2*Math.PI);
+//                     ctx.fillStyle='#000';
+//                     ctx.fill();
+                    b.update();
+                    
                     ctx.fillStyle='#000';
-                    ctx.fill();
-
                     ctx.fillText("live- "+VERSION,innerWidth-5,20);
                 }
             }
@@ -73,7 +101,8 @@
                 DeviceMotionEvent.requestPermission().then(response => {
                     if (response == 'granted') {
                         accelAuth = true;
-                   // Add a listener to get smartphone orientation 
+                        document.getElementById('accelPermsButton').style.visibility = 'hidden';
+                        // Add a listener to get smartphone orientation 
                         window.addEventListener('deviceorientation',trackOrient,false);
                     }
                 });
@@ -91,27 +120,26 @@
                 vx = vx + leftToRight_degrees * updateRate*2; 
                 vy = vy + frontToBack_degrees * updateRate;
                 
-                vy = vy/sensitivity;
-                vx = vx/sensitivity;
+                vy *= sensitivity;
+                vx *= sensitivity;
 
                 // Update position and clip it to bounds
                 px = px + vx*.5;
-                if (px > 98 || px < 0){ 
-                    px = Math.max(0, Math.min(98, px)) // Clip px between 0-98
-                    vx = 0;
-                }
+//                 if (px > 98 || px < 0){ 
+//                     px = Math.max(0, Math.min(100, px)) // Clip px between 0-98
+//                     vx = 0;
+//                 }
 
                 py = py + vy*.5;
-                if (py > 98 || py < 0){
-                    py = Math.max(0, Math.min(98, py)) // Clip py between 0-98
-                    vy = 0;
-                }
+//                 if (py > 98 || py < 0){
+//                     py = Math.max(0, Math.min(98, py)) // Clip py between 0-98
+//                     vy = 0;
+//                 }
 
                 //dot = document.getElementsByClassName("indicatorDot")[0]
                 //dot.setAttribute('style', "left:" + (px) + "%;" + "top:" + (py) + "%;");
 
                 //CODE DIRECTLY FROM : https://kongmunist.medium.com/accessing-the-iphone-accelerometer-with-javascript-in-ios-14-and-13-e146d18bb175
-                document.getElementById('accelPermsButton').style.visibility = 'hidden';
                 //document.getElementById('log').innerHTML="X:"+(innerWidth*(px/100))+",Y:"+(innerHeight*(py/100));
             }
             animate();
