@@ -38,7 +38,7 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P019";
+            const VERSION = "P020";
             var sensitivity = 0.7;
             var offset = {x: undefined, y:undefined};
             
@@ -112,6 +112,8 @@
                     ctx.textAlign = 'start';
                     ctx.fillText("vx: " + vx,10,10);
                     ctx.fillText("vy: " + vy,10,30);
+                    ctx.fillText("ox: " + offset.x,10,50);
+                    ctx.fillText("oy: " + offset.y,10,70);
                 }
             }
 
