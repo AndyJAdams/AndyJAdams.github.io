@@ -38,9 +38,9 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P020";
+            const VERSION = "P021";
             var sensitivity = 0.7;
-            var offset = {x: undefined, y:undefined};
+            var offset = {x: 20, y:0};
             
             var can = document.querySelector('canvas');
             can.width = window.innerWidth;
@@ -98,12 +98,8 @@
 //                     ctx.arc(innerWidth*(px/100),innerHeight*(py/100),50,0,2*Math.PI);
 //                     ctx.fillStyle='#000';
 //                     ctx.fill();
-                    if(offset.x == undefined || offset.y == undefined){
-                        offset.x = vx;
-                        offset.y = vy;
-                    } else {
-                        b.update();
-                    }
+                    
+                    b.update();
                     
                     ctx.fillStyle='#000';
                     ctx.textAlign = 'end';
@@ -120,7 +116,7 @@
             function getAccel(){
                 DeviceMotionEvent.requestPermission().then(response => {
                     if (response == 'granted') {
-                        accelAuth = true;
+                        //accelAuth = true;
                         document.getElementById('accelPermsButton').style.visibility = 'hidden';
                         // Add a listener to get smartphone orientation 
                         window.addEventListener('deviceorientation',trackOrient,false);
@@ -146,6 +142,12 @@
                 //Drift correction
                 vy = Math.floor(vy*10.0)/10;
                 vx = Math.floor(vx*10.0)/10;
+                if(offset.x > 1){
+                 offset.x = vx;
+                 offset.y = vy;
+                } else {
+                    accelAuth = true;
+                }
             }
             animate();
         </script>
