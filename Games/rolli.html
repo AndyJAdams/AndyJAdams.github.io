@@ -12,7 +12,8 @@
                 overflow: hidden;
             }
             canvas{
-                background-color: #fcad03;
+                /*background-color: #fcad03; ORANGE-ISH YELLOW*/
+                background-color: #79b9c9;
             }
             
             button{
@@ -38,7 +39,7 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P021";
+            const VERSION = "P022";
             var sensitivity = 0.7;
             var offset = {x: 20, y:0};
             
@@ -142,7 +143,7 @@
                 //Drift correction
                 vy = Math.floor(vy*10.0)/10;
                 vx = Math.floor(vx*10.0)/10;
-                if(offset.x > 1){
+                if(Math.abs(offset.x) > 10){
                  offset.x = vx;
                  offset.y = vy;
                 } else {
