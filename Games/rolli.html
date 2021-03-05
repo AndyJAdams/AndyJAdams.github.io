@@ -39,7 +39,7 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P022";
+            const VERSION = "P023";
             var sensitivity = 0.7;
             var offset = {x: 20, y:0};
             
@@ -63,7 +63,7 @@
                 this.draw = function(){
                     ctx.fillStyle='#FFF';
                     ctx.strokeStyle='#000';
-                    ctx.lineWidth = 3;
+                    ctx.lineWidth = 7;
                     ctx.beginPath();
                     ctx.arc(this.x, this.y,this.r, 0, 2*Math.PI);
                     ctx.fill();
