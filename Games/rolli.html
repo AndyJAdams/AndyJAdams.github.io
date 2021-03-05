@@ -38,8 +38,9 @@
         <button id="accelPermsButton" onclick="getAccel()"><h1>rOlli</h1></button>
         <p id='log'></p>
         <script>
-            const VERSION = "P018";
+            const VERSION = "P019";
             var sensitivity = 0.7;
+            var offset = {x: undefined, y:undefined};
             
             var can = document.querySelector('canvas');
             can.width = window.innerWidth;
@@ -69,8 +70,8 @@
                 }
                 
                 this.update = function(){
-                    this.dx += vx;
-                    this.dy += vy;
+                    this.dx += (vx-offset.x);
+                    this.dy += (vy-offset.y);
                     this.dx = Math.max(-maxSpeed,Math.min(maxSpeed,this.dx));
                     this.dy = Math.max(-maxSpeed,Math.min(maxSpeed,this.dy));
                     
@@ -97,7 +98,12 @@
 //                     ctx.arc(innerWidth*(px/100),innerHeight*(py/100),50,0,2*Math.PI);
 //                     ctx.fillStyle='#000';
 //                     ctx.fill();
-                    b.update();
+                    if(offset.x == undefined || offset.y == undefined){
+                        offset.x = vx;
+                        offset.y = vy;
+                    } else {
+                        b.update();
+                    }
                     
                     ctx.fillStyle='#000';
                     ctx.textAlign = 'end';
