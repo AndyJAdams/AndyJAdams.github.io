@@ -540,8 +540,8 @@
                 ctx.textAlign='center';
                 ctx.fillStyle='#000';
                 ctx.fillText((Math.floor(depth*10)/10)+'cm',center.x,60); //(Math.floor(depth*10)/10)
-                if(depth < 4){
-                    ctx.fillText('Tap to fire - go deep',center.x,innerHeight-50);
+                if(depth < 3){
+                    ctx.fillText('Hold to fire - go deep',center.x,innerHeight-50);
                 } else if(depth > 20){
                     endTime = Date.now();
                     end = -1;
