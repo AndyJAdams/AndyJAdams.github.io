@@ -105,12 +105,12 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         }
         for(var i = 0; i < this.pos.length;i++){
             for(var j = 0; j < this.pos[i].length; j++){
-                ctx.fillStyle='#00000088';
-                ctx.fillRect(this.pos[i][j].x-radius, this.pos[i][j].y-radius,radius*2,radius*2);
+                ctx.strokeStyle='#00000088';
+                ctx.strokeRect(this.pos[i][j].x-(this.spacing.x/2)+2, this.pos[i][j].y-(this.spacing.y/2)+2,this.spacing.x-4,this.spacing.y-4);
 
-                ctx.fillStyle='#000';
+                ctx.fillStyle='#00000066';
                 ctx.font = '12px sans-serif';
-                ctx.fillText(i+","+j,this.pos[i][j].x-radius,this.pos[i][j].y-radius+10);
+                ctx.fillText(i+","+j,this.pos[i][j].x-8,this.pos[i][j].y+4);
             }
         }
     }
