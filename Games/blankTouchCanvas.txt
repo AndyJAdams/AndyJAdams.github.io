@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Rolli</title>
+	<title>BTC_BoilerPlate</title>
 	<style type="text/css">
 		body{
             margin: 0;
@@ -28,7 +28,7 @@
 	var ctx = canvas.getContext('2d');
     scaleCanvas();
 
-    
+
     //*************************************************
     //*************************************************
 	function animate(){
