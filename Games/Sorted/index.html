@@ -148,7 +148,7 @@
             this.draw = function(){
                 ctx.fillStyle='#00000044';
                 ctx.fillRect(this.pos.x-tileSize/2+4,this.pos.y-tileSize/2+4,tileSize-8,tileSize-8);
-                ctx.fillText(this.val,this.pos.x-tileSize/2+10,this.pos.y-tileSize/2+10);
+                ctx.fillText(this.val,this.pos.x-tileSize/2+10,this.pos.y-tileSize/2+16);
             }
         }
 
@@ -171,14 +171,44 @@
                 }
             }
 
+            this.getTileNeighbors = function(r,c){
+                var n = [];
+                if(c-1 >-1){
+                    n.push(this.tiles[r][c-1]);
+                }
+                if(r+1 < 5){
+                    n.push(this.tiles[r+1][c]);
+                }
+                if(c+1 > 5){
+                    n.push(this.tiles[r][c+1]);
+                }
+                if(r-1 > -1){
+                    n.push(this.tiles[r-1][c]);
+                }
+                return n;
+            }
+
             this.assignValues = function(){
                 //How many colors?
                 var colCount = Math.floor(Math.random()*4)+2;
                 //Spit the grid even(ish)
                 var groupSize = Math.floor(25/colCount);
-                //Select a random un
+                //Select a random tile to start
+                for(var i = 0; i< colCount; i++){
+                    var randR = Math.floor(Math.random()*5);
+                    var randC = Math.floor(Math.random()*5);
+                    var t = this.tiles[randR][randC];
+                    for(var j = 0; j < groupSize;j++){
+                        t.val = i;
+                        
+                    }
+
+                }
+
             }
             this.assignValues();
+
+
         }
         var puzzle = new Puzzle();
         //---------------------------------------------------------------------------------------
