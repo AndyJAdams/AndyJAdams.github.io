@@ -5,9 +5,9 @@ var canvas = document.querySelector('canvas');
 }
 var ctx = canvas.getContext('2d');
 scaleCanvas();
-var tileGrid = new TileGrid(7,4,innerWidth,innerHeight);
-// var tiles = [];
-// tiles.push(new Tile(new Position(innerWidth/2-40,innerHeight/2-40),'#08F',80));
+
+var tileGrid = new TileGrid(9,6,innerWidth,innerHeight);
+var dragSensitivity = 25;
   //*************************************************
   //*************************************************
 function animate(){
@@ -20,21 +20,10 @@ function animate(){
   //*************************************************
 
   function GetSelected(x,y){
-    //We want to know on mouse down which tile we are on
-    // later we'll introduce the grid concept and check for column and rows
-    // for(var i = 0; i < tiles.length; i++){
-    //   let p = tiles[i].pos, s = tiles[i].scale;
-    //   if(x < p.x+s && x > p.x && y < p.y+s && y > p.y){
-    //     tiles[i].selected = true;
-    //   }
-    // }
     if(tileGrid){tileGrid.gatherSelected(x,y);}
   }
 
   function ClearSelected(){
-    // for(var i = 0; i < tiles.length; i++){
-    //   tiles[i].selected = false;
-    // }
     if(tileGrid){tileGrid.clearSelected();}
   }
 
@@ -42,13 +31,11 @@ function animate(){
   window.addEventListener('keyup',function(e){
       console.log(e.keyCode);
   });
-
   window.addEventListener('resize',function(evt){
       evt.preventDefault();
       scaleCanvas();
       if(tileGrid){tileGrid.init(innerWidth,innerHeight);}
   });
-
 
   window.addEventListener('mousedown',inputStart,false);
   window.addEventListener('mousemove',inputMove,false);
@@ -60,7 +47,7 @@ function animate(){
   window.addEventListener('touchend',inputEnd,false);
 
   var start = {x:-1,y:-1};
-  var current = {x:-1,y:-1};
+  var current = {x:-1,y:-1,d:0};
   function inputStart(evt){
       evt.preventDefault();
       if(evt.changedTouches != undefined){
@@ -91,11 +78,28 @@ function animate(){
               current.x = evt.pageX;
               current.y = evt.pageY;
           }
+
+          if(tileGrid){
+            let xdif = Math.abs(start.x-current.x);
+            let ydif = Math.abs(start.y-current.y);
+            if(ydif > dragSensitivity && xdif > dragSensitivity && current.d != 1){
+              //We prefer the vertical
+              current.d = -1;
+              tileGrid.cycleColumn(current.y-start.y);
+            } else if(ydif > dragSensitivity  && current.d != 1){
+              current.d = -1;
+              tileGrid.cycleColumn(current.y-start.y);
+            } else if(xdif > dragSensitivity  && current.d != -1){
+              current.d = 1;
+              tileGrid.cycleRow(current.x-start.x);
+            }
+          }
       }
   }
 
   function inputEnd(){
       start.x = -1;
       ClearSelected();
+      current.d = 0;
   }
 animate();
