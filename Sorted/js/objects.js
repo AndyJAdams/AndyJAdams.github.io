@@ -60,7 +60,7 @@ function TileGrid(r,c,w,h){
   this.selected = {row:[],column:[],dir:0};
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
   this.primary = {tile: undefined, r: -1, c: -1};
-  this.init = function(w,h){
+  this.init = function(w,h,data = []){
     this.w = w; this.h = h;
     this.scale = (this.w*0.8)/this.c;
     if((this.h < (this.w*0.8))||(this.scale*this.r > (this.h*0.8))){
@@ -81,6 +81,7 @@ function TileGrid(r,c,w,h){
       vert: this.gridScale.y
     };
     this.gridPos = [];
+    let dataCount = 0;
     if(this.tiles.length < 1){ // Puzzle not yet generated
       for(var cols = 0; cols < this.c; cols++){
         let row = [];
@@ -92,6 +93,10 @@ function TileGrid(r,c,w,h){
           );
           gp.push(pos);
           let ind = Math.floor(Math.random()*this.colorArray.length);
+          if(data.length > 0){
+            ind = data[dataCount];
+            dataCount++;
+          }
           row.push(new Tile(new Position(
             this.center.x-this.halfGrid.x+(cols*this.scale),
             this.center.y-this.halfGrid.y+(rows*this.scale)),
@@ -348,5 +353,58 @@ function TileGrid(r,c,w,h){
       }
     }
     return out;
+  }
+
+  this.allReady = function(){
+    for(var i = 0; i < this.tiles.length; i++){
+      for(var j = 0; j < this.tiles[i].length; j++){
+        if(!this.tiles[i][j].inPos){
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  this.getNeighbors = function(t,c=-1,r=-1){
+    //Where is this tile?
+    let spot = {c:c,r:r};
+    if(c == -1 || r == -1){
+      for(var i = 0; i < this.tiles.length; i++){
+        for(var j = 0; j < this.tiles[i].length; j++){
+          if(this.tiles[i][j] == t){
+            spot.c = i; spot.r = j;
+          }
+        }
+      }
+    }
+    //Now let's collect the neighbors
+    let n = [];
+    if(spot.c > 0){ n.push(this.tiles[spot.c-1][spot.r]);} //left
+    if(spot.c < this.c-1){ n.push(this.tiles[spot.c+1][spot.r]);} //right
+    if(spot.r > 0){ n.push(this.tiles[spot.c][spot.r-1]);}//up
+    if(spot.r < this.r-1){ n.push(this.tiles[spot.c][spot.r+1]);}//down
+    return n;
+  }
+
+  this.validate = function(){
+    if(!this.allReady()){
+      return false;
+    }
+    var result = true;
+    for(var i = 0; i < this.tiles.length; i++){
+      for(var j = 0; j < this.tiles[i].length; j++){
+        let n = this.getNeighbors(this.tiles[i][j],i,j);
+        let pass = false;
+        for(var a = 0; a < n.length; n++){
+            if(n.index == this.tiles[i][j].index){
+              pass = true;
+            }
+        }
+        if(!pass){
+          return false;
+        }
+      }
+    }
   }
 }

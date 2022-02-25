@@ -17,13 +17,42 @@ function animate(){
   if(!tileGrid){
     //console.log(localStorage.getItem('sortedGameKey'));
     //this returns null
-    tileGrid = new TileGrid(9,6,innerWidth,innerHeight);
-    tileGrid.init(innerWidth,innerHeight);
+    // tileGrid = new TileGrid(9,6,innerWidth,innerHeight);
+    // tileGrid.init(innerWidth,innerHeight);
+    init();
   }
   tileGrid.update(ctx);
+  if(tileGrid.validate()){
+    //Yay we won - for now let's init again
+    console.log('win');
+    reset();
+  }
 }
   //*************************************************
   //*************************************************
+
+  function init(){
+    let raw = localStorage.getItem('sortedGameKey');
+    if(raw != null){
+      var keyData = raw.split('_');
+      tileGrid = new TileGrid(keyData[0],keyData[1],innerWidth,innerHeight);
+      tileGrid.init(innerWidth,innerHeight,keyData.slice(2));
+      return;
+    }
+    let x = Math.floor(Math.random()*5)+2;
+    let y = Math.floor(Math.random()*7)+2;
+    tileGrid = new TileGrid(y,x,innerWidth,innerHeight);
+    tileGrid.init(innerWidth,innerHeight);
+  }
+
+  function reset(){
+    localStorage.clear();
+    let x = Math.floor(Math.random()*5)+2;
+    let y = Math.floor(Math.random()*7)+2;
+    tileGrid = new TileGrid(y,x,innerWidth,innerHeight);
+    tileGrid.init(innerWidth,innerHeight);
+    localStorage.setItem('sortedGameKey',tileGrid.compressData());
+  }
 
   function GetSelected(x,y){
     if(tileGrid){tileGrid.gatherSelected(x,y);}
@@ -83,6 +112,7 @@ function animate(){
       }
       current.x = start.x;
       current.y = start.y;
+
       GetSelected(current.x,current.y);
   }
 
@@ -124,7 +154,6 @@ function animate(){
       start.x = -1;
       if(tileGrid){
         var data = tileGrid.compressData();
-        console.log(data);
         localStorage.setItem('sortedGameKey',data);
       }
   }
