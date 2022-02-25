@@ -1,13 +1,14 @@
 //Position object
 function Position(x,y){this.x = x; this.y =y ;}
 
-function Tile(pos,val,scale){
+function Tile(pos,val,scale,index){
   this.pos = pos;
   this.val = val;
   this.scale = scale;
   this.targetPos = new Position(this.pos.x,this.pos.y);
   this.selected = false;
   this.inPos = true;
+  this.index = index;
 
   this.draw = function(ctx){
     ctx.fillStyle=""+this.val;
@@ -17,10 +18,10 @@ function Tile(pos,val,scale){
     // } else {
       //Tile is no longer selected [normal size]
       ctx.fillRect(this.pos.x, this.pos.y, this.scale, this.scale);
-      ctx.beginPath();
-      ctx.moveTo(this.pos.x+10, this.pos.y+10);
-      ctx.lineTo(this.targetPos.x, this.targetPos.y);
-      ctx.stroke();
+      // ctx.beginPath();
+      // ctx.moveTo(this.pos.x+10, this.pos.y+10);
+      // ctx.lineTo(this.targetPos.x, this.targetPos.y);
+      // ctx.stroke();
     // }
   }
 
@@ -90,11 +91,13 @@ function TileGrid(r,c,w,h){
             this.center.y-this.halfGrid.y+(rows*this.scale)
           );
           gp.push(pos);
+          let ind = Math.floor(Math.random()*this.colorArray.length);
           row.push(new Tile(new Position(
             this.center.x-this.halfGrid.x+(cols*this.scale),
             this.center.y-this.halfGrid.y+(rows*this.scale)),
-            this.colorArray[Math.floor(Math.random()*this.colorArray.length)],
-            this.scale)
+            this.colorArray[ind],
+            this.scale,
+            ind )
           ); //End tile definition
         }
         this.tiles.push(row);
@@ -123,29 +126,29 @@ function TileGrid(r,c,w,h){
     for(var c = 0; c < this.tiles.length; c++){
       for(var r = 0; r < this.tiles[c].length; r++){
         this.tiles[c][r].update(ctx);
-        //DEBUG ROW
-        for(var a = 0; a < this.selected.row.length; a++){
-          if(this.tiles[c][r] == this.selected.row[a]){
-            ctx.fillStyle='#000';
-            ctx.fillText("R:"+a,this.tiles[c][r].pos.x+5,this.tiles[c][r].pos.y+10);
-          }
-        }
-        //DEBUG COLUMN
-        for(var b = 0; b < this.selected.column.length; b++){
-          if(this.tiles[c][r] == this.selected.column[b]){
-            ctx.fillStyle='#000';
-            ctx.fillText("C:"+b,this.tiles[c][r].pos.x+5,this.tiles[c][r].pos.y+20);
-          }
-        }
+        // //DEBUG ROW
+        // for(var a = 0; a < this.selected.row.length; a++){
+        //   if(this.tiles[c][r] == this.selected.row[a]){
+        //     ctx.fillStyle='#000';
+        //     ctx.fillText("R:"+a,this.tiles[c][r].pos.x+5,this.tiles[c][r].pos.y+10);
+        //   }
+        // }
+        // //DEBUG COLUMN
+        // for(var b = 0; b < this.selected.column.length; b++){
+        //   if(this.tiles[c][r] == this.selected.column[b]){
+        //     ctx.fillStyle='#000';
+        //     ctx.fillText("C:"+b,this.tiles[c][r].pos.x+5,this.tiles[c][r].pos.y+20);
+        //   }
+        // }
       }
     }
 
-    for(var i = 0; i < this.gridPos.length; i++){
-      for(var j = 0; j < this.gridPos[i].length; j++){
-        ctx.fillStyle='#FFF';
-        ctx.fillRect(this.gridPos[i][j].x-2,this.gridPos[i][j].y-2,4,4);
-      }
-    }
+    // for(var i = 0; i < this.gridPos.length; i++){
+    //   for(var j = 0; j < this.gridPos[i].length; j++){
+    //     ctx.fillStyle='#FFF';
+    //     ctx.fillRect(this.gridPos[i][j].x-2,this.gridPos[i][j].y-2,4,4);
+    //   }
+    // }
   }
 
   //Now for selection...
@@ -335,5 +338,15 @@ function TileGrid(r,c,w,h){
       }
     }
     this.clearSelected();
+  }
+
+  this.compressData = function(){
+    var out = this.r + "_"+this.c;
+    for(var i = 0; i < this.tiles.length; i++){
+      for(var j = 0; j < this.tiles[i].length; j++){
+        out += "_"+this.tiles[i][j].index;
+      }
+    }
+    return out;
   }
 }

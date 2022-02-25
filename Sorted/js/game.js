@@ -6,8 +6,7 @@ var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 scaleCanvas();
 
-var tileGrid = new TileGrid(9,6,innerWidth,innerHeight);
-tileGrid.init(innerWidth,innerHeight);
+var tileGrid = undefined;
 var dragSensitivity = 25;
   //*************************************************
   //*************************************************
@@ -15,6 +14,12 @@ function animate(){
   window.requestAnimationFrame(animate);
   ctx.clearRect(0,0,innerWidth,innerHeight);
   //ctx.fillRect(innerWidth/2-30,innerHeight/2-30,60,60);
+  if(!tileGrid){
+    //console.log(localStorage.getItem('sortedGameKey'));
+    //this returns null
+    tileGrid = new TileGrid(9,6,innerWidth,innerHeight);
+    tileGrid.init(innerWidth,innerHeight);
+  }
   tileGrid.update(ctx);
 }
   //*************************************************
@@ -38,6 +43,14 @@ function animate(){
 //*** INPUT SECTION **//
   window.addEventListener('keyup',function(e){
       console.log(e.keyCode);
+      if(e.keyCode == '73'){
+        let key = localStorage.getItem('sortedGameKey');
+        console.log("KEY:"+key);
+      }
+      if(e.keyCode == '67'){
+        localStorage.clear();
+        console.log("KEY CLEARED");
+      }
   });
   window.addEventListener('resize',function(evt){
       evt.preventDefault();
@@ -109,5 +122,12 @@ function animate(){
       ClearSelected();
       current.d = 0;
       start.x = -1;
+      if(tileGrid){
+        var data = tileGrid.compressData();
+        console.log(data);
+        localStorage.setItem('sortedGameKey',data);
+      }
   }
+
+
 animate();
