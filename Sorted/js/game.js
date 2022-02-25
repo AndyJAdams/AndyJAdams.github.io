@@ -7,6 +7,7 @@ var ctx = canvas.getContext('2d');
 scaleCanvas();
 
 var tileGrid = new TileGrid(9,6,innerWidth,innerHeight);
+tileGrid.init(innerWidth,innerHeight);
 var dragSensitivity = 25;
   //*************************************************
   //*************************************************
@@ -24,7 +25,14 @@ function animate(){
   }
 
   function ClearSelected(){
-    if(tileGrid){tileGrid.clearSelected();}
+    if(tileGrid){
+      if(current.d == -1){
+        tileGrid.snap(current.y-start.y,-1);
+      }  else if(current.d == 1){
+        tileGrid.snap(current.x-start.x,1);
+      }
+      tileGrid.clearSelected();
+    }
   }
 
 //*** INPUT SECTION **//
@@ -98,8 +106,8 @@ function animate(){
   }
 
   function inputEnd(){
-      start.x = -1;
       ClearSelected();
       current.d = 0;
+      start.x = -1;
   }
 animate();

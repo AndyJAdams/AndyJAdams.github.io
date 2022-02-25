@@ -17,6 +17,10 @@ function Tile(pos,val,scale){
     // } else {
       //Tile is no longer selected [normal size]
       ctx.fillRect(this.pos.x, this.pos.y, this.scale, this.scale);
+      ctx.beginPath();
+      ctx.moveTo(this.pos.x+10, this.pos.y+10);
+      ctx.lineTo(this.targetPos.x, this.targetPos.y);
+      ctx.stroke();
     // }
   }
 
@@ -86,8 +90,10 @@ function TileGrid(r,c,w,h){
             this.center.y-this.halfGrid.y+(rows*this.scale)
           );
           gp.push(pos);
-          row.push(new Tile(
-            pos, this.colorArray[Math.floor(Math.random()*this.colorArray.length)],
+          row.push(new Tile(new Position(
+            this.center.x-this.halfGrid.x+(cols*this.scale),
+            this.center.y-this.halfGrid.y+(rows*this.scale)),
+            this.colorArray[Math.floor(Math.random()*this.colorArray.length)],
             this.scale)
           ); //End tile definition
         }
@@ -112,12 +118,32 @@ function TileGrid(r,c,w,h){
       }
     }
   }
-  this.init(w,h);
 
   this.update = function(ctx){
     for(var c = 0; c < this.tiles.length; c++){
       for(var r = 0; r < this.tiles[c].length; r++){
         this.tiles[c][r].update(ctx);
+        //DEBUG ROW
+        for(var a = 0; a < this.selected.row.length; a++){
+          if(this.tiles[c][r] == this.selected.row[a]){
+            ctx.fillStyle='#000';
+            ctx.fillText("R:"+a,this.tiles[c][r].pos.x+5,this.tiles[c][r].pos.y+10);
+          }
+        }
+        //DEBUG COLUMN
+        for(var b = 0; b < this.selected.column.length; b++){
+          if(this.tiles[c][r] == this.selected.column[b]){
+            ctx.fillStyle='#000';
+            ctx.fillText("C:"+b,this.tiles[c][r].pos.x+5,this.tiles[c][r].pos.y+20);
+          }
+        }
+      }
+    }
+
+    for(var i = 0; i < this.gridPos.length; i++){
+      for(var j = 0; j < this.gridPos[i].length; j++){
+        ctx.fillStyle='#FFF';
+        ctx.fillRect(this.gridPos[i][j].x-2,this.gridPos[i][j].y-2,4,4);
       }
     }
   }
@@ -201,7 +227,6 @@ function TileGrid(r,c,w,h){
     // }
   }
   this.clearSelected = function(){
-
     for(var c = 0; c < this.tiles.length; c++){
       for(var r = 0; r < this.tiles[c].length; r++){
         this.tiles[c][r].selected = false;
@@ -236,7 +261,6 @@ function TileGrid(r,c,w,h){
     }
 
   }
-
   this.cycleRow = function(qty){
     if(this.selected.dir == -1){
       return;
@@ -258,5 +282,58 @@ function TileGrid(r,c,w,h){
         this.selected.row[i].pos.x += this.bounds.horz;
       }
     }
+  }
+
+  this.snap = function(qty,dir){
+    if(dir == 1){
+      for(var i = 0; i < this.selected.row.length; i++){
+        let md = this.scale*10;
+        let pair = {r:-1,c:-1};
+        for(var a = 0; a < this.gridPos.length; a++){
+          for(var b = 0; b < this.gridPos[a].length; b++){
+            let d = Math.abs(
+              Math.sqrt(
+                Math.pow(
+                  this.gridPos[a][b].x-this.selected.row[i].pos.x,2)+
+                Math.pow(
+                  this.gridPos[a][b].y-this.selected.row[i].pos.y,2)
+              )
+            );
+            if(d < md){
+              this.selected.row[i].targetPos.x = this.gridPos[a][b].x;
+              this.selected.row[i].targetPos.y = this.gridPos[a][b].y;
+              pair.r = b; pair.c = a;
+              md = d;
+            }
+          }
+        }
+        this.tiles[pair.c][pair.r] = this.selected.row[i];
+      }
+    } else if(dir == -1){
+      for(var i = 0; i < this.selected.column.length; i++){
+        let md = this.scale*10;
+        let pair = {r:-1,c:-1};
+        for(var a = 0; a < this.gridPos.length; a++){
+          for(var b = 0; b < this.gridPos[a].length; b++){
+            let d = Math.abs(
+              Math.sqrt(
+                Math.pow(
+                  this.gridPos[a][b].x-this.selected.column[i].pos.x,2)+
+                Math.pow(
+                  this.gridPos[a][b].y-this.selected.column[i].pos.y,2)
+              )
+            );
+            if(d < md){
+              this.selected.column[i].targetPos.x = this.gridPos[a][b].x;
+              this.selected.column[i].targetPos.y = this.gridPos[a][b].y;
+              pair.r = b; pair.c = a;
+              md = d;
+            }
+          }
+        }
+        this.tiles[pair.c][pair.r] = this.selected.column[i];
+      }
+    }
+    this.clearSelected();
   }
 }
