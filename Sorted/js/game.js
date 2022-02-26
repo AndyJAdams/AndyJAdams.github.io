@@ -21,11 +21,16 @@ function animate(){
     // tileGrid.init(innerWidth,innerHeight);
     init();
   }
+  tileGrid.update(ctx);
   if(tileGrid.validate()){
     //Yay we won - for now let's init again
-    reset();
+    //reset();
+    if(tileGrid.retire(ctx)){
+        console.log("CHICKEN DINNER");
+        reset();
+    }
   }
-  tileGrid.update(ctx);
+
 }
   //*************************************************
   //*************************************************
@@ -47,8 +52,8 @@ function animate(){
   function reset(){
     localStorage.clear();
     tileGrid = undefined;
-    let x = Math.floor(Math.random()*2)+2;
-    let y = Math.floor(Math.random()*4)+2;
+    let x = Math.floor(Math.random()*4)+2;
+    let y = Math.floor(Math.random()*6)+2;
     tileGrid = new TileGrid(y,x,innerWidth,innerHeight);
     tileGrid.init(innerWidth,innerHeight);
     localStorage.setItem('sortedGameKey',tileGrid.compressData());

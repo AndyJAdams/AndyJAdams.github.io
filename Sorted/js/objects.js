@@ -4,7 +4,9 @@ function Position(x,y){this.x = x; this.y =y ;}
 function Tile(pos,val,scale,index){
   this.pos = pos;
   this.val = val;
-  this.scale = scale;
+  this.setScale = scale;
+  this.scale = 0;
+  this.oScale = {x:0,y:0};
   this.targetPos = new Position(this.pos.x,this.pos.y);
   this.selected = false; this.checked = false;
   this.inPos = true;
@@ -12,25 +14,22 @@ function Tile(pos,val,scale,index){
 
   this.draw = function(ctx){
     ctx.fillStyle=""+this.val;
-    // if(this.selected){
-    //     //Tile is selected shrink it a bit for effect
-    //     ctx.fillRect(this.pos.x+10, this.pos.y+10, this.scale-20,this.scale-20);
-    // } else {
-      //Tile is no longer selected [normal size]
-      ctx.fillRect(this.pos.x, this.pos.y, this.scale, this.scale);
-      // ctx.fillStyle='#000';
-      // ctx.fillText(this.index,this.pos.x+5,this.pos.y+10);
-      // ctx.beginPath();
-      // ctx.moveTo(this.pos.x+10, this.pos.y+10);
-      // ctx.lineTo(this.targetPos.x, this.targetPos.y);
-      // ctx.stroke();
-    // }
-
+    ctx.fillRect(
+      this.pos.x+(this.oScale.x/2),
+      this.pos.y+(this.oScale.y/2),
+      this.scale-this.oScale.x,
+      this.scale-this.oScale.y
+    );
   }
 
   this.update = function(ctx){
     let set = {x:false,y:false}; //Check set status on each axis
     if(!this.selected){
+      if(this.scale != this.setScale){
+        this.scale += (this.setScale-this.scale)/10;
+      }
+      if(this.oScale.x > 0){this.oScale.x = Math.floor(this.oScale.x/2);}
+      if(this.oScale.y > 0){this.oScale.y = Math.floor(this.oScale.y/2);}
       if(Math.round(Math.abs(this.targetPos.y-this.pos.y))>0){
         this.pos.y = this.pos.y+(this.targetPos.y-this.pos.y)*0.5;
       } else {
@@ -51,11 +50,14 @@ function Tile(pos,val,scale,index){
   this.hardSet = function(x,y,s){
     this.targetPos.x = x; this.pos.x = x;
     this.targetPos.y = y; this.pos.y = y;
+    this.oScale = {x:0,y:0};
+    this.setScale = s;
     this.scale = s;
   }
 }
 
 function TileGrid(r,c,w,h){
+  this.canControl = true;
   this.r = r; this.c = c;
   this.tiles = [];
   this.gridPos = [];
@@ -64,7 +66,7 @@ function TileGrid(r,c,w,h){
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
   this.primary = {tile: undefined, r: -1, c: -1};
   this.groupings = [];
-
+  this.rate = 0;
   this.init = function(w,h,data = []){
     this.w = w; this.h = h;
     this.scale = (this.w*0.8)/this.c;
@@ -75,6 +77,7 @@ function TileGrid(r,c,w,h){
     this.center = {x: (this.w/2),y:(this.h/2)};
     this.gridScale = {x: this.scale*this.c, y: this.scale*this.r};
     this.halfGrid = { x: this.gridScale.x/2,y: this.gridScale.y/2};
+    this.rate = this.scale/4;
 
     //Bounds are set here but defined outside init for use in cycling
     this.bounds = {
@@ -98,6 +101,8 @@ function TileGrid(r,c,w,h){
           );
           gp.push(pos);
           let ind = Math.floor(Math.random()*this.colorArray.length);
+          //HERE WE RANDOMLY PUT IN HOLES BY ASSIGING -1 INDEX
+
           if(data.length > 0){
             ind = data[dataCount];
             dataCount++;
@@ -251,7 +256,7 @@ function TileGrid(r,c,w,h){
 
   //Now for rotation...
   this.cycleColumn = function(qty){
-    if(this.selected.dir == 1 || this.primary.tile == undefined){
+    if(this.selected.dir == 1 || this.primary.tile == undefined || !this.canControl){
       return;
     }
     this.selected.dir = -1; //-1 vertical
@@ -265,6 +270,7 @@ function TileGrid(r,c,w,h){
     //if the tile exceeds bounds we need to loop using horz / vert bounds
     for(var i = 0; i < this.selected.column.length; i++){
       this.selected.column[i].selected = true;
+      this.selected.column[i].oScale.x = 20;
       this.selected.column[i].pos.y = this.selected.column[i].targetPos.y + qty;
       if(this.selected.column[i].targetPos.y+qty > this.bounds.maxY-this.scale){
         this.selected.column[i].pos.y -= this.bounds.vert;
@@ -275,7 +281,7 @@ function TileGrid(r,c,w,h){
 
   }
   this.cycleRow = function(qty){
-    if(this.selected.dir == -1 || this.primary.tile == undefined){
+    if(this.selected.dir == -1 || this.primary.tile == undefined || !this.canControl){
       return;
     }
     this.selected.dir = 1; //-1 vertical
@@ -288,6 +294,7 @@ function TileGrid(r,c,w,h){
     //if the tile exceeds bounds we need to loop using horz / vert bounds
     for(var i = 0; i < this.selected.row.length; i++){
       this.selected.row[i].selected = true;
+      this.selected.row[i].oScale.y = 20;
       this.selected.row[i].pos.x = this.selected.row[i].targetPos.x + qty;
       if(this.selected.row[i].targetPos.x+qty > this.bounds.maxX-this.scale){
         this.selected.row[i].pos.x -= this.bounds.horz;
@@ -405,14 +412,16 @@ function TileGrid(r,c,w,h){
   this.validate = function(){
     if(!this.allReady()){
       //console.log("not ready");
+      // this.canControl = false;
       return false;
     }
+
     let valid = true;
     this.groupings = [];
     for(let a = 0; a < this.tiles.length; a++){
       for(let b = 0; b < this.tiles[a].length; b++){
         if(this.getCount(this.tiles[a][b].index) > 1){
-          if(!this.tiles[a][b].checked){
+          if(!this.tiles[a][b].checked && this.tiles[a][b].index > 0){
             //console.log('scanning ' + a + ',' + b);
             this.currentGroup = [];
             this.createGroups(this.tiles[a][b]);
@@ -441,6 +450,7 @@ function TileGrid(r,c,w,h){
       }
     }
     //return true;
+    // this.canControl = true;
     return valid;
   }
 
@@ -462,6 +472,23 @@ function TileGrid(r,c,w,h){
       }
     }
     return result;
+  }
+
+  this.retire = function(ctx){
+    this.canControl = false;
+    //Here we're going to end this grid and make way for the new
+    for(var i = 0; i < this.tiles.length; i++){
+      for(var j = 0; j < this.tiles[i].length; j++){
+        //this.tiles[i][j].targetPos.x+=(this.rate/2);
+      //  this.tiles[i][j].targetPos.y+=(this.rate/2);
+        this.tiles[i][j].setScale -= this.rate;
+      }
+    }
+    if(this.tiles[0][0].setScale < 0){
+      return true;
+    }
+
+    return false;
   }
 }
 
