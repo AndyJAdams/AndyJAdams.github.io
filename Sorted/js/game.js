@@ -38,8 +38,8 @@ function animate(){
       tileGrid.init(innerWidth,innerHeight,keyData.slice(2));
       return;
     }
-    let x = Math.floor(Math.random()*5)+2;
-    let y = Math.floor(Math.random()*7)+2;
+    let x = Math.floor(Math.random()*2)+2;
+    let y = Math.floor(Math.random()*4)+2;
     tileGrid = new TileGrid(y,x,innerWidth,innerHeight);
     tileGrid.init(innerWidth,innerHeight);
   }
@@ -47,8 +47,8 @@ function animate(){
   function reset(){
     localStorage.clear();
     tileGrid = undefined;
-    let x = Math.floor(Math.random()*5)+2;
-    let y = Math.floor(Math.random()*7)+2;
+    let x = Math.floor(Math.random()*2)+2;
+    let y = Math.floor(Math.random()*4)+2;
     tileGrid = new TileGrid(y,x,innerWidth,innerHeight);
     tileGrid.init(innerWidth,innerHeight);
     localStorage.setItem('sortedGameKey',tileGrid.compressData());

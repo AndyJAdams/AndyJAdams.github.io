@@ -6,7 +6,7 @@ function Tile(pos,val,scale,index){
   this.val = val;
   this.scale = scale;
   this.targetPos = new Position(this.pos.x,this.pos.y);
-  this.selected = false;
+  this.selected = false; this.checked = false;
   this.inPos = true;
   this.index = index;
 
@@ -18,8 +18,8 @@ function Tile(pos,val,scale,index){
     // } else {
       //Tile is no longer selected [normal size]
       ctx.fillRect(this.pos.x, this.pos.y, this.scale, this.scale);
-      ctx.fillStyle='#000';
-      ctx.fillText(this.index,this.pos.x+5,this.pos.y+10);
+      // ctx.fillStyle='#000';
+      // ctx.fillText(this.index,this.pos.x+5,this.pos.y+10);
       // ctx.beginPath();
       // ctx.moveTo(this.pos.x+10, this.pos.y+10);
       // ctx.lineTo(this.targetPos.x, this.targetPos.y);
@@ -63,6 +63,7 @@ function TileGrid(r,c,w,h){
   this.selected = {row:[],column:[],dir:0};
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
   this.primary = {tile: undefined, r: -1, c: -1};
+  this.groupings = [];
 
   this.init = function(w,h,data = []){
     this.w = w; this.h = h;
@@ -400,39 +401,71 @@ function TileGrid(r,c,w,h){
     return count;
   }
 
+
   this.validate = function(){
     if(!this.allReady()){
       //console.log("not ready");
       return false;
     }
-    var indicies = "";
-    let failCount = 0;
-    for(let w = 0; w < this.tiles.length; w++){
-      for(let q = 0; q < this.tiles[w].length; q++){
-        //Get the total count of  this index
-        if(this.getCount(this.tiles[w][q].index) > 1){
-          //console.log("passed count check");
-          let n = this.getNeighbors(this.tiles[w][q]);
-          let matched = false;
-          if(n.length < 1){
-            //console.log("n array not valid");
-            return false;
+    let valid = true;
+    this.groupings = [];
+    for(let a = 0; a < this.tiles.length; a++){
+      for(let b = 0; b < this.tiles[a].length; b++){
+        if(this.getCount(this.tiles[a][b].index) > 1){
+          if(!this.tiles[a][b].checked){
+            //console.log('scanning ' + a + ',' + b);
+            this.currentGroup = [];
+            this.createGroups(this.tiles[a][b]);
+            this.groupings.push(new Grouping(this.tiles[a][b].index,this.currentGroup));
           }
-          for(let t = 0; t < n.length; t++){
-            if(n[t].index == this.tiles[w][q].index){
-              // indicies += n[t].index+"@"+w+","+q+" _ ";
-              matched = true;
-            }
-          }
-          if(!matched){
-            //console.log(w+","+q+" failed to match");
-            return false;
-          }
-        } //End count check
+        }
       }
     }
-    // console.log(indicies);
-    //console.log("WINNER");
-    return true;
+    //Now that we have all our groupings we can compare if any have a matching index
+    //console.log(this.groupings.length);
+    for(let g = 0; g < this.groupings.length; g++){
+      let myGroup = this.groupings[g];
+      for(let h = 0; h < this.groupings.length; h++){
+        if(this.groupings[h] != myGroup){ //Don't scan yourself
+          if(this.groupings[h].index == myGroup.index){
+            valid = false; // There are two groups of the same index... bad
+          }
+        }
+      }
+    }
+
+    //Clear all the checks
+    for(let a = 0; a < this.tiles.length; a++){
+      for(let b = 0; b < this.tiles[a].length; b++){
+        this.tiles[a][b].checked = false;
+      }
+    }
+    //return true;
+    return valid;
   }
+
+  this.currentGroup = [];
+  this.createGroups = function(tile){
+    let result = false;
+    let n = this.getNeighbors(tile);
+    if(n.length < 1){
+      console.log("BROKEN");
+      return;
+    }
+    if(!this.currentGroup.includes(tile)){
+      this.currentGroup.push(tile);
+      tile.checked = true;
+    }
+    for(let t = 0; t < n.length; t++){
+      if(n[t].index == tile.index && !this.currentGroup.includes(n[t])){
+        result = this.createGroups(n[t]);
+      }
+    }
+    return result;
+  }
+}
+
+function Grouping(index,tiles){
+  this.index = index;
+  this.tiles = tiles;
 }
