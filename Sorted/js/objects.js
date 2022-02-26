@@ -18,22 +18,25 @@ function Tile(pos,val,scale,index){
     // } else {
       //Tile is no longer selected [normal size]
       ctx.fillRect(this.pos.x, this.pos.y, this.scale, this.scale);
+      ctx.fillStyle='#000';
+      ctx.fillText(this.index,this.pos.x+5,this.pos.y+10);
       // ctx.beginPath();
       // ctx.moveTo(this.pos.x+10, this.pos.y+10);
       // ctx.lineTo(this.targetPos.x, this.targetPos.y);
       // ctx.stroke();
     // }
+
   }
 
   this.update = function(ctx){
     let set = {x:false,y:false}; //Check set status on each axis
     if(!this.selected){
-      if(Math.abs(this.targetPos.y-this.pos.y)>0){
+      if(Math.round(Math.abs(this.targetPos.y-this.pos.y))>0){
         this.pos.y = this.pos.y+(this.targetPos.y-this.pos.y)*0.5;
       } else {
         set.x = true; //x axis is set
       }
-      if(Math.abs(this.targetPos.x-this.pos.x) >0){
+      if(Math.round(Math.abs(this.targetPos.x-this.pos.x)) >0){
         this.pos.x = this.pos.x+(this.targetPos.x-this.pos.x)*0.5;
       } else {
         set.y = true; //y axis is set
@@ -60,6 +63,7 @@ function TileGrid(r,c,w,h){
   this.selected = {row:[],column:[],dir:0};
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
   this.primary = {tile: undefined, r: -1, c: -1};
+
   this.init = function(w,h,data = []){
     this.w = w; this.h = h;
     this.scale = (this.w*0.8)/this.c;
@@ -102,7 +106,7 @@ function TileGrid(r,c,w,h){
             this.center.y-this.halfGrid.y+(rows*this.scale)),
             this.colorArray[ind],
             this.scale,
-            ind )
+            ind)
           ); //End tile definition
         }
         this.tiles.push(row);
@@ -246,7 +250,7 @@ function TileGrid(r,c,w,h){
 
   //Now for rotation...
   this.cycleColumn = function(qty){
-    if(this.selected.dir == 1){
+    if(this.selected.dir == 1 || this.primary.tile == undefined){
       return;
     }
     this.selected.dir = -1; //-1 vertical
@@ -270,7 +274,7 @@ function TileGrid(r,c,w,h){
 
   }
   this.cycleRow = function(qty){
-    if(this.selected.dir == -1){
+    if(this.selected.dir == -1 || this.primary.tile == undefined){
       return;
     }
     this.selected.dir = 1; //-1 vertical
@@ -366,10 +370,9 @@ function TileGrid(r,c,w,h){
     return true;
   }
 
-  this.getNeighbors = function(t,c=-1,r=-1){
+  this.getNeighbors = function(t){
     //Where is this tile?
-    let spot = {c:c,r:r};
-    if(c == -1 || r == -1){
+    let spot = {c:-1,r:-1};
       for(var i = 0; i < this.tiles.length; i++){
         for(var j = 0; j < this.tiles[i].length; j++){
           if(this.tiles[i][j] == t){
@@ -377,7 +380,6 @@ function TileGrid(r,c,w,h){
           }
         }
       }
-    }
     //Now let's collect the neighbors
     let n = [];
     if(spot.c > 0){ n.push(this.tiles[spot.c-1][spot.r]);} //left
@@ -386,25 +388,51 @@ function TileGrid(r,c,w,h){
     if(spot.r < this.r-1){ n.push(this.tiles[spot.c][spot.r+1]);}//down
     return n;
   }
-
-  this.validate = function(){
-    if(!this.allReady()){
-      return false;
-    }
-    var result = true;
+  this.getCount = function(index){
+    let count = 0;
     for(var i = 0; i < this.tiles.length; i++){
       for(var j = 0; j < this.tiles[i].length; j++){
-        let n = this.getNeighbors(this.tiles[i][j],i,j);
-        let pass = false;
-        for(var a = 0; a < n.length; n++){
-            if(n.index == this.tiles[i][j].index){
-              pass = true;
-            }
-        }
-        if(!pass){
-          return false;
+        if(this.tiles[i][j].index == index){
+          count++;
         }
       }
     }
+    return count;
+  }
+
+  this.validate = function(){
+    if(!this.allReady()){
+      //console.log("not ready");
+      return false;
+    }
+    var indicies = "";
+    let failCount = 0;
+    for(let w = 0; w < this.tiles.length; w++){
+      for(let q = 0; q < this.tiles[w].length; q++){
+        //Get the total count of  this index
+        if(this.getCount(this.tiles[w][q].index) > 1){
+          //console.log("passed count check");
+          let n = this.getNeighbors(this.tiles[w][q]);
+          let matched = false;
+          if(n.length < 1){
+            //console.log("n array not valid");
+            return false;
+          }
+          for(let t = 0; t < n.length; t++){
+            if(n[t].index == this.tiles[w][q].index){
+              // indicies += n[t].index+"@"+w+","+q+" _ ";
+              matched = true;
+            }
+          }
+          if(!matched){
+            //console.log(w+","+q+" failed to match");
+            return false;
+          }
+        } //End count check
+      }
+    }
+    // console.log(indicies);
+    //console.log("WINNER");
+    return true;
   }
 }

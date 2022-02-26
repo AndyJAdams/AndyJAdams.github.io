@@ -21,12 +21,11 @@ function animate(){
     // tileGrid.init(innerWidth,innerHeight);
     init();
   }
-  tileGrid.update(ctx);
   if(tileGrid.validate()){
     //Yay we won - for now let's init again
-    console.log('win');
     reset();
   }
+  tileGrid.update(ctx);
 }
   //*************************************************
   //*************************************************
@@ -47,6 +46,7 @@ function animate(){
 
   function reset(){
     localStorage.clear();
+    tileGrid = undefined;
     let x = Math.floor(Math.random()*5)+2;
     let y = Math.floor(Math.random()*7)+2;
     tileGrid = new TileGrid(y,x,innerWidth,innerHeight);
