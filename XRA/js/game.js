@@ -7,9 +7,10 @@ var ctx = canvas.getContext('2d');
 scaleCanvas();
 
 var tiles = [];
-tiles.push( new Tile(ctx,innerWidth/2-130,innerHeight/2-130,120,120,2));
-tiles.push( new Tile(ctx,innerWidth/2,innerHeight/2-130,120,120,1));
-tiles.push( new Tile(ctx,innerWidth/2+130,innerHeight/2-130,120,120,0));
+tiles.push( new Tile(ctx,innerWidth/2-130,innerHeight/2-130,120,120,-1));
+tiles.push( new Tile(ctx,innerWidth/2,innerHeight/2-130,120,120,0));
+tiles.push( new Tile(ctx,innerWidth/2+130,innerHeight/2-130,120,120,1));
+tiles.push( new Tile(ctx,innerWidth/2+130,innerHeight/2,120,120,2));
 
   //*************************************************
   //*************************************************

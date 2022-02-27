@@ -9,8 +9,6 @@ function Tile(ctx,x,y,w,h,v){
   this.init = function(){
     if(!this.initialized){
       switch(this.v){
-        case -1:
-          break;
         case 0:
           this.targetW = this.w; this.w = 0;
           this.targetH = this.h; this.h = 0;
@@ -23,6 +21,12 @@ function Tile(ctx,x,y,w,h,v){
         case 1:
           this.ticker.push(0); //Stage tracker
           this.ticker.push(20);
+          this.ticker.push(0);
+          break;
+        case 2:
+          this.targetW = this.w; this.w = 0;
+          this.targetH = this.h; this.h = 0;
+          this.ticker.push(0);
           break;
         default:
           this.targetW = this.w; this.w = 0;
@@ -95,8 +99,76 @@ function Tile(ctx,x,y,w,h,v){
           this.ctx.beginPath();
           this.ctx.moveTo(this.x-this.w/2+10,this.y-this.h/2+10);
           this.ctx.lineTo(this.x+this.w/2-10,this.y+this.h/2-10);
+          this.ctx.moveTo(this.x+this.w/2-10,this.y-this.h/2+10);
+          this.ctx.lineTo(this.x-this.w/2+10,this.y+this.h/2-10);
+          this.ctx.stroke();
+
+          this.ticker[2]++;
+          if(this.ticker[2] > 10 && this.ticker[2] < 30){
+            this.ctx.clearRect(this.x-this.w/4,this.y-this.h/4,this.w/2,this.h/2);
+            this.ctx.strokeRect(this.x-this.w/6,this.y-this.h/6,this.w/3,this.h/3);
+
+          }
+          if(this.ticker[2] >40){
+            this.ticker[2] = 0;
+          }
+        }
+        break;
+      case 2:
+        this.ctx.strokeStyle='#F80042';
+        this.ctx.lineWidth = 10;
+        let bounds = {
+          minX: this.x-this.w/2,
+          maxX: this.x+this.w/2,
+          minY: this.y-this.h/2,
+          maxY: this.y+this.h/2
+        };
+        if(Math.abs(this.w-this.targetW) < 2){
+          this.ticker[0]+= 0.2;
+          if(this.ticker[0] > 20){
+            this.ticker[0] = 0;
+          }
+          //this.ctx.fillRect(this.x-this.w/2,this.y-this.h/2,this.w,this.h);
+          let count = Math.round(this.targetW/20);
+          this.ctx.beginPath();
+          for(let i = 0; i < 20*count; i+=20){
+            this.ctx.moveTo(bounds.maxX-this.ticker[0]-i,bounds.minY);
+            this.ctx.lineTo(bounds.minX,bounds.maxY-this.ticker[0]-i);
+          }
+          for(let i = 20; i < 20*(count+1); i+=20){
+            this.ctx.moveTo(bounds.maxX,bounds.minY+i-this.ticker[0]);
+            this.ctx.lineTo(bounds.minX+i-this.ticker[0],bounds.maxY);
+          }
           this.ctx.stroke();
         }
+        //Clean the edges
+        this.ctx.clearRect(this.x-this.w/2-5,this.y-this.h/2-5,this.w+10,15); //TOP
+        this.ctx.clearRect(this.x-this.w/2-5,this.y+this.h/2-10,this.w+10,15);//Bottom
+        this.ctx.clearRect(this.x-this.w/2-5,this.y-this.h/2-5,15,this.h+10);
+        this.ctx.clearRect(this.x+this.w/2-10,this.y-this.h/2-5,15,this.h+10);
+        //Box it up
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle='#F8004288';
+        this.ctx.beginPath();
+        //Top left corner
+        this.ctx.moveTo(this.x-this.w/2+5,this.y-this.h/2+15);
+        this.ctx.lineTo(this.x-this.w/2+5,this.y-this.h/2+5);
+        this.ctx.lineTo(this.x-this.w/2+15,this.y-this.h/2+5);
+        //Top right corner
+        this.ctx.moveTo(this.x+this.w/2-15,this.y-this.h/2+5);
+        this.ctx.lineTo(this.x+this.w/2-5,this.y-this.h/2+5);
+        this.ctx.lineTo(this.x+this.w/2-5,this.y-this.h/2+15);
+        
+        //Bottom right corner
+        this.ctx.moveTo(this.x+this.w/2-5,this.y+this.h/2-15);
+        this.ctx.lineTo(this.x+this.w/2-5,this.y+this.h/2-5);
+        this.ctx.lineTo(this.x+this.w/2-15,this.y+this.h/2-5);
+
+        //Bottom left corner
+        this.ctx.moveTo(this.x-this.w/2+5,this.y+this.h/2-15);
+        this.ctx.lineTo(this.x-this.w/2+5,this.y+this.h/2-5);
+        this.ctx.lineTo(this.x-this.w/2+15,this.y+this.h/2-5);
+        this.ctx.stroke();
         break;
       default:
         this.ctx.fillStyle='#FFF';
@@ -140,6 +212,9 @@ function Tile(ctx,x,y,w,h,v){
           break;
         case 1:
           speed = 1; //Instant
+          break;
+        case 2:
+          speed = 0.05;
           break;
         default:
           speed = 0.1;
