@@ -106,7 +106,7 @@ function Grid(rows,columns,spacing_x,spacing_y,origin_x,origin_y,centered = true
         for(var i = 0; i < this.pos.length;i++){
             for(var j = 0; j < this.pos[i].length; j++){
                 ctx.lineCap = 'butt';
-                ctx.lineJoin = 'weld';
+                ctx.lineJoin = 'miter';
                 ctx.lineWidth = 2;
                 ctx.strokeStyle='#00000088';
                 ctx.strokeRect(this.pos[i][j].x-(this.spacing.x/2)+2, this.pos[i][j].y-(this.spacing.y/2)+2,this.spacing.x-4,this.spacing.y-4);
