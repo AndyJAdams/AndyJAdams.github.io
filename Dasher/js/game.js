@@ -14,8 +14,9 @@ var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 scaleCanvas();
 
-var grid = new Grid(5,5,tileScale,tileScale,center.x, center.y);
-var unit = new Unit(2,2,new Pos(grid.pos[2][2].x,grid.pos[2][2].y), tileScale/2);
+var grid = new Grid(7,7,tileScale,tileScale,center.x, center.y);
+var shaker = new ScreenShaker(ctx);
+var unit = new Unit(3,3,new Pos(grid.pos[3][3].x,grid.pos[3][3].y), tileScale/2);
 
   //*************************************************
   //*************************************************
@@ -24,7 +25,12 @@ function animate(){
   ctx.clearRect(0,0,innerWidth,innerHeight);
   grid.draw(ctx);
   dir = unit.update(dir);
+  if(dir < 0){
+    shaker.shake(-dir, 10);
+    dir = 0;
+  }
 
+  shaker.update();
   //// DEBUG:
   ctx.fillText("Dir:"+dir,20,20);
 
