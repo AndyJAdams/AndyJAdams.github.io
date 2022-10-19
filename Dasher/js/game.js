@@ -16,6 +16,8 @@ scaleCanvas();
 
 var grid = new Grid(7,7,tileScale,tileScale,center.x, center.y);
 var shaker = new ScreenShaker(ctx);
+var walls = [new Wall(0,2,tileScale),new Wall(6,6),new Wall(5,1),new Wall(1,0)];
+
 var unit = new Unit(3,3,new Pos(grid.pos[3][3].x,grid.pos[3][3].y), tileScale/2);
 
   //*************************************************
@@ -24,6 +26,9 @@ function animate(){
   window.requestAnimationFrame(animate);
   ctx.clearRect(0,0,innerWidth,innerHeight);
   grid.draw(ctx);
+  for(var i = 0; i < walls.length; i++){
+    walls[i].draw();
+  }
   dir = unit.update(dir);
   if(dir < 0){
     shaker.shake(-dir, 10);
@@ -44,21 +49,45 @@ function scanGrid(startR,startC,dir){
     for(let r = startR; r > -1; r--){
       //Check for blocks/walls/enemies/whatev here
       end.r = r;
+      if(!checkWalls(r-1,startC)){
+        break; //Leave for loop
+      }
     }
   } else if(dir == 3){ //DN aka increase req
     for(let r = startR; r < grid.rows; r++){
       end.r = r;
+      if(!checkWalls(r+1,startC)){
+        break;
+      }
     }
   } else if(dir == 2){
     for(let c = startC; c < grid.columns; c++){
       end.c = c;
+      if(!checkWalls(startR,c+1)){
+        break;
+      }
     }
   } else if(dir == 4){
     for(let c = startC; c > -1; c--){
       end.c = c;
+      if(!checkWalls(startR,c-1)){
+        break;
+      }
     }
   }
   return end;
+}
+
+function checkWalls(r,c){
+  if(r >= grid.rows || r < 0 || c >= grid.columns || c < 0){
+    return false;
+  }
+  for(var i = 0; i < walls.length; i++){
+    if(r == walls[i].r && c == walls[i].c){
+      return false;
+    }
+  }
+  return true; //Allowed to proceed
 }
 
 //*** INPUT SECTION **//
