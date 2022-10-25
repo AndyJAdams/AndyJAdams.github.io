@@ -207,6 +207,7 @@ function TileGrid(r,c,w,h){
       this.selected = {row:[],column:[]};
       return;
     }
+
     //Check if primary is locked
     if(this.primary.tile.locked){
       this.selected = {row:[],column:[]};
@@ -293,6 +294,9 @@ function TileGrid(r,c,w,h){
     }
     this.selected.dir = -1; //-1 vertical
     //qty = quantity (positive or negative) to shift the column
+
+    //TODO: WE MAY NEED TO RE_EVALUATE THE BOUNDS HERE TO SCOPE ROTATION TO ONLY THE "SELECTED" TILE AREA
+
     //First we check to see if the primary is attempting to exceed Bounds
     if(this.primary.tile.targetPos.y + qty > this.bounds.maxY-this.scale ||
       this.primary.tile.targetPos.y + qty < this.bounds.minY){
