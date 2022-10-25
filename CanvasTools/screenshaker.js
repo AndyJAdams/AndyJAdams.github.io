@@ -4,7 +4,7 @@ function ScreenShaker(context){
     this.ctx = context;
     this.x = 0;
     this.y = 0;
-    console.log("ShakerCreated");
+    //console.log("ShakerCreated");
 
     this.shake = function(amt=0.236,dur=485){
         if(amt < 0){
@@ -16,7 +16,6 @@ function ScreenShaker(context){
             this.intensity == 1;
         }
         this.totalFrames += dur;
-        console.log("SHAKE");
     }
 
     this.update = function(){
