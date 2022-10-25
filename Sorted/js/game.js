@@ -164,4 +164,8 @@ function animate(){
   }
 
 
+var levelData = [
+  
+];
+
 animate();

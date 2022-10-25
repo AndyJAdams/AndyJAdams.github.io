@@ -11,6 +11,7 @@ function Tile(pos,val,scale,index){
   this.selected = false; this.checked = false;
   this.inPos = true;
   this.index = index;
+  this.locked = false;
 
   this.draw = function(ctx){
     ctx.fillStyle=""+this.val;
@@ -20,6 +21,17 @@ function Tile(pos,val,scale,index){
       this.scale-this.oScale.x,
       this.scale-this.oScale.y
     );
+    if(this.locked){
+      ctx.strokeRect(
+        this.pos.x+(this.oScale.x/3),
+        this.pos.y+(this.oScale.y/3),
+        this.scale-this.oScale.x,
+        this.scale-this.oScale.y
+      );
+    }
+    //DEBUG REVIEW DATA
+    ctx.fillStyle='#FFF';
+    ctx.fillText(this.index,this.pos.x+5,this.pos.y+10);
   }
 
   this.update = function(ctx){
@@ -47,7 +59,7 @@ function Tile(pos,val,scale,index){
     this.draw(ctx); //make the tile appear
   }
 
-  this.hardSet = function(x,y,s){
+  this.hardSet = function(x,y,s){ //We absolutely require this tile to be somewhere
     this.targetPos.x = x; this.pos.x = x;
     this.targetPos.y = y; this.pos.y = y;
     this.oScale = {x:0,y:0};
@@ -67,6 +79,7 @@ function TileGrid(r,c,w,h){
   this.primary = {tile: undefined, r: -1, c: -1};
   this.groupings = [];
   this.rate = 0;
+
   this.init = function(w,h,data = []){
     this.w = w; this.h = h;
     this.scale = (this.w*0.8)/this.c;
@@ -102,15 +115,22 @@ function TileGrid(r,c,w,h){
           gp.push(pos);
           let ind = Math.floor(Math.random()*this.colorArray.length);
           //HERE WE RANDOMLY PUT IN HOLES BY ASSIGING -1 INDEX
+          if(Math.random()>0.85){
+            ind = -1;
+          }
 
           if(data.length > 0){
             ind = data[dataCount];
             dataCount++;
           }
+          let col = this.colorArray[ind];
+          if(ind < 0){
+            col = "#00000000";
+          }
           row.push(new Tile(new Position(
             this.center.x-this.halfGrid.x+(cols*this.scale),
             this.center.y-this.halfGrid.y+(rows*this.scale)),
-            this.colorArray[ind],
+            col,
             this.scale,
             ind)
           ); //End tile definition
@@ -188,10 +208,10 @@ function TileGrid(r,c,w,h){
       return;
     }
     //Check if primary is locked
-    // if(primary.tile.locked){
-    //   this.selected = {row:[],column:[]};
-    //   return;
-    // }
+    if(this.primary.tile.locked){
+      this.selected = {row:[],column:[]};
+      return;
+    }
 
     /*THIS IS THE TRICKY BIT...
     We need to move outward from the primary tile in
@@ -204,7 +224,7 @@ function TileGrid(r,c,w,h){
       1. build function to iterate from index to end in 4 directions
       2. Some intense recursion that goes tile by tile.
 
-    Since our grid is centralized and we are using fly-weight ops
+    Since our grid is centralized and we are using fly-weight algo
     we will go with option one. Ideally the sub-function would take:
     1. Tile
     2. Direction
@@ -214,6 +234,9 @@ function TileGrid(r,c,w,h){
     //COLUMN COLLECTION from the primary
     for(var d = this.primary.r-1; d > -1; d--){
     //Going up! : UNSHIFT adds to start as we climb
+      if(this.tiles[this.primary.c][d].index < 0){
+        break;
+      }
       this.selected.column.unshift(this.tiles[this.primary.c][d]);
     }
     //ADD THE PRIMARY
@@ -221,18 +244,27 @@ function TileGrid(r,c,w,h){
 
     for(var e = this.primary.r+1; e < this.tiles[this.primary.c].length; e++){
     //Going down! : Push adds to the end as we descend
+      if(this.tiles[this.primary.c][e].index < 0){
+        break;
+      }
       this.selected.column.push(this.tiles[this.primary.c][e]);
     }
 
     //ROW COLLECTION from the primary
     for(var f = this.primary.c-1; f > -1; f--){
       //Going right! : UNSHIFT adds to the start of the row
+      if(this.tiles[f][this.primary.r].index < 0){
+        break;
+      }
       this.selected.row.unshift(this.tiles[f][this.primary.r]);
     }
     //ADD THE primary
     this.selected.row.push(this.primary.tile);
 
     for(var g = this.primary.c+1; g < this.tiles.length; g++){
+      if(this.tiles[g][this.primary.r].index < 0){
+        break;
+      }
       this.selected.row.push(this.tiles[g][this.primary.r]);
     }
 
@@ -364,6 +396,7 @@ function TileGrid(r,c,w,h){
         out += "_"+this.tiles[i][j].index;
       }
     }
+    console.log(out);
     return out;
   }
 
