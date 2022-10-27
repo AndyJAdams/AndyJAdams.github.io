@@ -208,10 +208,14 @@ function TileGrid(r,c,w,h){
     this.tempBounds = {minX:innerWidth,maxX:0,minY:innerHeight,maxY:0};
     for(let i = 0; i < arr.length; i++){
       //Get new temp bounds min/max (x&y)
-      if(arr[i].pos.x+this.scale > this.tempBounds.maxX){this.tempBounds.maxX = arr[i].pos.x+this.scale;}
-      if(arr[i].pos.x < this.tempBounds.minX){this.tempBounds.minX = arr[i].pos.x;}
-      if(arr[i].pos.y+this.scale > this.tempBounds.maxY){this.tempBounds.maxY = arr[i].pos.y+this.scale;}
-      if(arr[i].pos.y < this.tempBounds.minY){this.tempBounds.minY = arr[i].pos.y;}
+      // if(arr[i].pos.x+this.scale > this.tempBounds.maxX){this.tempBounds.maxX = arr[i].pos.x+this.scale;}
+      // if(arr[i].pos.x < this.tempBounds.minX){this.tempBounds.minX = arr[i].pos.x;}
+      // if(arr[i].pos.y+this.scale > this.tempBounds.maxY){this.tempBounds.maxY = arr[i].pos.y+this.scale;}
+      // if(arr[i].pos.y < this.tempBounds.minY){this.tempBounds.minY = arr[i].pos.y;}
+
+      //NEED TO SET THESE PER COLUMN OR PER ROW... So there is a row min,max / and a column min,max
+      //since rows only move vertically and columns horizontal we can apply just those limits based on direction?
+      //TODO: Pass in direction to determine variables being set
     }
   }
 
@@ -306,6 +310,7 @@ function TileGrid(r,c,w,h){
     //   this.selected.column[i].selected = true;
     // }
     this.setTempBounds(this.selected.column);
+    this.setTempBounds(this.selected.row);
   }
   this.clearSelected = function(){
     for(var c = 0; c < this.tiles.length; c++){
@@ -327,7 +332,7 @@ function TileGrid(r,c,w,h){
 
     //TODO: WE MAY NEED TO RE_EVALUATE THE BOUNDS HERE TO SCOPE ROTATION TO ONLY THE "SELECTED" TILE AREA
     //Since this function is for columns we'll adjust the limits horizontally
-    this.setTempBounds(this.selected.column);
+    //this.setTempBounds(this.selected.column);
 
     //First we check to see if the primary is attempting to exceed Bounds
     if(this.primary.tile.targetPos.y + qty > this.bounds.maxY-this.scale ||
