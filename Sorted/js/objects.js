@@ -76,6 +76,7 @@ function TileGrid(r,c,w,h){
   this.colorArray = ['#648FFF','#785EF0','#DC267F','#FE6100','#FFB000'];
   this.selected = {row:[],column:[],dir:0};
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
+  this.tempBounds = {minX:innerWidth,maxX:0,minY:innerHeight,maxY:0};
   this.primary = {tile: undefined, r: -1, c: -1};
   this.groupings = [];
   this.rate = 0;
@@ -101,6 +102,7 @@ function TileGrid(r,c,w,h){
       horz: this.gridScale.x,
       vert: this.gridScale.y
     };
+    
     this.gridPos = [];
     let dataCount = 0;
     if(this.tiles.length < 1){ // Puzzle not yet generated
@@ -177,13 +179,40 @@ function TileGrid(r,c,w,h){
         // }
       }
     }
-
+    ctx.strokeStyle='#FFF';
+    ctx.beginPath();
+    ctx.moveTo(this.bounds.minX,this.bounds.minY);
+    ctx.lineTo(this.bounds.maxX,this.bounds.minY);
+    ctx.lineTo(this.bounds.maxX,this.bounds.maxY);
+    ctx.lineTo(this.bounds.minX, this.bounds.maxY);
+    ctx.closePath();
+    ctx.stroke();
     // for(var i = 0; i < this.gridPos.length; i++){
     //   for(var j = 0; j < this.gridPos[i].length; j++){
     //     ctx.fillStyle='#FFF';
     //     ctx.fillRect(this.gridPos[i][j].x-2,this.gridPos[i][j].y-2,4,4);
     //   }
     // }
+    ctx.strokeStyle='#F00';
+    ctx.beginPath();
+    ctx.beginPath();
+    ctx.moveTo(this.tempBounds.minX,this.tempBounds.minY);
+    ctx.lineTo(this.tempBounds.maxX,this.tempBounds.minY);
+    ctx.lineTo(this.tempBounds.maxX,this.tempBounds.maxY);
+    ctx.lineTo(this.tempBounds.minX, this.tempBounds.maxY);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  this.setTempBounds = function(arr){
+    this.tempBounds = {minX:innerWidth,maxX:0,minY:innerHeight,maxY:0};
+    for(let i = 0; i < arr.length; i++){
+      //Get new temp bounds min/max (x&y)
+      if(arr[i].pos.x+this.scale > this.tempBounds.maxX){this.tempBounds.maxX = arr[i].pos.x+this.scale;}
+      if(arr[i].pos.x < this.tempBounds.minX){this.tempBounds.minX = arr[i].pos.x;}
+      if(arr[i].pos.y+this.scale > this.tempBounds.maxY){this.tempBounds.maxY = arr[i].pos.y+this.scale;}
+      if(arr[i].pos.y < this.tempBounds.minY){this.tempBounds.minY = arr[i].pos.y;}
+    }
   }
 
   //Now for selection...
@@ -276,6 +305,7 @@ function TileGrid(r,c,w,h){
     // for(var i = 0; i < this.selected.column.length; i++){
     //   this.selected.column[i].selected = true;
     // }
+    this.setTempBounds(this.selected.column);
   }
   this.clearSelected = function(){
     for(var c = 0; c < this.tiles.length; c++){
@@ -296,6 +326,8 @@ function TileGrid(r,c,w,h){
     //qty = quantity (positive or negative) to shift the column
 
     //TODO: WE MAY NEED TO RE_EVALUATE THE BOUNDS HERE TO SCOPE ROTATION TO ONLY THE "SELECTED" TILE AREA
+    //Since this function is for columns we'll adjust the limits horizontally
+    this.setTempBounds(this.selected.column);
 
     //First we check to see if the primary is attempting to exceed Bounds
     if(this.primary.tile.targetPos.y + qty > this.bounds.maxY-this.scale ||
