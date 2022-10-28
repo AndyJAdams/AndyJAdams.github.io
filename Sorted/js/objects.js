@@ -74,9 +74,8 @@ function TileGrid(r,c,w,h){
   this.tiles = [];
   this.gridPos = [];
   this.colorArray = ['#648FFF','#785EF0','#DC267F','#FE6100','#FFB000'];
-  this.selected = {row:[],column:[],dir:0};
+  this.selected = {row:[],column:[],dir: 0,bounds:{minX:innerWidth,maxX:0,minY:innerHeight,maxY:0}};
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
-  this.tempBounds = {minX:innerWidth,maxX:0,minY:innerHeight,maxY:0};
   this.primary = {tile: undefined, r: -1, c: -1};
   this.groupings = [];
   this.rate = 0;
@@ -193,29 +192,37 @@ function TileGrid(r,c,w,h){
     //     ctx.fillRect(this.gridPos[i][j].x-2,this.gridPos[i][j].y-2,4,4);
     //   }
     // }
-    ctx.strokeStyle='#F00';
-    ctx.beginPath();
-    ctx.beginPath();
-    ctx.moveTo(this.tempBounds.minX,this.tempBounds.minY);
-    ctx.lineTo(this.tempBounds.maxX,this.tempBounds.minY);
-    ctx.lineTo(this.tempBounds.maxX,this.tempBounds.maxY);
-    ctx.lineTo(this.tempBounds.minX, this.tempBounds.maxY);
-    ctx.closePath();
-    ctx.stroke();
+
+    if(this.primary.tile != undefined){
+      ctx.lineWidth=4;
+      ctx.strokeStyle='#00F';
+      ctx.beginPath();
+      ctx.moveTo(this.selected.bounds.minX,this.primary.tile.pos.y);
+      ctx.lineTo(this.selected.bounds.maxX,this.primary.tile.pos.y);
+      ctx.lineTo(this.selected.bounds.maxX,this.primary.tile.pos.y+this.scale);
+      ctx.lineTo(this.selected.bounds.minX,this.primary.tile.pos.y+this.scale);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.strokeStyle='#F00';
+      ctx.beginPath();
+      ctx.moveTo(this.primary.tile.pos.x,this.selected.bounds.minY);
+      ctx.lineTo(this.primary.tile.pos.x+this.scale,this.selected.bounds.minY);
+      ctx.lineTo(this.primary.tile.pos.x+this.scale,this.selected.bounds.maxY);
+      ctx.lineTo(this.primary.tile.pos.x,this.selected.bounds.maxY);
+      ctx.closePath();
+      ctx.stroke();
+    }
   }
 
-  this.setTempBounds = function(arr){
-    this.tempBounds = {minX:innerWidth,maxX:0,minY:innerHeight,maxY:0};
-    for(let i = 0; i < arr.length; i++){
-      //Get new temp bounds min/max (x&y)
-      // if(arr[i].pos.x+this.scale > this.tempBounds.maxX){this.tempBounds.maxX = arr[i].pos.x+this.scale;}
-      // if(arr[i].pos.x < this.tempBounds.minX){this.tempBounds.minX = arr[i].pos.x;}
-      // if(arr[i].pos.y+this.scale > this.tempBounds.maxY){this.tempBounds.maxY = arr[i].pos.y+this.scale;}
-      // if(arr[i].pos.y < this.tempBounds.minY){this.tempBounds.minY = arr[i].pos.y;}
-
-      //NEED TO SET THESE PER COLUMN OR PER ROW... So there is a row min,max / and a column min,max
-      //since rows only move vertically and columns horizontal we can apply just those limits based on direction?
-      //TODO: Pass in direction to determine variables being set
+  this.setSelectedBounds = function(){
+    for(var r = 0; r < this.selected.row.length; r++){
+      if(this.selected.row[r].pos.x < this.selected.bounds.minX){this.selected.bounds.minX = this.selected.row[r].pos.x;}
+      if(this.selected.row[r].pos.x+this.scale > this.selected.bounds.maxX){this.selected.bounds.maxX = this.selected.row[r].pos.x+this.scale;}
+    }
+    for(var c = 0; c < this.selected.column.length; c++){
+      if(this.selected.column[c].pos.y < this.selected.bounds.minY){this.selected.bounds.minY = this.selected.column[c].pos.y;}
+      if(this.selected.column[c].pos.y+this.scale > this.selected.bounds.maxY){this.selected.bounds.maxY = this.selected.column[c].pos.y+this.scale;}
     }
   }
 
@@ -273,6 +280,7 @@ function TileGrid(r,c,w,h){
       }
       this.selected.column.unshift(this.tiles[this.primary.c][d]);
     }
+
     //ADD THE PRIMARY
     this.selected.column.push(this.primary.tile);
 
@@ -309,8 +317,7 @@ function TileGrid(r,c,w,h){
     // for(var i = 0; i < this.selected.column.length; i++){
     //   this.selected.column[i].selected = true;
     // }
-    this.setTempBounds(this.selected.column);
-    this.setTempBounds(this.selected.row);
+    this.setSelectedBounds();
   }
   this.clearSelected = function(){
     for(var c = 0; c < this.tiles.length; c++){
@@ -318,7 +325,7 @@ function TileGrid(r,c,w,h){
         this.tiles[c][r].selected = false;
       }
     }
-    this.selected = {row:[],column:[],dir: 0};
+    this.selected = {row:[],column:[],dir: 0,bounds:{minX:innerWidth,maxX:0,minY:innerHeight,maxY:0}};
     this.primary = {tile: undefined, r: -1, c: -1};
   }
 
@@ -357,7 +364,7 @@ function TileGrid(r,c,w,h){
     if(this.selected.dir == -1 || this.primary.tile == undefined || !this.canControl){
       return;
     }
-    this.selected.dir = 1; //-1 vertical
+    this.selected.dir = 1; //1 horizontal
 
     if(this.primary.tile.targetPos.x + qty > this.bounds.maxX-this.scale ||
       this.primary.tile.targetPos.x + qty < this.bounds.minX){
