@@ -74,7 +74,7 @@ function TileGrid(r,c,w,h){
   this.tiles = [];
   this.gridPos = [];
   this.colorArray = ['#648FFF','#785EF0','#DC267F','#FE6100','#FFB000'];
-  this.selected = {row:[],column:[],dir: 0,bounds:{minX:innerWidth,maxX:0,minY:innerHeight,maxY:0}};
+  this.selected = {row:[],column:[],dir: 0,bounds:{minX:innerWidth,maxX:0,minY:innerHeight,maxY:0,vert:-1,horz:-1}};
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
   this.primary = {tile: undefined, r: -1, c: -1};
   this.groupings = [];
@@ -85,6 +85,10 @@ function TileGrid(r,c,w,h){
     this.scale = (this.w*0.8)/this.c;
     if((this.h < (this.w*0.8))||(this.scale*this.r > (this.h*0.8))){
       this.scale = (this.h*0.8)/this.r;
+    }
+    console.log(this.w+"x"+this.h+"@"+this.scale);
+    if(this.scale > 120){
+      this.scale = 120;
     }
 
     this.center = {x: (this.w/2),y:(this.h/2)};
@@ -139,6 +143,22 @@ function TileGrid(r,c,w,h){
         this.tiles.push(row);
         this.gridPos.push(gp);
       }
+      //Now we need to double check that the tiles aren't genrating any islands or solo blocks
+      for(let a = 0; a < this.tiles.length; a++){
+        for(let b = 0; b < this.tiles[a].length; b++){
+          let n = this.getNeighbors(this.tiles[a][b]);
+          let ni = -1;
+          for(let c = 0; c < n.length; c++){
+            if(n[c].index > -1){
+              ni = n[c].index;
+            }
+          }
+          if(ni < 0){
+            console.log('Tile orphaned');
+            this.tiles[a][b].index = -1;
+          }
+        }
+      }
     } else { //Puzzle generated but screen needs adjusting
       for(var i = 0; i < this.tiles.length; i++){
         let gp = [];
@@ -154,6 +174,21 @@ function TileGrid(r,c,w,h){
           ));
         }
         this.gridPos.push(gp);
+      }
+      for(let a = 0; a < this.tiles.length; a++){
+        for(let b = 0; b < this.tiles[a].length; b++){
+          let n = this.getNeighbors(this.tiles[a][b]);
+          let ni = -1;
+          for(let c = 0; c < n.length; c++){
+            if(n[c].index > -1){
+              ni = n[c].index;
+            }
+          }
+          if(ni < 0){
+            console.log('Tile orphaned');
+            this.tiles[a][b].index = -1;
+          }
+        }
       }
     }
   }
@@ -212,18 +247,22 @@ function TileGrid(r,c,w,h){
       ctx.lineTo(this.primary.tile.pos.x,this.selected.bounds.maxY);
       ctx.closePath();
       ctx.stroke();
+
+      ctx.fillText(this.selected.bounds.horz+","+this.selected.bounds.vert,10,50);
     }
   }
 
   this.setSelectedBounds = function(){
     for(var r = 0; r < this.selected.row.length; r++){
-      if(this.selected.row[r].pos.x < this.selected.bounds.minX){this.selected.bounds.minX = this.selected.row[r].pos.x;}
-      if(this.selected.row[r].pos.x+this.scale > this.selected.bounds.maxX){this.selected.bounds.maxX = this.selected.row[r].pos.x+this.scale;}
+      if(this.selected.row[r].pos.x < this.selected.bounds.minX){this.selected.bounds.minX = this.selected.row[r].pos.x-(this.scale/2);}
+      if(this.selected.row[r].pos.x+this.scale > this.selected.bounds.maxX){this.selected.bounds.maxX = this.selected.row[r].pos.x+this.scale+(this.scale/2);}
     }
     for(var c = 0; c < this.selected.column.length; c++){
-      if(this.selected.column[c].pos.y < this.selected.bounds.minY){this.selected.bounds.minY = this.selected.column[c].pos.y;}
-      if(this.selected.column[c].pos.y+this.scale > this.selected.bounds.maxY){this.selected.bounds.maxY = this.selected.column[c].pos.y+this.scale;}
+      if(this.selected.column[c].pos.y < this.selected.bounds.minY){this.selected.bounds.minY = this.selected.column[c].pos.y-(this.scale/2);}
+      if(this.selected.column[c].pos.y+this.scale > this.selected.bounds.maxY){this.selected.bounds.maxY = this.selected.column[c].pos.y+this.scale+(this.scale/2);}
     }
+    this.selected.bounds.vert = this.selected.column.length*this.scale;
+    this.selected.bounds.horz = this.selected.row.length*this.scale;
   }
 
   //Now for selection...
@@ -319,6 +358,7 @@ function TileGrid(r,c,w,h){
     // }
     this.setSelectedBounds();
   }
+  
   this.clearSelected = function(){
     for(var c = 0; c < this.tiles.length; c++){
       for(var r = 0; r < this.tiles[c].length; r++){
@@ -331,7 +371,7 @@ function TileGrid(r,c,w,h){
 
   //Now for rotation...
   this.cycleColumn = function(qty){
-    if(this.selected.dir == 1 || this.primary.tile == undefined || !this.canControl){
+    if(this.selected.dir == 1 || this.primary.tile == undefined || !this.canControl || this.primary.tile.index < 0){
       return;
     }
     this.selected.dir = -1; //-1 vertical
@@ -342,8 +382,8 @@ function TileGrid(r,c,w,h){
     //this.setTempBounds(this.selected.column);
 
     //First we check to see if the primary is attempting to exceed Bounds
-    if(this.primary.tile.targetPos.y + qty > this.bounds.maxY-this.scale ||
-      this.primary.tile.targetPos.y + qty < this.bounds.minY){
+    if(this.primary.tile.targetPos.y + qty > this.selected.bounds.maxY-this.scale ||
+      this.primary.tile.targetPos.y + qty < this.selected.bounds.minY){
       return;
     }
     //Loop through selected column and set targetPos to gridPos + quantity
@@ -352,22 +392,22 @@ function TileGrid(r,c,w,h){
       this.selected.column[i].selected = true;
       this.selected.column[i].oScale.x = 20;
       this.selected.column[i].pos.y = this.selected.column[i].targetPos.y + qty;
-      if(this.selected.column[i].targetPos.y+qty > this.bounds.maxY-this.scale){
-        this.selected.column[i].pos.y -= this.bounds.vert;
-      } else if(this.selected.column[i].targetPos.y+qty < this.bounds.minY){
-        this.selected.column[i].pos.y += this.bounds.vert;
+      if(this.selected.column[i].targetPos.y+qty > this.selected.bounds.maxY-this.scale){
+        //console.log("moving from " + this.selected.column[i].pos.y + " to " + (this.selected.column[i].pos.y-this.selected.bounds.vert));
+        this.selected.column[i].pos.y -= this.selected.bounds.vert;
+      } else if(this.selected.column[i].targetPos.y+qty < this.selected.bounds.minY){
+        this.selected.column[i].pos.y += this.selected.bounds.vert;
       }
     }
-
   }
   this.cycleRow = function(qty){
-    if(this.selected.dir == -1 || this.primary.tile == undefined || !this.canControl){
+    if(this.selected.dir == -1 || this.primary.tile == undefined || !this.canControl || this.primary.tile.index < 0){
       return;
     }
     this.selected.dir = 1; //1 horizontal
 
-    if(this.primary.tile.targetPos.x + qty > this.bounds.maxX-this.scale ||
-      this.primary.tile.targetPos.x + qty < this.bounds.minX){
+    if(this.primary.tile.targetPos.x + qty > this.selected.bounds.maxX-this.scale ||
+      this.primary.tile.targetPos.x + qty < this.selected.bounds.minX){
       return;
     }
     //Loop through selected row and set targetPos to gridPos + quantity
@@ -376,10 +416,10 @@ function TileGrid(r,c,w,h){
       this.selected.row[i].selected = true;
       this.selected.row[i].oScale.y = 20;
       this.selected.row[i].pos.x = this.selected.row[i].targetPos.x + qty;
-      if(this.selected.row[i].targetPos.x+qty > this.bounds.maxX-this.scale){
-        this.selected.row[i].pos.x -= this.bounds.horz;
-      } else if(this.selected.row[i].targetPos.x+qty < this.bounds.minX){
-        this.selected.row[i].pos.x += this.bounds.horz;
+      if(this.selected.row[i].targetPos.x+qty > this.selected.bounds.maxX-this.scale){
+        this.selected.row[i].pos.x -= this.selected.bounds.horz;
+      } else if(this.selected.row[i].targetPos.x+qty < this.selected.bounds.minX){
+        this.selected.row[i].pos.x += this.selected.bounds.horz;
       }
     }
   }

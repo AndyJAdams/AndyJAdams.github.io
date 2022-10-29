@@ -77,13 +77,8 @@ function animate(){
 //*** INPUT SECTION **//
   window.addEventListener('keyup',function(e){
       console.log(e.keyCode);
-      if(e.keyCode == '73'){
-        let key = localStorage.getItem('sortedGameKey');
-        console.log("KEY:"+key);
-      }
-      if(e.keyCode == '67'){
-        localStorage.clear();
-        console.log("KEY CLEARED");
+      if(e.key == 'q' || e.key == 'Q'){
+        reset();
       }
   });
   window.addEventListener('resize',function(evt){
