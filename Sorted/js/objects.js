@@ -1,3 +1,5 @@
+var versionNumber = "11012022-003";
+
 //Position object
 function Position(x,y){this.x = x; this.y =y ;}
 
@@ -124,7 +126,10 @@ function TileGrid(r,c,w,h){
             this.center.y-this.halfGrid.y+(rows*this.scale)
           );
           gp.push(pos);
-          let ind = Math.floor(Math.random()*this.colorArray.length);
+          
+          //Random assignment is being replaced with a solution generation and then a jumble
+          let ind = 0;//Math.floor(Math.random()*this.colorArray.length);
+          
           //HERE WE RANDOMLY PUT IN HOLES BY ASSIGING -1 INDEX 
           // if(Math.random()>0.85){
           //   ind = -1;
@@ -259,6 +264,7 @@ function TileGrid(r,c,w,h){
         //     ctx.fillText("C:"+b,this.tiles[c][r].pos.x+5,this.tiles[c][r].pos.y+20);
         //   }
         // }
+        ctx.fillText("v"+versionNumber, 20,innerHeight-20);
       }
     }
     ctx.strokeStyle='#FFF';
