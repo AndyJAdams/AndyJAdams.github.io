@@ -276,28 +276,28 @@ function TileGrid(r,c,w,h){
     //   }
     // }
 
-    // if(this.primary.tile != undefined){
-    //   ctx.lineWidth=4;
-    //   ctx.strokeStyle='#00F';
-    //   ctx.beginPath();
-    //   ctx.moveTo(this.selected.bounds.minX,this.primary.tile.pos.y);
-    //   ctx.lineTo(this.selected.bounds.maxX,this.primary.tile.pos.y);
-    //   ctx.lineTo(this.selected.bounds.maxX,this.primary.tile.pos.y+this.scale);
-    //   ctx.lineTo(this.selected.bounds.minX,this.primary.tile.pos.y+this.scale);
-    //   ctx.closePath();
-    //   ctx.stroke();
+    if(this.primary.tile != undefined){
+      ctx.lineWidth=4;
+      ctx.strokeStyle='#00F';
+      ctx.beginPath();
+      ctx.moveTo(this.selected.bounds.minX,this.primary.tile.pos.y);
+      ctx.lineTo(this.selected.bounds.maxX,this.primary.tile.pos.y);
+      ctx.lineTo(this.selected.bounds.maxX,this.primary.tile.pos.y+this.scale);
+      ctx.lineTo(this.selected.bounds.minX,this.primary.tile.pos.y+this.scale);
+      ctx.closePath();
+      ctx.stroke();
 
-    //   ctx.strokeStyle='#F00';
-    //   ctx.beginPath();
-    //   ctx.moveTo(this.primary.tile.pos.x,this.selected.bounds.minY);
-    //   ctx.lineTo(this.primary.tile.pos.x+this.scale,this.selected.bounds.minY);
-    //   ctx.lineTo(this.primary.tile.pos.x+this.scale,this.selected.bounds.maxY);
-    //   ctx.lineTo(this.primary.tile.pos.x,this.selected.bounds.maxY);
-    //   ctx.closePath();
-    //   ctx.stroke();
+      ctx.strokeStyle='#F00';
+      ctx.beginPath();
+      ctx.moveTo(this.primary.tile.pos.x,this.selected.bounds.minY);
+      ctx.lineTo(this.primary.tile.pos.x+this.scale,this.selected.bounds.minY);
+      ctx.lineTo(this.primary.tile.pos.x+this.scale,this.selected.bounds.maxY);
+      ctx.lineTo(this.primary.tile.pos.x,this.selected.bounds.maxY);
+      ctx.closePath();
+      ctx.stroke();
 
-    //   ctx.fillText(this.selected.bounds.horz+","+this.selected.bounds.vert,10,50);
-    // }
+      ctx.fillText(this.selected.bounds.horz+","+this.selected.bounds.vert,10,50);
+    }
   }
 
   this.setSelectedBounds = function(){
