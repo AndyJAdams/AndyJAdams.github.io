@@ -74,6 +74,7 @@ function TileGrid(r,c,w,h){
   this.tiles = [];
   this.gridPos = [];
   this.colorArray = ['#648FFF','#785EF0','#DC267F','#FE6100','#FFB000'];
+  this.indexArray = [];
   this.selected = {row:[],column:[],dir: 0,bounds:{minX:innerWidth,maxX:0,minY:innerHeight,maxY:0,vert:-1,horz:-1}};
   this.bounds = {minX:-1,maxX:-1,minY:-1,maxY:-1,horz:-1,vert:-1};
   this.primary = {tile: undefined, r: -1, c: -1};
@@ -106,6 +107,11 @@ function TileGrid(r,c,w,h){
       vert: this.gridScale.y
     };
     
+    //Build the array that holds the tiles by index
+    for(var c = 0; c < this.colorArray.length; c++){
+      this.indexArray.push([]);
+    }
+
     this.gridPos = [];
     let dataCount = 0;
     if(this.tiles.length < 1){ // Puzzle not yet generated
@@ -119,10 +125,11 @@ function TileGrid(r,c,w,h){
           );
           gp.push(pos);
           let ind = Math.floor(Math.random()*this.colorArray.length);
-          //HERE WE RANDOMLY PUT IN HOLES BY ASSIGING -1 INDEX
-          if(Math.random()>0.85){
-            ind = -1;
-          }
+          //HERE WE RANDOMLY PUT IN HOLES BY ASSIGING -1 INDEX 
+          // if(Math.random()>0.85){
+          //   ind = -1;
+          // }
+          ///// BLANK SPACES REMOVED DUE TO PLAYER CONFUSION, AND IT CREATED UNSOLVEABLE PUZZLES - YIKES
 
           if(data.length > 0){
             ind = data[dataCount];
@@ -132,18 +139,22 @@ function TileGrid(r,c,w,h){
           if(ind < 0){
             col = "#00000000";
           }
-          row.push(new Tile(new Position(
+          let newTile = new Tile(new Position(
             this.center.x-this.halfGrid.x+(cols*this.scale),
             this.center.y-this.halfGrid.y+(rows*this.scale)),
             col,
             this.scale,
             ind)
-          ); //End tile definition
+          row.push(newTile); //End tile definition
+          if(ind >= 0){
+            this.indexArray[ind].push(newTile);
+          }
         }
         this.tiles.push(row);
         this.gridPos.push(gp);
       }
       //Now we need to double check that the tiles aren't genrating any islands or solo blocks
+        /*
       for(let a = 0; a < this.tiles.length; a++){
         for(let b = 0; b < this.tiles[a].length; b++){
           let n = this.getNeighbors(this.tiles[a][b]);
@@ -158,7 +169,7 @@ function TileGrid(r,c,w,h){
             this.tiles[a][b].index = -1;
           }
         }
-      }
+      }*/
     } else { //Puzzle generated but screen needs adjusting
       for(var i = 0; i < this.tiles.length; i++){
         let gp = [];
@@ -175,6 +186,7 @@ function TileGrid(r,c,w,h){
         }
         this.gridPos.push(gp);
       }
+      /*
       for(let a = 0; a < this.tiles.length; a++){
         for(let b = 0; b < this.tiles[a].length; b++){
           let n = this.getNeighbors(this.tiles[a][b]);
@@ -189,10 +201,46 @@ function TileGrid(r,c,w,h){
             this.tiles[a][b].index = -1;
           }
         }
+      }*/
+    }
+    //this.orphanScan(); //REMOVED 10/29/2022 Due to call stack expections blocking recursive maintenance
+  }
+  /*
+  this.orphanScan = function(){
+    //Basically all the tiles need to be able to reach all the same tiles of the same index
+    //So we use depth first search to make sure they can all reach each other,but in order to do that we
+    // need to group all the tiles by their indixes and check them (thankfully only one of them each)
+    for(let g = 0; g < this.indexArray.length; g++){
+      let start = this.indexArray[g][0]; //Where dfs will start
+      //Now we loop through all the tiles in this index array and validate reach
+      for(let a = 1; a < this.indexArray[g].length; a++){
+        let target = this.indexArray[g][a];
+        if(!this.dfs(start,target)){
+          //Uh oh this one returned false and is orphaned for now just report the tile
+          console.log("ORPHAN ALERT: " + target.r+","+target.c);
+        } else {
+          console.log("Cleared tiles " + target.index);
+        }
       }
+      
     }
   }
 
+  this.dfs = function(start,target){ //Depth First Search
+    if(start == target){ //Are we there yet?
+      return true;
+      console.log("FOUND IT");
+    }
+    let n = this.getNeighbors(start); // Get all neighbors
+    for(let i = 0; i < n.length; n++){ //Loop through neighbors
+      var result = this.dfs(n[i],target); //Call the neigbors to find the target
+      if(result != null){ //The result needs to be either true or false
+        return result; //Send it back up the chain
+      }
+    }
+    return false; //We didn't find a path.... that means this tile (start) is orphaned and this puzzle is unsolveable
+  }
+  */
   this.update = function(ctx){
     for(var c = 0; c < this.tiles.length; c++){
       for(var r = 0; r < this.tiles[c].length; r++){
