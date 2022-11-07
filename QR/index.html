@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html>
     <head>
-
+       <title>QR Generator</title>
+       <style>
+        input{
+            font-size: 18pt;
+            border: 0;
+            border-bottom: 2px solid black;
+            width: 180px;
+        }
+        section{
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-25%);
+        }
+       </style>
     </head>
     <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <section class="user-input">
-    <input type="text" name="input_text" id="input_text" autocomplete="off">
-    <button class="button" type="submit">Generate QR Code</button>
-</section><br/>
-<div class="qr-code" style="display: none;"></div>
+    <input type="text" placeholder="Enter text here" autocomplete="off"><br/><br/>
+    <div class="qr-code" style="display: none;"></div>
+</section>
 <script>
-    let btn = document.querySelector(".button");
-    btn.addEventListener("click", () => {
-        let user_input = document.querySelector("#input_text");
-        if(user_input.value != "") {
-            if(document.querySelector(".qr-code").childElementCount == 0){
-                generate(user_input);
-            } else{
-                document.querySelector(".qr-code").innerHTML = "";
-                generate(user_input);
-            }
-        } else {
-            document.querySelector(".qr-code").style = "display: none";
-            console.log("not valid input");
-        }
-    });
+    setInterval(function(){generate(document.querySelector("input"));},100);
 
     function generate(user_input){
-
-        document.querySelector(".qr-code").style = "";
+        let qr = document.querySelector(".qr-code");
+        if(user_input.value != ""){
+            if(qr.childElementCount > 0){
+                qr.innerHTML = "";
+            }
+        } else {
+            qr.style= "display: none";
+            return;
+        }
+        qr.style = "";
 
         var qrcode = new QRCode(document.querySelector(".qr-code"), {
             text: `${user_input.value}`,
@@ -41,8 +47,6 @@
         });
 
         console.log(qrcode);
-
-        
     }
     
 </script>
