@@ -128,13 +128,15 @@ function TileGrid(r,c,w,h){
           gp.push(pos);
           
           //Random assignment is being replaced with a solution generation and then a jumble
-          let ind = 0;//Math.floor(Math.random()*this.colorArray.length);
+          let ind = Math.floor(Math.random()*this.colorArray.length);
           
           //HERE WE RANDOMLY PUT IN HOLES BY ASSIGING -1 INDEX 
-          // if(Math.random()>0.85){
-          //   ind = -1;
+          // if(Math.random()>0.5 && this.r > 3 && this.c > 3){
+          //   if(rows == 0 || rows == this.r-1 ){//|| cols == 0 || cols == this.c-1){
+          //     ind = -1;
+          //   }
           // }
-          ///// BLANK SPACES REMOVED DUE TO PLAYER CONFUSION, AND IT CREATED UNSOLVEABLE PUZZLES - YIKES
+          //Need to make it so no tile is adjacent to two or more holes
 
           if(data.length > 0){
             ind = data[dataCount];
@@ -585,6 +587,9 @@ function TileGrid(r,c,w,h){
 
 
   this.validate = function(){
+    //FOR DEBUGGING GRID GENERATION
+    //return false;
+
     if(!this.allReady()){
       //console.log("not ready");
       // this.canControl = false;
