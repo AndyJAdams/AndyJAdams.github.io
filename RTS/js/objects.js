@@ -21,20 +21,20 @@ function Unit(name,x,y,r,t,game,parent,playable=true){
                 ctx.strokeRect(this.x-this.r/2-5,this.y-this.r/2-5,this.r+10,this.r+10);
                 let w = this.r/this.engines.length;
                 for(let e = 0; e < this.engines.length;e++){
-                    ctx.fillRect(this.x-this.r/2+(e*w),this.y+(this.r/2)-(this.r*this.engines[e].percentage),w,this.r*this.engines[e].percentage);
+                    ctx.fillRect(this.x-this.r/2+(e*w)+1,this.y+(this.r/2)-(this.r*this.engines[e].percentage),w-2,this.r*this.engines[e].percentage);
                 }
-                ctx.fillText(this.cost,this.x-this.r/2,this.y+this.r/2+20);
+                ctx.fillText(this.cost + " - " + this.delay + " - " + this.name,this.x-this.r/2-5,this.y+this.r/2+20);
                 break;
         }
     }
 
     this.update=function(){
         if(this.selected){
-            if(this.game.currency > this.cost){
+            if(this.game.currency >= this.cost){
                 this.game.currency -= this.cost;
+                this.addEngine();
+                this.selected = false;
             }
-            this.addEngine();
-            this.selected = false;
         }
 
         for(let e = 0; e < this.engines.length;e++){
@@ -45,8 +45,9 @@ function Unit(name,x,y,r,t,game,parent,playable=true){
 
     this.addEngine = function(){
         if(this.engines.length > 4){
-            this.delay /= 1.05;
-            this.cost *= 1.1;
+            this.delay =Math.round(this.delay/1.05);
+            this.cost = Math.round(this.cost*1.1);
+            this.award = Math.round(this.award*1.5);
             this.engines = [];
         }
         this.engines.push(new Engine(this,this.delay));
@@ -76,7 +77,7 @@ function Engine(unit,delay){
 }
 
 function Game(){
-    this.currency=100;
+    this.currency=1000;
     this.start = Date.now();
     this.paused = false;
     this.units = [];
