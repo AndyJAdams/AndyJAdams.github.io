@@ -1,0 +1,153 @@
+<DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>SNEK</title>
+        <style type="text/css">
+            body{
+                margin: 0;
+                touch-action: none;
+                position: fixed;
+                -webkit-touch-callout: none !important;
+                -webkit-user-select: none !important;
+            }
+            canvas{
+                touch-action: none;
+                background-color: #444;
+            }
+        </style>
+    </head>
+    <body id='body'>
+    <canvas></canvas>
+        <script>
+        var canvas = document.querySelector('canvas');
+        var center = {x: -1, y: -1};
+        function scaleCanvas(){
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            center = {x: innerWidth/2, y: innerHeight/2};
+        }
+        var ctx = canvas.getContext('2d');
+        scaleCanvas();
+
+        function Point(x,y){
+            this.x = x; this.y =y;
+        }
+    
+        function Snek(){
+            this.points = []; this.dir = 3;
+            
+            for(var i = 0; i < 10; i++){
+                this.points.push(new Point(center.x, center.y+i));
+            }
+
+            this.draw = function(){
+                ctx.strokeStyle='#FFF';
+                ctx.lineWidth= 4;
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x,this.points[0].y);
+                for(var p = 1; p < this.points.length; p++){
+                    ctx.lineTo(this.points[p].x, this.points[p].y);
+                }
+                ctx.stroke();
+                ctx.closePath();
+                
+            }
+
+            this.update = function(){
+                for(var i = this.points.length-1; i > 0; i--){
+                    this.points[i] = this.points[i-1];
+                }
+                this.points[0].y--;
+
+                this.draw();
+            }
+        }
+    
+        var snek = new Snek();
+        //*************************************************
+        //*************************************************
+        function animate(){
+            window.requestAnimationFrame(animate);
+            ctx.clearRect(0,0,innerWidth,innerHeight);
+            snek.update();
+        }
+        //*************************************************
+        //*************************************************
+    
+        //*** INPUT SECTION **//
+        window.addEventListener('keyup',function(e){
+            console.log(e.key);
+        });
+    
+        window.addEventListener('resize',function(evt){
+            evt.preventDefault();
+            scaleCanvas();
+        });
+    
+    
+        window.addEventListener('mousedown',inputStart,false);
+        window.addEventListener('mousemove',inputMove,false);
+        window.addEventListener('mouseup',inputEnd,false);
+    
+        window.addEventListener('touchstart',inputStart, false);
+        window.addEventListener('touchmove', inputMove,false);
+        window.addEventListener('touchcancel',inputEnd,false);
+        window.addEventListener('touchend',inputEnd,false);
+    
+        var start = {x:-1,y:-1};
+        var current = {x:-1,y:-1};
+        function inputStart(evt){
+            evt.preventDefault();
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    start.x = touches[0].pageX;
+                    start.y = touches[0].pageY;
+                }
+            } else {
+                start.x = evt.pageX;
+                start.y = evt.pageY;
+            }
+                    current.x = start.x;
+                    current.y = start.y;
+        }
+    
+        function inputMove(evt){
+            evt.preventDefault();
+            if(start.x > -1){
+                if(evt.changedTouches != undefined){
+                    var touches = evt.changedTouches;
+                    if(touches.length > 0){
+                        current.x = touches[0].pageX;
+                        current.y = touches[0].pageY;
+                    }
+                } else {
+                    current.x = evt.pageX;
+                    current.y = evt.pageY;
+                }
+            }
+        }
+    
+        function inputEnd(evt){
+            if(snek){
+                let d= Math.abs(Math.sqrt(Math.pow(evt.pageX-start.x,2)+Math.pow(evt.pageY-start.y,2)));
+                if(d > 50){ //Minimum swipe distance in pixels
+                    if(evt.pageX < start.x){ //LEFT
+                        snek.dir = 3;
+                    } else if(evt.pageX > start.x){
+                        snek.dir = 1; //RIGHT
+                    } else if(evt.pageY < start.y){
+                        snek.dir = 0; //UP
+                    } else if(evt.pageY > start.y){
+                        snek.dir = 2; //DOWN
+                    }
+                }
+            }
+            start.x = -1;
+        }
+        animate();
+        </script>
+    </body>
+    </html>
+    
