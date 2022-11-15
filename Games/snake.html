@@ -29,55 +29,179 @@
         }
         var ctx = canvas.getContext('2d');
         scaleCanvas();
+        
+        var score = 0;
+        var bestScore = 0;
+        var fruits = [];
+        var sneks = [];
 
         function Point(x,y){
             this.x = x; this.y =y;
         }
-    
-        function Snek(){
-            this.points = []; this.dir = 3;
+
+        function Fruit(){
+            this.init = function(){
+                this.x = center.x-210+Math.round(Math.random()*420);
+                this.y = center.y-300+Math.round(Math.random()*600);
+            }
             
-            for(var i = 0; i < 10; i++){
-                this.points.push(new Point(center.x, center.y+i));
+            this.draw = function(){
+                ctx.fillStyle='#F00';
+                ctx.fillRect(this.x-5,this.y-5,10,10);
+            }
+
+            this.eat = function(){
+                score++;
+                this.init();
+            }
+            this.init();
+        }
+
+        function Snake(){
+            this.points = []; this.direction = {x: 0, y: -1}; this.growth = 0;
+            this.init = function(){
+                this.points = []; 
+                this.direction = {x: 0, y: -1};
+                for(var i = 0; i < 100; i++){
+                    this.points.push(new Point(center.x, center.y+i));
+                }
             }
 
             this.draw = function(){
                 ctx.strokeStyle='#FFF';
-                ctx.lineWidth= 4;
+                ctx.lineWidth = 4;
                 ctx.beginPath();
-                ctx.moveTo(this.points[0].x,this.points[0].y);
-                for(var p = 1; p < this.points.length; p++){
-                    ctx.lineTo(this.points[p].x, this.points[p].y);
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                for(var i = 1; i < this.points.length; i++){
+                    if(Math.abs(Math.sqrt(Math.pow(this.points[i-1].x-this.points[i].x,2)+Math.pow(this.points[i-1].y-this.points[i].y,2))) > 5){
+                        ctx.moveTo(this.points[i].x,this.points[i].y);
+                    } else {
+                        ctx.lineTo(this.points[i].x, this.points[i].y);
+                    }
                 }
                 ctx.stroke();
-                ctx.closePath();
-                
             }
 
             this.update = function(){
-                for(var i = this.points.length-1; i > 0; i--){
-                    this.points[i] = this.points[i-1];
-                }
-                this.points[0].y--;
+                let next = new Point(this.points[0].x+this.direction.x, this.points[0].y+this.direction.y);
+                //Check boundaries
+                if(next.x > center.x+220){ next.x = center.x-220;} else if(next.x < center.x-220){next.x = center.x+220;}
+                if(next.y > center.y+310){ next.y = center.y-310;} else if(next.y < center.y-310){next.y = center.y+310;}
 
+                //Check collisions with line
+                for(var i  = 1;i < this.points.length; i++){
+                    //Get Distance between points
+                    let d = Math.abs(Math.sqrt(Math.pow(this.points[i].x-next.x,2)+Math.pow(this.points[i].y-next.y,2)));
+                    if(d < 1){
+                        if(score > bestScore){
+                            bestScore = score;
+                        }
+                        score = 0;
+                        this.init();
+                        return;
+                    }
+                }
+
+                this.points.unshift(next);
+                if(this.growth <= 0){
+                    this.points.pop();
+                } else {
+                    this.growth--;
+                }
                 this.draw();
             }
+            this.grow = function(){
+                this.growth += Math.round(this.points.length/4);
+            }
+
+            this.init();
         }
     
-        var snek = new Snek();
+        var dangerNoodle = new Snake();
+        sneks.push(dangerNoodle);
+        var apple = new Fruit;
+        fruits.push(apple);
+        
         //*************************************************
         //*************************************************
         function animate(){
             window.requestAnimationFrame(animate);
             ctx.clearRect(0,0,innerWidth,innerHeight);
-            snek.update();
+            //Update snakes
+            for(var s = 0;s < sneks.length; s++){
+                sneks[s].update();
+            }
+            //Update fruits
+            for(var f = 0; f < fruits.length; f++){
+                fruits[f].draw();
+            }
+            //Check for fruity yummies
+            checkFruit();
+
+            ctx.strokeStyle='#FFF';
+            ctx.strokeRect(center.x-220,center.y-310,440,620);
         }
         //*************************************************
         //*************************************************
     
+        //Check fruit versus snek collisions
+        function checkFruit(){
+            for(var i =  0; i < fruits.length; i++){
+                //loop through sneks and check collision distance 
+                for(var s = 0; s < sneks.length; s++){
+                    //Loop through all snek points
+                    for(var p = 0; p < sneks[i].points.length; p++){
+                        let dist = Math.abs(Math.sqrt(Math.pow(sneks[s].points[p].x-fruits[i].x,2)+Math.pow(sneks[s].points[p].y-fruits[i].y,2)));
+                        if(dist < 5){
+                            fruits[i].eat();
+                            sneks[s].grow();
+                        }
+                    }
+                }
+            }
+        }
+
         //*** INPUT SECTION **//
         window.addEventListener('keyup',function(e){
             console.log(e.key);
+            switch(e.key){
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    for(var i = 0;i < sneks.length; i++){
+                        if(sneks[i].direction.y <= 0){
+                            sneks[i].direction = {x:0,y:-1};
+                        }
+                    }
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    for(var i = 0;i < sneks.length; i++){
+                        if(sneks[i].direction.y >= 0){
+                            sneks[i].direction = {x:0,y:1};
+                        }
+                    }
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    for(var i = 0;i < sneks.length; i++){
+                        if(sneks[i].direction.x <= 0){
+                            sneks[i].direction = {x:-1,y:0};
+                        }
+                    }
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    for(var i = 0;i < sneks.length; i++){
+                        if(sneks[i].direction.x >= 0){
+                            sneks[i].direction = {x:1,y:0};
+                        }
+                    }
+                    break;
+            }
         });
     
         window.addEventListener('resize',function(evt){
@@ -130,20 +254,19 @@
         }
     
         function inputEnd(evt){
-            if(snek){
-                let d= Math.abs(Math.sqrt(Math.pow(evt.pageX-start.x,2)+Math.pow(evt.pageY-start.y,2)));
-                if(d > 50){ //Minimum swipe distance in pixels
-                    if(evt.pageX < start.x){ //LEFT
-                        snek.dir = 3;
-                    } else if(evt.pageX > start.x){
-                        snek.dir = 1; //RIGHT
-                    } else if(evt.pageY < start.y){
-                        snek.dir = 0; //UP
-                    } else if(evt.pageY > start.y){
-                        snek.dir = 2; //DOWN
-                    }
-                }
-            }
+            // if(evt.pageX < start.x){
+            //     dangerNoodle.direction.x = -1;
+            //     dangerNoodle.direction.y = 0;
+            // } else if(evt.pageX > start.x){
+            //     dangerNoodle.direction.x = 1;
+            //     dangerNoodle.direction.y = 0;
+            // } else if(evt.pageY > start.y){
+            //     dangerNoodle.direction.y = 1;
+            //     dangerNoodle.direction.x = 0;
+            // } else if(evt.pageY < start.y){
+            //     dangerNoodle.direction.y = -1;
+            //     dangerNoodle.direction.x = 0;
+            // }
             start.x = -1;
         }
         animate();
