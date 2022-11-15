@@ -127,6 +127,11 @@
         function animate(){
             window.requestAnimationFrame(animate);
             ctx.clearRect(0,0,innerWidth,innerHeight);
+            //Display score
+            ctx.fillStyle='#888';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.fillText(score+'pts',center.x-200,center.y-280);
+
             //Update snakes
             for(var s = 0;s < sneks.length; s++){
                 sneks[s].update();
@@ -140,6 +145,8 @@
 
             ctx.strokeStyle='#FFF';
             ctx.strokeRect(center.x-220,center.y-310,440,620);
+
+            
         }
         //*************************************************
         //*************************************************
@@ -254,19 +261,41 @@
         }
     
         function inputEnd(evt){
-            // if(evt.pageX < start.x){
-            //     dangerNoodle.direction.x = -1;
-            //     dangerNoodle.direction.y = 0;
-            // } else if(evt.pageX > start.x){
-            //     dangerNoodle.direction.x = 1;
-            //     dangerNoodle.direction.y = 0;
-            // } else if(evt.pageY > start.y){
-            //     dangerNoodle.direction.y = 1;
-            //     dangerNoodle.direction.x = 0;
-            // } else if(evt.pageY < start.y){
-            //     dangerNoodle.direction.y = -1;
-            //     dangerNoodle.direction.x = 0;
-            // }
+            let end = {x: evt.pageX,y:evt.pageY};
+            let xdif = Math.abs(start.x-end.x);
+            let ydif = Math.abs(start.y-end.y);
+            let dist = Math.sqrt(Math.pow(xdif,2)+Math.pow(ydif,2))
+            if(dist > 30){
+                if(xdif > ydif){
+                    if(start.x < end.x){ //Right
+                        for(var i = 0;i < sneks.length; i++){
+                            if(sneks[i].direction.x >= 0){
+                                sneks[i].direction = {x:1,y:0};
+                            }
+                        }
+                    } else { //Left
+                        for(var i = 0;i < sneks.length; i++){
+                            if(sneks[i].direction.x <= 0){
+                                sneks[i].direction = {x:-1,y:0};
+                            }
+                        }
+                    }
+                } else {
+                    if(start.y > end.y){ //Up
+                        for(var i = 0;i < sneks.length; i++){
+                            if(sneks[i].direction.y <= 0){
+                                sneks[i].direction = {x:0,y:-1};
+                            }
+                        }
+                    } else { //Down
+                        for(var i = 0;i < sneks.length; i++){
+                            if(sneks[i].direction.y >= 0){
+                                sneks[i].direction = {x:0,y:1};
+                            }
+                        }
+                    }
+                }
+            }
             start.x = -1;
         }
         animate();
