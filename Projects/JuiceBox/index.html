@@ -6,7 +6,8 @@
   </head>
 
   <body>
-    <button>CLICK ME A-HOLE</button>
+    <button id='loc'>Allow Location</button>
+    <button id='stat'>GetStationList</button>
     <p id='out'></p>
   </body>
   <script>
@@ -27,7 +28,7 @@
     }
     var baseURL = 'https://api.openchargemap.io/v3/poi/?';
     const ua = async () =>{
-      getLoc();
+      //getLoc();
       let locURL = baseURL+'longitude='+loc.long+'&latitude='+loc.latitude+'&distance='+distanceLimit;
       let myURL = locURL+'&key=juiceboxapp';
       const response = await fetch(myURL);
@@ -36,7 +37,10 @@
       console.log(json);
     }
 
-    var btn = document.querySelector('button');
-    btn.addEventListener('click',ua);
+    var LOCbtn = document.getElementById('loc');
+    LOCbtn.addEventListener('click',getLoc);
+    var staBTN = document.getElementById('stat');
+    staBTN.addEventListener('click',ua);
+    
   </script>
 </html>
