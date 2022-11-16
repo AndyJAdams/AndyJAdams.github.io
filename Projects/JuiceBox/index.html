@@ -12,7 +12,7 @@
   </body>
   <script>
     var loc ={long: -1,lat: -1};
-    var distanceLimit = 100; //defaults to miles
+    var distanceLimit = 40; //defaults to miles
     function getLoc(){
       if(navigator.geolocation){
         navigator.geolocation.getCurrentPosition(stashLoc);
@@ -24,13 +24,14 @@
       console.log(position);
       loc.long = position.coords.longitude;
       loc.lat = position.coords.latitude;
-      console.log(bb);
+      console.log(loc);
     }
     var baseURL = 'https://api.openchargemap.io/v3/poi/?';
     const ua = async () =>{
       //getLoc();
-      let locURL = baseURL+'longitude='+loc.long+'&latitude='+loc.latitude+'&distance='+distanceLimit;
+      let locURL = baseURL+'longitude='+loc.long+'&latitude='+loc.lat+'&distance='+distanceLimit;
       let myURL = locURL+'&key=juiceboxapp';
+      console.log(myURL);
       const response = await fetch(myURL);
       const json = await response.json();
       //document.getElementById('out').innerHTML = json.ToString();
@@ -41,6 +42,6 @@
     LOCbtn.addEventListener('click',getLoc);
     var staBTN = document.getElementById('stat');
     staBTN.addEventListener('click',ua);
-    
+
   </script>
 </html>
