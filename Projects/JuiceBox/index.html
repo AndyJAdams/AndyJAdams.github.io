@@ -11,6 +11,7 @@
   </body>
   <script>
     var loc ={long: -1,lat: -1};
+    var bb = {tlong: -1, tlat: -1,blong: -1, blat:-1};
     function getLoc(){
       if(navigator.geolocation){
         navigator.geolocation.getCurrentPosition(stashLoc);
@@ -22,17 +23,23 @@
       console.log(position);
       loc.long = position.coords.longitude;
       loc.lat = position.coords.latitude;
+      bb.tlong = Math.floor(loc.long*10)/10;
+      bb.tlat = Math.ceil(loc.lat*10)/10;
+      bb.blong = Math.ceil(loc.long*10/10);
+      bb.blat = Math.floor(loc.lat*10)/10;
+      console.log(bb);
     }
     var baseURL = 'https://api.openchargemap.io/v3/?';
-
     const ua = async () =>{
-      const response = await fetch('https://api.openchargemap.io/v3/?key=123');
+      baseURL += 'boundingbox='+bb.tlat+'%2C'+bb.tlong+'%2C'+bb.blat+'%2C'+bb.blong;
+      baseURL += '&key=juiceboxapp';
+      const response = await fetch(baseURL);
       const json = await response.json();
       //document.getElementById('out').innerHTML = json.ToString();
       console.log(json);
     }
 
     var btn = document.querySelector('button');
-    btn.addEventListener('click',getLoc);
+    btn.addEventListener('click',ua);
   </script>
 </html>

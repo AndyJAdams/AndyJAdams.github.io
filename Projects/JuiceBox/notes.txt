@@ -1,0 +1,6 @@
+onst options = {method: 'GET', headers: {'Content-Type': 'application/json'}};
+
+fetch('https://api.openchargemap.io/v3/poi?boundingbox=-92.168933928%2C44.489649499%2C-90.8508781791%2C44.489649499%2C-90.8508781791%2C45.1341312655%2C-92.168933928%2C45.1341312655%2C-92.168933928%2C44.489649499&key=abcdefg', options)
+  .then(response => response.json())
+  .then(response => console.log(response))
+  .catch(err => console.error(err));
