@@ -29,7 +29,7 @@
         }
         var ctx = canvas.getContext('2d');
         scaleCanvas();
-        
+
         var score = 0;
         var bestScore = 0;
         var fruits = [];
@@ -44,7 +44,7 @@
                 this.x = center.x-210+Math.round(Math.random()*420);
                 this.y = center.y-300+Math.round(Math.random()*600);
             }
-            
+
             this.draw = function(){
                 ctx.fillStyle='#F00';
                 ctx.fillRect(this.x-5,this.y-5,10,10);
@@ -60,11 +60,12 @@
         function Snake(){
             this.points = []; this.direction = {x: 0, y: -1}; this.growth = 0;
             this.init = function(){
-                this.points = []; 
+                this.points = [];
                 this.direction = {x: 0, y: -1};
                 for(var i = 0; i < 100; i++){
                     this.points.push(new Point(center.x, center.y+i));
                 }
+                this.growth = 0;
             }
 
             this.draw = function(){
@@ -116,12 +117,12 @@
 
             this.init();
         }
-    
+
         var dangerNoodle = new Snake();
         sneks.push(dangerNoodle);
         var apple = new Fruit;
         fruits.push(apple);
-        
+
         //*************************************************
         //*************************************************
         function animate(){
@@ -146,15 +147,15 @@
             ctx.strokeStyle='#FFF';
             ctx.strokeRect(center.x-220,center.y-310,440,620);
 
-            
+
         }
         //*************************************************
         //*************************************************
-    
+
         //Check fruit versus snek collisions
         function checkFruit(){
             for(var i =  0; i < fruits.length; i++){
-                //loop through sneks and check collision distance 
+                //loop through sneks and check collision distance
                 for(var s = 0; s < sneks.length; s++){
                     //Loop through all snek points
                     for(var p = 0; p < sneks[i].points.length; p++){
@@ -210,22 +211,22 @@
                     break;
             }
         });
-    
+
         window.addEventListener('resize',function(evt){
             evt.preventDefault();
             scaleCanvas();
         });
-    
-    
+
+
         window.addEventListener('mousedown',inputStart,false);
         window.addEventListener('mousemove',inputMove,false);
         window.addEventListener('mouseup',inputEnd,false);
-    
+
         window.addEventListener('touchstart',inputStart, false);
         window.addEventListener('touchmove', inputMove,false);
         window.addEventListener('touchcancel',inputEnd,false);
         window.addEventListener('touchend',inputEnd,false);
-    
+
         var start = {x:-1,y:-1};
         var current = {x:-1,y:-1};
         function inputStart(evt){
@@ -243,7 +244,7 @@
                     current.x = start.x;
                     current.y = start.y;
         }
-    
+
         function inputMove(evt){
             evt.preventDefault();
             if(start.x > -1){
@@ -259,7 +260,7 @@
                 }
             }
         }
-    
+
         function inputEnd(evt){
             let end = {x: evt.pageX,y:evt.pageY};
             let xdif = Math.abs(start.x-end.x);
@@ -302,4 +303,3 @@
         </script>
     </body>
     </html>
-    
