@@ -13,14 +13,15 @@
     var loc ={long: -1,lat: -1};
     function getLoc(){
       if(navigator.geolocation){
-        let pos = navigator.geolocation.getCurrentPosition();
-        console.log(pos);
-        loc.long = pos.coords.longitude;
-        loc.lat = pos.coords.latitude;
-
+        navigator.geolocation.getCurrentPosition(stashLoc);
       } else {
         console.log("Get rinsed")
       }
+    }
+    function stashLoc(position){
+      console.log(position);
+      loc.long = position.coords.longitude;
+      loc.lat = position.coords.latitude;
     }
     var baseURL = 'https://api.openchargemap.io/v3/?';
 
