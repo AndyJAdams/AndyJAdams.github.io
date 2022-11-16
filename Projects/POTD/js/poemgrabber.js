@@ -20,7 +20,7 @@ var promise = new Promise(function(resolve,reject) {
 
 promise.then(function(value){
     if(value.length > 0){
-        let randindex = Math.floor(Math.random()*value.length);
+        let randindex = 0;// Math.floor(Math.random()*value.length);
         let poemData = '';
         for(var i = 0; i < value[randindex].lines.length; i++){
             poemData += value[randindex].lines[i]+'<br/>';
