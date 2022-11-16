@@ -28,6 +28,7 @@
       bb.blong = Math.ceil(loc.long*10/10);
       bb.blat = Math.floor(loc.lat*10)/10;
       console.log(bb);
+      ua;
     }
     var baseURL = 'https://api.openchargemap.io/v3/?';
     const ua = async () =>{
@@ -40,6 +41,9 @@
     }
 
     var btn = document.querySelector('button');
-    btn.addEventListener('click',ua);
+    btn.addEventListener('click',{
+      getLoc();
+      ua();
+    });
   </script>
 </html>
