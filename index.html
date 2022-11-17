@@ -2,52 +2,94 @@
 <html lang="en US">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@700&display=swap" rel="stylesheet">
   <title>Andy_Adams</title>
   <style type="text/css">
     body{
-      margin: 0;
-      text-align: right;
+      margin: 20px;
       font-family: 'Josefin Sans','sans-serif';
+      color: #bbb;
+      font-size: 20px;
+      text-align: left;
+    }
+    #title{
       color: #000;
-    }
-    #content{
-      position: absolute;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%);
-    }
-
-    h1{
       font-size: 72px;
     }
-
+    .icon{
+      width: 52px;
+      height: 52px;
+    }
+    #iconTray{
+      position: absolute;
+      right: 20px;
+      top: 20px;
+    }
+    #spacer{
+      width: 100%;
+      height: 5px;
+      background-color: #000;
+    }
     a{
       text-decoration: none;
-      font-size: 36px;
+      font-size: 32px;
     }
-
-    #mail{        color: #37c56d;}
-    #twit{        color: #6bb9e9;}
-    #codepen{     color: #ce37c1;}
     .game{        color: #ce9135;}
     .site{        color: #682f68;}
     .project{     color: #964545;}
     .widget{      color: #1270c2;}
 
+    @media all and (max-width: 790px){
+      /*FOR MOBILE*/
+      #iconTray{
+        position: relative;
+        margin: 0px 20px;
+      }
+      .icon{
+        width: 46px;
+        height: 46px;
+      }
+      #title{
+        font-size: 48px;
+      }
+    }
+    @media all and (max-width: 430px){
+      /*FOR MOBILE*/
+      #iconTray{
+        position: relative;
+        margin: 0px 20px;
+      }
+      .icon{
+        width: 40px;
+        height: 40px;
+      }
+      #title{
+        font-size: 40px;
+      }
+    }
   </style>
 </head>
 <body id='body'>
     <div id='content'>
-    <h1>Andrew J. Adams</h1>
-      <a id='mail' href="mailto:andrewjamesadams@live.com?subject=site%20contact">email</a><br/>
-      <a id='twit' href="https://twitter.com/Andeee_Adams">twitter</a><br/>
-      <a id='codepen' href="https://codepen.io/andyjamesadams">codepen</a><br/>
-      <br/>
-      <br/>
-      <a class="widget" href="Projects/POTD/index.html">poem of the day</a> api sourced poetry<br/>
-      <a class="project" href="Projects/QR/index.html">qr generator</a> nifty pixel hyperlinks<br/>
-      <a class="game" href="Games/snake.html">snek</a> classic game of snake<br/>
+      <div id='title'>Andrew J. Adams</div>
+      <div id='spacer'></div>
+      <div id='iconTray'>
+        <a href="mailto:andrewjamesadams@live.com?subject=site%20contact">
+          <img class='icon' src='img/icons/email_black_over_trans_180.png'/>
+        </a>
+        <a id='twit' href="https://twitter.com/Andeee_Adams">
+          <img class='icon' src='img/icons/twitter_black_over_trans_180.png'/>
+        </a>
+        <a id='codepen' href="https://codepen.io/andyjamesadams">
+          <img class='icon' src='img/icons/codepen_black_over_trans_180.png'/>
+        </a>
+      </div>
+
+    <br/>
+    <a class="widget" href="Projects/POTD/index.html">poem of the day</a> api sourced poetry<br/>
+    <a class="project" href="Projects/QR/index.html">qr generator</a> nifty pixel hyperlinks<br/>
+    <a class="game" href="Games/snake.html">snek</a> classic game of snake<br/>
     </div>
 </body>
 </html>
