@@ -1,0 +1,128 @@
+body{
+    margin: 10px;
+    background-color: #FFF;
+    color: #000;
+    font-family: sans-serif;
+}
+
+.content{
+    display: flex;
+}
+
+#main{
+    border: 2px solid black;
+    width: 300px;
+    margin: 20px;
+}
+
+#NF_title{
+    font-size: 35px;
+    font-weight:bolder;
+    margin-left: 4px;
+}
+
+.linebreakSmall{
+    width: 96%;
+    margin-left: 2%;
+    height: 1.5px;
+    background-color: #000;
+}
+
+.linebreakMedium{
+    width: 96%;
+    margin-left: 2%;
+    height: 4.5px;
+    background-color: #000;
+}
+
+.linebreakLarge{
+    width: 96%;
+    margin-left: 2%;
+    height: 12.5px;
+    background-color: #000;
+}
+
+
+#servingsper{
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+}
+
+.row{
+    display: flex;
+}
+
+.leftCol{
+    flex: 50%;
+    margin-left: 4px;
+}
+
+.rightCol{
+    margin-right: 4px;
+}
+
+#servingsize_content{
+    font-size: 14px;
+    margin-left: 4px;
+}
+
+#amountperserving{
+    font-size: 14px;
+    margin-left: 4px;
+}
+
+#amountperCalories{
+    font-size: 28px;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+#caloriecount{
+    font-size: 40px;
+    font-weight: bolder;
+    margin-right: 4px;
+}
+
+#dailyvaluetitle{
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+#dailyvaluechart{
+    font-size: 14px;
+}
+
+.leftChartCol{
+    border-style: solid;
+    border-color: #000;
+    border-width: 1px 1px 0px 0px;
+    width: 60px;
+    margin-left: 4px;   
+    text-align: right;
+}
+
+.rightChartCol{
+    border-style: solid;
+    border-color: #000;
+    border-width: 1px 0px 0px 0px;
+    flex: 90%;
+    display: flex;
+    margin-right: 4px;
+}
+
+.chartTitle{
+    font-weight: bold;
+    margin-right: 2px;
+}
+
+#footnote{
+    font-size: 12px;   
+    margin-top: 8px;
+    margin-bottom: 26px; 
+}
+
+.footrightCol{
+    margin-left: 10px;
+    margin-right: 10px;
+}

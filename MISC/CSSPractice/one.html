@@ -3,98 +3,142 @@
   <head>
     <meta charset="utf-8">
     <title>Practice 1</title>
-    <style>
-      
-
-    </style>
+    <link rel="stylesheet" href="one.css">
   </head>
   <body>
-    <div id='main'>
-      <div id="NF_title">Nutrition Facts</div>
-      <div class="linebreakSmall"></div>
-      <div id="servingsper">8 servings per container</div>
-      <div id="servingsize_content" class="row"></div>
-        <div id="servingsize_title" class="servingsize leftCol">Serving size</div>
-        <div id="servingsize_qty" class="servingsize rightCol">2/3 cup (55g)</div>
+    <div class="content">
+      <div id='main'>
+        <div id="NF_title"><b>Nutrition Facts</b></div>
+        <div class="linebreakSmall"></div>
+        <div id="servingsper">8 servings per container</div>
+        <div id="servingsize_content" class="row">
+          <div id="servingsize_title" class="servingsize leftCol">Serving size</div>
+          <div id="servingsize_qty" class="servingsize rightCol">2/3 cup (55g)</div>
+        </div>
+        <div class="linebreakLarge"></div>
+        <div id="amountper_content" class="row">
+          <div id="amountper_title" class="leftCol">
+            <div id="amountperserving">Amount per 2/3 cup</div>
+            <div id="amountperCalories">Calories</div>
+          </div>
+          <div id="caloriecount" class="rightCol">230</div>
+        </div>
+        <div class="linebreakMedium"></div>
+        <div id="dailyvaluetitle">% DV*</div>
+        <div id="dailyvaluechart" class="row">
+          <!--TOTAL FAT-->
+          <div id="totalfat%" class="leftChartCol"><b>12%</b>&nbsp;</div>
+          <div id="totalfat" class="rightChartCol">
+            <div id="totalfattitle" class="chartTitle">Total Fat</div>
+            <div id="totalfatqty">8g</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Saturated Fat-->
+          <div id="satfat%" class="leftChartCol"><b>5</b>%&nbsp;</div>
+          <div id="satFat" class="rightChartCol">
+            <div id="satfattitle" >&nbsp;&nbsp;Saturated Fat</div>
+            <div id="satfatqty">1g</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Trans Fat-->
+          <div id="transfat%" class="leftChartCol"></div>
+          <div id="transFat" class="rightChartCol">
+            <div id="transfattitle" >&nbsp;&nbsp;<i>Trans</i> Fat</div>
+            <div id="transfatqty">0g</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Cholesterol-->
+          <div id="cholesterol%" class="leftChartCol"><b>0</b>%&nbsp;</div>
+          <div id="cholesterol" class="rightChartCol">
+            <div id="cholesteroltitle" class="chartTitle">Cholesterol</div>
+            <div id="cholesterolqty">0mg</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Sodium-->
+          <div id="sodium%" class="leftChartCol"><b>7</b>%&nbsp;</div>
+          <div id="sodium" class="rightChartCol">
+            <div id="sodiumtitle" class="chartTitle">Sodium</div>
+            <div id="sodiumqty">160mg</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Total Carbs-->
+          <div id="totalCarbs%" class="leftChartCol"><b>12</b>%&nbsp;</div>
+          <div id="totalCarbs" class="rightChartCol">
+            <div id="totalCarbstitle" class="chartTitle">Total Carbs&nbsp;</div>
+            <div id="sodiumqty">37g</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Dietary fiber-->
+          <div id="dietfiber%" class="leftChartCol percentage"><b>14</b>%&nbsp;</div>
+          <div id="dietfiber" class="rightChartCol">
+            <div id="dietfibertitle" >&nbsp;&nbsp;Dietary Fiber&nbsp;</div>
+            <div id="dietfiberqty">4g</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Sugars-->
+          <div id="sugars%" class="leftChartCol percentage"></div>
+          <div id="sugars" class="rightChartCol">
+            <div id="sugarstitle" >&nbsp;&nbsp;Sugars&nbsp;</div>
+            <div id="sugarsqty">1g</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Added Sugars-->
+          <div id="addsugars%" class="leftChartCol percentage"></div>
+          <div id="addsugars" class="rightChartCol">
+            <div id="addsugarstitle" >&nbsp;&nbsp;&nbsp;&nbsp;Added Sugars&nbsp;</div>
+            <div id="addsugarsqty">0g</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Protein-->
+          <div id="protein%" class="leftChartCol percentage"></div>
+          <div id="protein" class="rightChartCol">
+            <div id="proteintitle" class="chartTitle">Protein&nbsp;</div>
+            <div id="proteinqty">3g</div>
+          </div>
+        </div>
+        <div class="linebreakLarge"></div>
+        <div id="dailyvaluechart" class="row">
+          <!--Vitman D-->
+          <div id="vd%" class="leftChartCol percentage">10%&nbsp;</div>
+          <div id="vd" class="rightChartCol">
+            <div id="vdtitle" class="chartTitle">Vitamin D </div>
+            <div id="vdqty">2mcg</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Calcium-->
+          <div id="cal%" class="leftChartCol percentage">20%&nbsp;</div>
+          <div id="cal" class="rightChartCol">
+            <div id="caltitle" class="chartTitle">Calcium </div>
+            <div id="calqty">260mg</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Iron-->
+          <div id="iron%" class="leftChartCol percentage">45%&nbsp;</div>
+          <div id="iron" class="rightChartCol">
+            <div id="irontitle" class="chartTitle">Iron </div>
+            <div id="ironqty">8mg</div>
+          </div>
+        </div><div id="dailyvaluechart" class="row">
+          <!--Potassium -->
+          <div id="pot%" class="leftChartCol percentage">5%&nbsp;</div>
+          <div id="pot" class="rightChartCol">
+            <div id="pottitle" class="chartTitle">Potassium </div>
+            <div id="potqty">235mg</div>
+          </div>
+        </div>
+        <div class="linebreakMedium"></div>
+        <div id="footnote" class="row">
+          <div id="footmark" class="footrightCol">*</div>
+          <div id="footcomment" class="footleftCol">Footnote on Daily Values (DV) and calories <br/>
+          reference to be inserted here.
+          </div>
+        </div>
+      </div> <!--END MAIN-->
+
+      <div id='reference'>
+        <label>Reference Image</label><br/>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsMh5Xrb98sps0tqPLhGqkJ5asYoqn933uiVtJHO05DrCrHOjq5plCPxRZ-sDKvCUFsII:https://media.npr.org/assets/img/2014/02/26/new-label2_custom-78217b75f0547ec99d1e91170af0357a3bf2ebed-s1100-c50.jpg" width="280px"></img>
       </div>
-      <div class="linebreakLarge"></div>
-      <div id="amountper_content" class="row">
-        <div id="amountper_title" class="leftCol">
-          <div id="amountperserving">Amount per 2/3 cup</div>
-          <div id="amountperCalories">Calories</div>
-        </div>
-        <div id="caloriecount" class="rightCol"></div>
-      </div>
-      <div class="linebreakMedium"></div>
-      <div id="dailyvaluetitle">% DV*</div>
-      <div id="dailyvaluechart" class="row">
-        <!--TOTAL FAT-->
-        <div id="totalfat%" class="leftChartCol"><b>12%</b></div>
-        <div id="totalfat" class="rightChartCol">
-          <div id="totalfattitle" class="chartTitle">Total Fat</div>
-          <div id="totalfatqty">8g</div>
-        </div>
-        <!--Saturated Fat-->
-        <div id="satfat%" class="leftChartCol"><b>5</b>%</div>
-        <div id="satFat" class="rightChartCol">
-          <div id="satfattitle" >Saturated Fat</div>
-          <div id="satfatqty">1g</div>
-        </div>
-        <!--Trans Fat-->
-        <div id="transfat%" class="leftChartCol"></div>
-        <div id="transFat" class="rightChartCol">
-          <div id="transfattitle" ><i>Trans</i> Fat</div>
-          <div id="transfatqty">0g</div>
-        </div>
-        <!--Cholesterol-->
-        <div id="cholesterol%" class="leftChartCol"><b>0</b>%</div>
-        <div id="cholesterol" class="rightChartCol">
-          <div id="cholesteroltitle" class="chartTitle">Cholesterol</div>
-          <div id="cholesterolqty">0mg</div>
-        </div>
-        <!--Sodium-->
-        <div id="sodium%" class="leftChartCol"><b>7</b>%</div>
-        <div id="sodium" class="rightChartCol">
-          <div id="sodiumtitle" class="chartTitle">Sodium</div>
-          <div id="sodiumqty">160mg</div>
-        </div>
-        <!--Total Carbs-->
-        <div id="totalCarbs%" class="leftChartCol"><b>12</b>%</div>
-        <div id="totalCarbs" class="rightChartCol">
-          <div id="totalCarbstitle" class="chartTitle">Total Carbs</div>
-          <div id="sodiumqty">37g</div>
-        </div>
-        <!--Dietary fiber-->
-        <div id="dietfiber%" class="leftChartCol"><b>14</b>%</div>
-        <div id="dietfiber" class="rightChartCol">
-          <div id="dietfibertitle" >Dietary Fiber</div>
-          <div id="dietfiberqty">4g</div>
-        </div>
-        <!--Sugars-->
-        <div id="sugars%" class="leftChartCol"></div>
-        <div id="sugars" class="rightChartCol">
-          <div id="sugarstitle" >Sugars</div>
-          <div id="sugarsqty">1g</div>
-        </div>
-        <!--Added Sugars-->
-        <div id="addsugars%" class="leftChartCol"></div>
-        <div id="addsugars" class="rightChartCol">
-          <div id="addsugarstitle" >Added Sugars</div>
-          <div id="addsugarsqty">0g</div>
-        </div>
-        <!--Protein-->
-        <div id="protein%" class="leftChartCol"></div>
-        <div id="protein" class="rightChartCol">
-          <div id="proteintitle" class="chartTitle">Protein</div>
-          <div id="proteinqty">3g</div>
-        </div>
-      </div>
-      </body>
-    <br/>
-    <div id='reference'>
-      <label>Reference Image</label><br/>
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsMh5Xrb98sps0tqPLhGqkJ5asYoqn933uiVtJHO05DrCrHOjq5plCPxRZ-sDKvCUFsII:https://media.npr.org/assets/img/2014/02/26/new-label2_custom-78217b75f0547ec99d1e91170af0357a3bf2ebed-s1100-c50.jpg" width="15%" height="15%"></img>
-      <a href="https://www.w3schools.com/howto/howto_css_two_columns.asp">USE THIS</a>
     </div>
   </body>
 </html>
