@@ -1,0 +1,110 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>ToDo App Demo</title>
+	<style>
+    #tasklist{
+      background-color: #FF0000;
+      width: 300px;
+    }
+
+	</style>
+</head>
+<body id='body'>
+  <div id='content'>
+    <div id='newTask'>
+        <input type='text' id='taskTxt' name='taskTxt' placeholder="new task">
+        <button id='addBTN' onclick='addTask()'>ADD</button>
+    </div>
+    <div id='tasklist'>
+      <div id='task'>
+        <input type='checkbox'>
+        <div class='taskDesc'>Demo Task</div>
+        <div class='taskScore'>10</div>
+      </div>
+    </div>
+  </div>
+  <button id='clear' onclick='clearall()'>CLEAR</button>
+</body>
+<script>
+  //Object definition
+  function Task(desc,time){
+    this.desc = desc; this.time = time;
+    this.output = function(){
+      return this.desc+"|"+this.time;
+    }
+  }
+  var tasks = [];
+  var totalScore = 0;
+  function gatherTasks(){
+    let raw = localStorage.getItem('todo_score_list');
+    if(raw){
+      let data = localStorage.getItem('todo_score_list').split('~');
+      totalScore = data[0];
+      for(var i = 1;i < data.length; i++){
+        let deets = data[i].split('|');
+        tasks.push(new Task(deets[0],deets[1]));
+      }
+      displayTasks();
+    } else {
+      console.log('no tasks');
+    }
+  }
+
+  function commitTasks(){
+    var str = totalScore+'~';
+    for(var i = 0; i < tasks.length; i++){
+      str+= tasks[i].output()+"~";
+    }
+    localStorage.setItem('todo_score_list',str);
+  }
+
+  function addTask(){
+    var desc = document.getElementById('taskTxt').value;
+    if(desc != ''){
+      tasks.push(new Task(document.getElementById('taskTxt').value,Date.now()));
+      //alert(tasks);
+      commitTasks();
+      displayTasks();
+    }
+  }
+
+  function calcScore(time){
+    return Math.round(Math.floor((Date.now()-time)/100000000)+1);
+  }
+
+  function displayTasks(){
+    clearList();
+    let list = document.getElementById('tasklist');
+    for(var i = 0; i < tasks.length; i++){
+      let score = calcScore(tasks[i].time);
+      let taskElem = document.createElement("div");
+      taskElem.id = ''+tasks[i].desc;
+      taskElem.class='task';
+      let checkElem = document.createElement("input");
+      checkElem.type='checkbox';
+      taskElem.appendChild(checkElem);
+      //alert(taskElem);
+      list.appendChild(taskElem);
+      //<input type='checkbox'><div class='taskDesc'>"+tasks[i].desc+"</div><div class='taskScore'>"+score+"</div>
+    }
+  }
+
+  function scoreTask(task){
+    //TODO add to total score
+  }
+
+  function clearList(){
+    var list = document.getElementById('tasklist');
+    while(list.firstChild){
+      list.removeChild(list.firstChild);
+    }
+  }
+
+  function clearall(){
+    localStorage.clear();
+  }
+  gatherTasks();
+</script>
+</html>
