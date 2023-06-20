@@ -8,7 +8,7 @@
   <style type="text/css">
     body{
       	margin: 0px;
-     	background-color: #000;
+     	background-color: #444;
 	overflow: hidden;
     }
   </style>
@@ -16,6 +16,7 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
+		const VER = 001
 		var img1 = new Image();
 		var canvas = document.querySelector('canvas');
 		var ctx = canvas.getContext('2d');
@@ -30,6 +31,8 @@
 			
 			//ctx.fillRect(10,30,60,50);
 			ctx.drawImage(img1,0,0,8,8,40,40,48,48);
+
+			ctx.fillText(VER,0,12);
 		}
 		
 		img1.src='https://andyjadams.github.io/MISC/TrialBlock.png'
