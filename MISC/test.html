@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@700&display=swap" rel="stylesheet">
+  <title>TESTING</title>
+  <style type="text/css">
+    body{
+      margin: 0px;
+      background-color: #000;
+    }
+  </style>
+</head>
+<body id='body'>
+	<canvas id='canvas'></canvas>
+	<script>
+		var canvas = document.querySelector('canvas');
+		var ctx = canvas.getContext('2d');
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		
+		function animate(){
+			window.requestAnimationFrame(animate);
+			ctx.clearRect(0,0,innerWidth,innerHeight);
+			
+			ctx.fillRect(10,30,60,50);
+		}
+		
+		animate();
+	</script>
+</body>
+</html>
