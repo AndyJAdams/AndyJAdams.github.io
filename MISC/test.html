@@ -7,14 +7,16 @@
   <title>TESTING</title>
   <style type="text/css">
     body{
-      margin: 0px;
-      background-color: #000;
+      	margin: 0px;
+     	background-color: #000;
+	overflow: hidden;
     }
   </style>
 </head>
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
+		var img1 = new Image();
 		var canvas = document.querySelector('canvas');
 		var ctx = canvas.getContext('2d');
 		canvas.width = window.innerWidth;
@@ -24,10 +26,15 @@
 			window.requestAnimationFrame(animate);
 			ctx.clearRect(0,0,innerWidth,innerHeight);
 			
-			ctx.fillRect(10,30,60,50);
+			//ctx.fillRect(10,30,60,50);
+			ctx.drawImage(img1,0,0,8,8,40,40,48,48);
 		}
 		
-		animate();
+		img1.src='https://andyjadams.github.io/MISC/TrialBlock.png'
+		img1.onload = function(){
+			animate();
+		}
+		//animate();
 	</script>
 </body>
 </html>
