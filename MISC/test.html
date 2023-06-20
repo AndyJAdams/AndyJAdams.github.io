@@ -21,6 +21,8 @@
 		var ctx = canvas.getContext('2d');
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
+		//No ANTIALIASING FOR YOU!
+		ctx.imageSmootingEnabled = false;
 		
 		function animate(){
 			window.requestAnimationFrame(animate);
