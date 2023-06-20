@@ -16,12 +16,12 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
-		const VER = 004;
+		const VER = 005;
 		var img1 = new Image();
 		var canvas = document.querySelector('canvas');
 		var ctx = canvas.getContext('2d');
 		var dpi = window.devicePixelRatio;
-		var scale = 4.0;
+		var scale = 10.0;
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 		//No ANTIALIASING FOR YOU!
@@ -34,9 +34,9 @@
 			//ctx.fillRect(10,30,60,50);
 			ctx.drawImage(img1,offset.x*8,offset.y*8,8,8,40,40,8*scale,8*scale);
 			offset.x++;
-			if(offset.x >= 4){
+			if(offset.x >= 8){
 				offset.y++;
-				if(offset.y >= 4){
+				if(offset.y >= 8){
 					offset.y = 0;
 				}
 				offset.x = 0;
