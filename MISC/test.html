@@ -16,11 +16,12 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
-		const VER = 002
+		const VER = 003;
 		var img1 = new Image();
 		var canvas = document.querySelector('canvas');
 		var ctx = canvas.getContext('2d');
 		var dpi = window.devicePixelRatio;
+		var scale = 4.0;
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 		//No ANTIALIASING FOR YOU!
@@ -44,7 +45,7 @@
 			ctx.clearRect(0,0,innerWidth,innerHeight);
 			
 			//ctx.fillRect(10,30,60,50);
-			ctx.drawImage(img1,0,0,8,8,40,40,48,48);
+			ctx.drawImage(img1,0,0,8,8,40,40,8*scale,8*scale);
 
 			ctx.fillText(VER,5,12);
 		}
