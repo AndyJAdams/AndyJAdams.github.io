@@ -16,14 +16,28 @@
 <body id='body'>
 	<canvas id='canvas'></canvas>
 	<script>
-		const VER = 001
+		const VER = 002
 		var img1 = new Image();
 		var canvas = document.querySelector('canvas');
 		var ctx = canvas.getContext('2d');
+		var dpi = window.devicePixelRatio;
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
 		//No ANTIALIASING FOR YOU!
-		ctx.imageSmootingEnabled = false;
+		function fix_dpi() {
+			//create a style object that returns width and height
+			  let style = {
+			    height() {
+			      return +getComputedStyle(canvas).getPropertyValue('height').slice(0,-2);
+			    },
+			    width() {
+			      return +getComputedStyle(canvas).getPropertyValue('width').slice(0,-2);
+			    }
+			  }
+			//set the correct attributes for a crystal clear image!
+		  	canvas.setAttribute('width', style.width() * dpi);
+		 	canvas.setAttribute('height', style.height() * dpi);
+		}
 		
 		function animate(){
 			window.requestAnimationFrame(animate);
@@ -32,11 +46,12 @@
 			//ctx.fillRect(10,30,60,50);
 			ctx.drawImage(img1,0,0,8,8,40,40,48,48);
 
-			ctx.fillText(VER,0,12);
+			ctx.fillText(VER,5,12);
 		}
 		
 		img1.src='https://andyjadams.github.io/MISC/TrialBlock.png'
 		img1.onload = function(){
+			fix_dpi();
 			animate();
 		}
 		//animate();
