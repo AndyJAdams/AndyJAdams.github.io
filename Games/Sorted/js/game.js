@@ -81,7 +81,15 @@ var locking = false;
         console.log(e.pageX);
         reset();
       }
+      locking = false;
   });
+
+  window.addEventListener('keydown',function(e){
+    if(e.key == 'l' || e.key == 'L'){
+      locking = true;
+    }
+  });
+
   window.addEventListener('resize',function(evt){
       evt.preventDefault();
       scaleCanvas();
@@ -115,6 +123,12 @@ var locking = false;
       current.y = start.y;
 
       GetSelected(current.x,current.y);
+      if(locking){
+        if(tileGrid){
+          var ct = tileGrid.getClosest(current.x,current.y);
+          ct.tile.locked = !ct.tile.locked;
+        }
+      }
   }
 
   function inputMove(evt){
