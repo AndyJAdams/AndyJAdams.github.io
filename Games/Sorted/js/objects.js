@@ -1,4 +1,4 @@
-var versionNumber = "11012022-003";
+var versionNumber = "06262023-005";
 
 //Position object
 function Position(x,y){this.x = x; this.y =y ;}
@@ -89,7 +89,7 @@ function TileGrid(r,c,w,h){
     if((this.h < (this.w*0.8))||(this.scale*this.r > (this.h*0.8))){
       this.scale = (this.h*0.8)/this.r;
     }
-    console.log(this.w+"x"+this.h+"@"+this.scale);
+    //console.log(this.w+"x"+this.h+"@"+this.scale);
     if(this.scale > 120){
       this.scale = 120;
     }
