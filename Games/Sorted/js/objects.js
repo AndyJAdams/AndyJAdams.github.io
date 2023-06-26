@@ -320,7 +320,25 @@ function TileGrid(r,c,w,h){
     this.selected.bounds.vert = this.selected.column.length*this.scale;
     this.selected.bounds.horz = this.selected.row.length*this.scale;
   }
-
+  
+  this.getClosest = function(x,y){
+	  var closest = {tile:undefined, r:-1,c:-1};
+	  for(var a = 0; a < this.tiles.length; a++){
+  		for(var b = 0; b < this.tiles[a].length; b++){
+  			let t = this.tiles[a][b];
+  			if(x < t.pos.x+this.scale && x > t.pos.x && y < t.pos.y+this.scale && y > t.pos.y){
+  			  closest = this.tiles[a][b];
+  			}
+  		}
+	  }
+	  //Did we actually engage a tile?
+		if(closest.tile == undefined){
+		  return null;
+		}
+	
+		return closest;
+  }
+  
   //Now for selection...
   this.gatherSelected = function(x,y){
     //First we find the primary hovered tile to make sure we aren't
