@@ -73,11 +73,12 @@ function animate(){
       tileGrid.clearSelected();
     }
   }
-
+var locking = false;
 //*** INPUT SECTION **//
   window.addEventListener('keyup',function(e){
       console.log(e.keyCode);
       if(e.key == 'q' || e.key == 'Q'){
+        console.log(e.pageX);
         reset();
       }
   });
