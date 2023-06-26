@@ -126,7 +126,11 @@ var locking = false;
       if(locking){
         if(tileGrid){
           var ct = tileGrid.getClosest(current.x,current.y);
-          ct.tile.locked = !ct.tile.locked;
+          if(ct != null){
+            ct.tile.locked = !ct.tile.locked;
+          } else {
+            console.log("NO CLOSE TILE? "+current.x+","current.y);
+          }
         }
       }
   }
