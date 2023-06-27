@@ -86,6 +86,7 @@ var locking = false;
 
   window.addEventListener('keydown',function(e){
     if(e.key == 'l' || e.key == 'L'){
+      console.log("LOCKING");
       locking = true;
     }
   });
@@ -129,7 +130,7 @@ var locking = false;
           if(ct != null){
             ct.tile.locked = !ct.tile.locked;
           } else {
-            console.log("NO CLOSE TILE? "+current.x+","current.y);
+            console.log("NO CLOSE TILE? "+current.x+","+current.y);
           }
         }
       }
