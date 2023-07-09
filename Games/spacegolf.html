@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>SpaceGolf</title>
+        <style type="text/css">
+            body{
+                margin: 0;
+                touch-action: none;
+                position: fixed;
+                -webkit-touch-callout: none !important;
+                -webkit-user-select: none !important;
+            }
+            canvas{
+                touch-action: none;
+                background-color: #3C153B;
+            }
+        </style>
+    </head>
+    <body id='body'>
+    <canvas></canvas>
+        <script>
+        var ver = "0001";
+        var canvas = document.querySelector('canvas');
+        var center = {x: -1, y: -1};
+        function scaleCanvas(){
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            center = {x: innerWidth/2, y: innerHeight/2};
+        }
+        var ctx = canvas.getContext('2d');
+        scaleCanvas();
+
+        function animate(){
+          window.requestAnimationFrame(animate);
+          //ctx.clearRect(0,0,innerWidth,innerHeight);
+
+          ctx.fillStyle="#89BD9E";
+          ctx.beginPath();
+          ctx.arc(center.x, center.y,100,0, 2*Math.PI);
+          ctx.fill();
+
+          ctx.fillStyle="#444";
+          ctx.fillText(ver,20,20);
+        }
+        animate();
+
+        /* Design Palette
+          #3C153B - Dark Purple
+          #8B1E3F - Claret (Burgundy)
+          #89BD9E - Cambridge Blue (Teal)
+          #F0C987 - Sunset (Yellow)
+          #DB4C40 - Vermillion (Grapefruit)
+          #444444 - Dark Grey
+          #c5c5c5 - Light Grey
+        */
+    </script></body></html>
