@@ -6,6 +6,7 @@ function Snek(pts,color,exit){
 	this.pts = pts;
 	this.color = color;
 	this.exit = exit;
+	this.complete = false;
 	
 	this.draw = function(ctx){
 		if(this.pts.length > 0){
@@ -32,17 +33,23 @@ function Snek(pts,color,exit){
 		}
 	}
 
+	this.kill = function(){
+		this.pts = [];
+	}
+
 	this.update = function(ctx){
 		if(this.pts[0] == this.exit){
 			//DONE W/ this snake
-			this.pts=[];
+			//this.pts=[];
+			this.complete = true;
 			//TODO: Animate Exit
 		} else if(this.pts[this.pts.length-1] == this.exit){
 			//DONE at the tail
-			this.pts = [];
-		} else {
-			this.draw(ctx);
-		}
+			//this.pts = [];
+			this.complete = true;
+		} 
+		this.draw(ctx);
+		
 	}
 
 	this.slide = function(gp){

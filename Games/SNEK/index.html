@@ -73,8 +73,22 @@
         for(let s = 0; s < sneks.length; s++){
             sneks[s].drawExit(ctx);    
         }
-        for(let s = 0; s < sneks.length; s++){
-            sneks[s].update(ctx);    
+        
+        //Validate sneks complete
+        let done = true;
+        for(let i = 0; i < sneks.length; i++){
+            if(!sneks[i].complete){
+                done = false;
+            }
+        }
+        if(!done){ //Not done... keep playing
+            for(let s = 0; s < sneks.length; s++){
+                sneks[s].update(ctx);    
+            }
+        } else {
+            for(let s = 0; s < sneks.length; s++){
+                sneks[s].kill();
+            }
         }
 	}
     //*************************************************
