@@ -1,150 +1,126 @@
-<DOCTYPE html>
-<html lang="en US">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@700&display=swap" rel="stylesheet">
-  <title>AA Routes</title>
-  <style type="text/css">
-    body{
-      margin: 0px;
-    }
-	#routelist{
-		background: #CCC;
-		width: 100%;
-	}
-	
-	.routetitle{
-		width: 100%;
-		font-family: san-serif;
-	}
-	
-	.map{
-		width: 100%;
-		height: 450px;
-	}
-	
-	a{
-		text-decoration: none;
-		color: #000;
-	}
-	#myBtn {
-	  display: none; /* Hidden by default */
-	  position: fixed; /* Fixed/sticky position */
-	  bottom: 20px; /* Place the button at the bottom of the page */
-	  right: 30px; /* Place the button 30px from the right */
-	  z-index: 99; /* Make sure it does not overlap */
-	  border: none; /* Remove borders */
-	  outline: none; /* Remove outline */
-	  background-color: red; /* Set a background color */
-	  color: white; /* Text color */
-	  cursor: pointer; /* Add a mouse pointer on hover */
-	  padding: 15px; /* Some padding */
-	  border-radius: 10px; /* Rounded corners */
-	  font-size: 18px; /* Increase font size */
-	}
-
-	#myBtn:hover {
-	  background-color: #555; /* Add a dark-grey background on hover */
-	}
-  </style>
+	<title> 2024 STURGIS TRIP</title>
+	<style>
+	table, td{border: 1px solid black;}
+	</style>
 </head>
-<body id='body'>
-    <div id='routelist'>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/yt6wtJQHQVLRfrrFA">Eau Claire -> Fountain City</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m42!1m12!1m3!1d305302.9417834404!2d-91.97473739498909!3d44.268277694186466!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m27!3e0!4m5!1s0x87f8bc220088396d%3A0xecf654acb28dd59d!2sKWIK%20TRIP%20%23633!3m2!1d44.7704027!2d-91.46254909999999!4m3!3m2!1d44.6684804!2d-91.5305862!4m3!3m2!1d44.5533463!2d-91.5778476!4m5!1s0x87f8e13131f17da7%3A0x89d1acdb0c0bedf8!2sLookout!3m2!1d44.457564999999995!2d-91.57382199999999!4m5!1s0x87f90dc9ece9352b%3A0xb8609daa3ea91dd9!2sElmer&#39;s%20Auto%20%26%20Toy%20Museum!3m2!1d44.139568499999996!2d-91.7129908!5e0!3m2!1sen!2sus!4v1682356599176!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/hCRFH64k6z1fhkav7">BNH Hastings MN</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d362609.73642309866!2d-92.5219557915887!3d44.762687300897035!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x87f8bc220088396d%3A0xecf654acb28dd59d!2sKWIK%20TRIP%20%23633%2C%202715%20Golf%20Rd%2C%20Eau%20Claire%2C%20WI%2054701!3m2!1d44.7704027!2d-91.46254909999999!4m5!1s0x87f865fa4d7cfd5b%3A0x66b5a7ee67a46989!2sRed%20Cedar%20Bike%20Trail%20Parking!3m2!1d44.7746042!2d-91.9350571!4m5!1s0x87f81f1c2ad2d051%3A0xe9f310f6955f1722!2sJW%20Trikes!3m2!1d44.7330922!2d-92.4570729!4m5!1s0x87f7c597472a01a7%3A0xbec212c1be09b427!2s127th%20St%20E%2C%20Nininger%20Township%2C%20MN%2055033!3m2!1d44.7651003!2d-92.92407209999999!5e0!3m2!1sen!2sus!4v1682355456653!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/koZ9eE4BcU3JJv8m7">BNH Barn Bluff - Red Wing MN</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d521186.27347319096!2d-92.66853211044968!3d44.660466628600105!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x87f8bd8bc92a4681%3A0x8e519efcb6ed8f71!2sKWIK%20TRIP%20%23472!3m2!1d44.7889492!2d-91.5177219!4m5!1s0x87f78944efeec91d%3A0x3cb8866875695d2f!2sBarn%20Bluff%20Trail%20Start%2C%20602%20Centennial%20St%2C%20Red%20Wing%2C%20MN%2055066!3m2!1d44.5681045!2d-92.51923839999999!5e0!3m2!1sen!2sus!4v1682354433077!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/a6tnX5AH2hT5wCcK7">BNH Rib Mountain - Wausau WI</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d799763.062199271!2d-91.40233739821836!3d44.94925539207526!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x87f8a4594e06ee61%3A0x87a9187e45c7250a!2sKWIK%20TRIP%20%23352!3m2!1d44.8858296!2d-91.4174395!4m5!1s0x8800221c43990489%3A0xf0804941878b41cf!2s149801%20State%20Park%20Rd%2C%20Wausau%2C%20WI%2054401!3m2!1d44.921636899999996!2d-89.68791189999999!5e1!3m2!1sen!2sus!4v1682354728208!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/NajUSeqDrphB3GjK7">BNH Silverbrook - St Croix Falls</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m62!1m12!1m3!1d301294.4056166601!2d-92.266900497828!3d45.034781473551995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m47!3e0!4m5!1s0x87f8bd6f1092b561%3A0xb20b7919f8e466ae!2sKWIK%20TRIP%20%23389!3m2!1d44.8161682!2d-91.50987669999999!4m5!1s0x87f8877b5e9b2583%3A0xf4349a12b98653c2!2sBentley%20Bites!3m2!1d44.844474899999994!2d-91.769294!4m5!1s0x87f87b9c0784a2d3%3A0x7b2ea72acf996ef4!2sThe%20Waterfront%20Bar%20%26%20Grill!3m2!1d44.878012!2d-91.9283938!4m5!1s0x52ad33cb4796030f%3A0x691c5cd9fec54d67!2sCenex!3m2!1d45.0415675!2d-92.032145!4m5!1s0x52ad3f01500514ed%3A0x7a13e339dcf8c5c1!2sReeve%20park!3m2!1d45.2379386!2d-92.1291322!4m5!1s0x52ad438fbc3d3c79%3A0x5db57c93049ed24a!2sThe%20Village%20Coffee%20Co!3m2!1d45.2520307!2d-92.2837089!4m3!3m2!1d45.3161987!2d-92.4051611!4m5!1s0x52b29a912f130523%3A0x71bc1c86ec0b973e!2s851%20WI-35%2C%20St%20Croix%20Falls%2C%20WI%2054024!3m2!1d45.395229!2d-92.645077!5e0!3m2!1sen!2sus!4v1682355955445!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/2iaTjSyri66Kjvry8">BNH Sugarloaf Bluff - Winona MN</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m32!1m12!1m3!1d624037.5613587375!2d-91.78265066764754!3d44.68388162615826!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m17!3e0!4m5!1s0x87f8bbe585aa3dbf%3A0x65db9ec0de2737f5!2sKwik%20Trip!3m2!1d44.7756707!2d-91.43088619999999!4m3!3m2!1d44.4582167!2d-91.57409849999999!4m5!1s0x87f96c465288d09d%3A0x7224238ffb21c5af!2s811%20E%20Lake%20Blvd%2C%20Winona%2C%20MN%2055987!3m2!1d44.0299392!2d-91.6256301!5e0!3m2!1sen!2sus!4v1682356278929!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/tdppo9ES6JyZ2E4P7">Boyceville-Ridgeland-Colfax-Menomonie Loop</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m58!1m12!1m3!1d35614.06285177808!2d-91.90429524726422!3d44.928345912503985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m43!3e0!4m5!1s0x87f879610b3cca8f%3A0xaccf2f053c9e384e!2sCenex%20North!3m2!1d44.9114734!2d-91.93279439999999!4m3!3m2!1d44.997509699999995!2d-91.9811509!4m3!3m2!1d45.1204621!2d-91.9992209!4m3!3m2!1d45.1956802!2d-91.9265357!4m3!3m2!1d45.1394447!2d-91.7864366!4m3!3m2!1d45.0093677!2d-91.7335882!4m3!3m2!1d44.982234899999995!2d-91.8035487!4m3!3m2!1d44.9679046!2d-91.87277139999999!4m3!3m2!1d44.9465988!2d-91.8879898!4m3!3m2!1d44.911663499999996!2d-91.91917029999999!5e0!3m2!1sen!2sus!4v1682358960505!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-	    	<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/5aRhZmiScrDdh1cs9">EC -> Devils Lake</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m44!1m12!1m3!1d295509.00159479806!2d-91.23862332973717!3d44.486343314379965!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m29!3e0!4m5!1s0x87f8bdd5e0431cd1%3A0xcfed97319e688646!2sKWIK%20TRIP%20%231162!3m2!1d44.7920644!2d-91.4935388!4m5!1s0x87fe00ac6e29de2f%3A0x60d07fb9e038005a!2sKWIK%20TRIP%20%23776!3m2!1d43.795637!2d-90.071485!4m3!3m2!1d43.775589499999995!2d-90.0551687!4m5!1s0x88075f125ec0b4e9%3A0xea8c889c8c92b5f1!2sJay&#39;s%20Power%20Center!3m2!1d43.5330604!2d-89.9872828!4m5!1s0x88076b624babd417%3A0xf5eb4fb02724fcb9!2sParking%20lot!3m2!1d43.4085926!2d-89.7252305!5e0!3m2!1sen!2sus!4v1682432262591!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-	    	<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/Y6ng2AyFu9EoRBV29">Twisty Ride for Pie</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m64!1m12!1m3!1d211400.10655045672!2d-91.60513399748093!3d44.65000382411794!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m49!3e0!4m5!1s0x87f8bc5976c28cdb%3A0xf9ece0f738dfba9f!2sKWIK%20TRIP%20%23398!3m2!1d44.7995143!2d-91.469929!4m3!3m2!1d44.6679251!2d-91.5299424!4m3!3m2!1d44.553082499999995!2d-91.57921019999999!4m3!3m2!1d44.4043008!2d-91.56677429999999!4m5!1s0x87f9272780451eb7%3A0x5cdebfeb6cd94a8b!2sIndee%20Mini%20Mart!3m2!1d44.3515814!2d-91.43177089999999!4m3!3m2!1d44.331145!2d-91.3395152!4m3!3m2!1d44.455503!2d-91.2982217!4m5!1s0x87f8cd2672a9a1fb%3A0x1a6fab7adb366536!2sNorske%20Nook%20-%20Osseo!3m2!1d44.577317199999996!2d-91.2233736!4m5!1s0x87f8b7e610f63aa1%3A0xdf30223ca962c543!2sBrackett!3m2!1d44.701349799999996!2d-91.3509906!4m3!3m2!1d44.7998513!2d-91.469573!5e0!3m2!1sen!2sus!4v1682433400113!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-	    	<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/qcVyXNhUsp77PRsy7">GFY Ride</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m62!1m12!1m3!1d519493.998286001!2d-91.14421833454638!3d44.84841068443237!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m47!3e0!4m5!1s0x87f8bbe585aa3dbf%3A0x65db9ec0de2737f5!2sKwik%20Trip!3m2!1d44.7756707!2d-91.43088619999999!4m3!3m2!1d44.6834954!2d-91.14078099999999!4m5!1s0x87ff4e0da51ec4b9%3A0xc23142fe0d8a4cfe!2sLudington!3m2!1d44.8291282!2d-91.12737249999999!4m3!3m2!1d44.8274344!2d-90.94352099999999!4m3!3m2!1d45.162762699999995!2d-90.8641159!4m3!3m2!1d44.831372099999996!2d-90.80191359999999!4m5!1s0x87ff9e033f3a41e5%3A0xf767d4e0f141e040!2sKWIK%20TRIP%20%23315!3m2!1d44.7655096!2d-90.597597!4m3!3m2!1d44.4863603!2d-90.59915319999999!4m3!3m2!1d44.458923999999996!2d-91.09034179999999!4m3!3m2!1d44.7754!2d-91.4306402!5e0!3m2!1sen!2sus!4v1682434464568!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-	    	<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/P5ZNxr6oPdFPENqL9">Stillwater and Cycle Gear</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m52!1m12!1m3!1d377165.9133559793!2d-92.74754488327713!3d44.990605696882106!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m37!3e0!4m5!1s0x87f87bd6173a9295%3A0x88b83d926a6fa6d1!2sKWIK%20TRIP%20%23593!3m2!1d44.904162899999996!2d-91.934247!4m3!3m2!1d45.0417141!2d-92.13226619999999!4m3!3m2!1d45.061172!2d-92.1954753!4m5!1s0x52b2ae42f0ca6351%3A0x3f7fed93dbfe5f20!2sBoardman!3m2!1d45.065522099999995!2d-92.5999216!4m5!1s0x52b2c9eb7e1377c1%3A0x92dcfb83e9fa9333!2sThe%20Dock%20Stillwater!3m2!1d45.0545421!2d-92.8033935!4m3!3m2!1d45.002147799999996!2d-92.8800143!4m5!1s0x87f7d9733dff2533%3A0x8fb7e7b6f82e267d!2sCycle%20Gear!3m2!1d44.9476528!2d-92.9075702!5e1!3m2!1sen!2sus!4v1682436589320!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-	    	<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/ci6ZSGxz8f4wep5P7">Pepin Pickles</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m56!1m12!1m3!1d74763.98913962423!2d-92.06242862132471!3d44.63217388954217!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m41!3e0!4m5!1s0x87f87ba006d39d11%3A0xea686ca3ec1bf627!2sKWIK%20TRIP%20%23498!3m2!1d44.871569!2d-91.93059799999999!4m3!3m2!1d44.8496393!2d-91.95272179999999!4m3!3m2!1d44.8005536!2d-91.964685!4m3!3m2!1d44.7601328!2d-91.9851714!4m3!3m2!1d44.5901864!2d-92.0779149!4m3!3m2!1d44.4440872!2d-92.1607052!4m3!3m2!1d44.4383506!2d-92.1450401!4m5!1s0x87f85dad84b1860d%3A0x9ccd50762eafd4fc!2sKWIK%20TRIP%20%231133!3m2!1d44.634776099999996!2d-91.9549979!4m3!3m2!1d44.871383099999996!2d-91.9305133!5e1!3m2!1sen!2sus!4v1682437668888!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-	    	<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="https://goo.gl/maps/xhLgrSYzyqLQAnu3A">Thrive in Nelson</a></h1>
-			<iframe class="map" src="https://www.google.com/maps/embed?pb=!1m34!1m12!1m3!1d163882.74628852212!2d-91.92067351224415!3d44.48123367361003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m19!3e0!4m3!3m2!1d44.803263199999996!2d-91.526506!4m3!3m2!1d44.668487999999996!2d-91.5328191!4m3!3m2!1d44.4801353!2d-91.8661206!4m5!1s0x87f84d0249621f29%3A0x2ab791d9bb283831!2sThrive*21%20Park!3m2!1d44.4240042!2d-92.0030414!5e1!3m2!1sen!2sus!4v1682521219240!5m2!1sen!2sus" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		<!--
-		<br/>
-		<div class="route">
-			<h1 class='routetitle'><a href="LINK">TITLE</a></h1>
-			<iframe class="map" src="MAP" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-		</div>
-		-->
-	   	<br/><br/><br/>
-	    	<button onclick="topFunction()" id="myBtn" title="Go to top">TOP</button>
-	</div>
-	<script>
-		// Get the button:
-		let mybutton = document.getElementById("myBtn");
-
-		// When the user scrolls down 20px from the top of the document, show the button
-		window.onscroll = function() {scrollFunction()};
-
-		function scrollFunction() {
-		  if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-		    mybutton.style.display = "block";
-		  } else {
-		    mybutton.style.display = "none";
-		  }
-		}
-
-		// When the user clicks on the button, scroll to the top of the document
-		function topFunction() {
-		  document.body.scrollTop = 0; // For Safari
-		  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
-		}
-	</script>
+<body>
+	<h1>2024 STURGIS TRIP</h1>
+	<p>
+		Two days out and two days back with 3 days / 4 nights in Rapid City (just south of Sturgis). <br>
+		This plan accounts for hotel stay, food, and fuel. Any added costs (souvenirs/trinkets) from <br>
+		sturgis fall under "MISC COST". All hotel stays are at Holiday Inn Express so breakfast is included.<br>
+		Rooms would be a shared double queen. <br>
+	</p>
+	<h1>HEADING OUT</h1>
+	<h3>DAY ONE</h3>
+	<table>
+		<tr bgcolor="#b2b3ad"><td> Day One </td><td>Saturday 8/3/2024</td><td>Eau Claire to Sioux Falls / 312mi</td><td>5.5hr</td></tr>
+		<tr><td> Time </td><td>Desc.</td><td>Address</td><td>Cost</td></tr>
+		<tr bgcolor ="#cffc03"><td>8:30A</td><td>START/FUEL</td><td>KwikTrip - 1130 W MacArthur Ave, Eau Claire, WI 54701</td><td>$15.00</td></tr>
+		<tr bgcolor ="#f2d36d"><td>11:00A</td><td>LUNCH</td><td>Janna's Market Grill, 129 Central Ave N, Faribault, MN 55021</td><td>$16.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>12:00P</td><td>FUEL</td><td>KwikTrip - 1405 MN-60, Faribault, MN 55021</td><td>$15.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>2:30P</td><td>FUEL</td><td>KwikTrip - 251 1st Ave S, Windom, MN 56101</td><td>$15.00</td></tr>
+		<tr bgcolor ="#81b1b8"><td>4:30P</td><td>HOTEL</td><td>Holiday Inn Exp - 1103 N Splitrock Blvd, Brandon, SD 57005</td><td>$95.00</td></tr>
+		<tr bgcolor ="#f2d36d"><td>6:00P</td><td>DINNER</td><td>Tailgators - 1013 N Splitrock Blvd, Brandon, SD 57005</td><td>$25.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>  </td><td>FUEL</td><td>BP - 1009 N Splitrock Blvd, Brandon, SD 57005</td><td>$15.00</td></tr>
+		<tr bgcolor="#b2b3ad"><td> TOTAL </td><td>$201.00</td></tr>
+	</table>
+	<p> Taking 37 out of EC down to Nelson/Wabasha. From there route 60 will take us accross <br>
+	MN until we meet interstate 90 in Worthington. We'll ride I90 into SD and stop for the night.</p>
+	<iframe src="https://www.google.com/maps/d/embed?mid=10at-vpjdl9k_TTJpVwTJqHBhu3PKxvg&ehbc=2E312F" width="640" height="480"></iframe>
+	<br>
+	<br>
+	<h3>DAY TWO</h3>
+	<table>
+		<tr bgcolor="#b2b3ad"><td> Day Two </td><td>Sunday 8/4/2024</td><td>Sioux Falls to Rapid City / 349mi</td><td>5.5hr</td></tr>
+		<tr><td> Time </td><td>Desc.</td><td>Address</td><td>Cost</td></tr>
+		<tr bgcolor ="#DDD"><td>9:00A</td><td>START</td><td>Holiday Inn Exp - 1103 N Splitrock Blvd, Brandon, SD 57005</td><td>  </td></tr>
+		<tr bgcolor ="#bd80d1"><td>11:00A</td><td>SITE</td><td>Dignity of Earth and Sky - Chamberlain, SD 57325</td><td>  </td></tr>
+		<tr bgcolor ="#f2d36d"><td>11:30A</td><td>LUNCH</td><td>Subway - 402 E King St, Chamberlain, SD 57325</td><td>$15.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>12:15P</td><td>FUEL</td><td>Sinclair - 802 East Hwy, Oacoma, SD 57365</td><td>$15.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>2:30P</td><td>FUEL</td><td>Conoco - 311 South Blvd, Wall, SD 57790</td><td>$15.00</td></tr>
+		<tr bgcolor ="#81b1b8"><td>4:30P</td><td>HOTEL</td><td>Holiday Inn Exp - 645 E Disk Dr, Rapid City, SD 57701</td><td>$150.00</td></tr>
+		<tr bgcolor ="#f2d36d"><td>6:00P</td><td>DINNER</td><td>MacKenzie River Pizza - 1205 Eglin St, Rapid City, SD 57701</td><td>$25.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>  </td><td>FUEL</td><td>Phillips 66 - 2130 N Lacrosse St, Rapid City, SD 57701</td><td>$15.00</td></tr>
+		<tr bgcolor="#b2b3ad"><td> TOTAL </td><td>$235.00</td></tr>
+	</table>
+	<p> Staying on I90 all the way accross South Dakota, with a small break for <br>
+	sight seeing and lunch in Chamberlain.</p>
+	<iframe src="https://www.google.com/maps/d/embed?mid=1scGZ4OZopICBZX7KR7FB3Pxe8_Xkz5I&ehbc=2E312F" width="640" height="480"></iframe>
+	<br><br>
+	<h1>TIME AT STURGIS</h1>
+	<p>Sturgis hosts concerts, rides, races, bike shows, etc. We can choose what we want to do.</p>
+	<table>
+		<tr bgcolor="#b2b3ad"><td> STURGIS </td><td>8/5-8/7</td><td>Cost is per day for stay, food, gas</td><td>$280</td></tr>
+		<tr><td> Time </td><td>Desc.</td><td>Address</td><td>Cost</td></tr>
+		<tr bgcolor ="#81b1b8"><td>  </td><td>HOTEL</td><td>Holiday Inn Exp - 645 E Disk Dr, Rapid City, SD 57701</td><td>$150.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>  </td><td>FUEL</td><td>Phillips 66 - 2130 N Lacrosse St, Rapid City, SD 57701</td><td>$30.00</td></tr>
+		<tr bgcolor ="#f2d36d"><td>  </td><td>MEALS</td><td>Various Locations</td><td>$50.00</td></tr>
+		<tr><td>MISC</td><td>  </td><td>Extra Expenses</td><td>$50</td></tr>
+		<tr bgcolor="#b2b3ad"><td> TOTAL </td><td>For all 3 nights</td><td>$840</td></tr>
+	</table>
+	<br><br>
+	<h1>RETURNING HOME</h1>
+	<h3>DAY SIX</h3>
+	<table>
+		<tr bgcolor="#b2b3ad"><td> Day Six </td><td>Thursday 8/8/2024</td><td>Rapid City to Worthington / 397mi</td><td>6hr</td></tr>
+		<tr><td> Time </td><td>Desc.</td><td>Address</td><td>Cost</td></tr>
+		<tr bgcolor ="#DDD"><td>9:00A</td><td>START</td><td>Holiday Inn Exp - 645 E Disk Dr, Rapid City, SD 57701</td><td>  </td></tr>
+		<tr bgcolor ="#f2d36d"><td>11:00A</td><td>LUNCH</td><td>Star Family Rest - 103 5th St, Murdo, SD 57559</td><td>$15.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>12:15P</td><td>FUEL</td><td>Cenex -  602 5th St, Murdo, SD 57559</td><td>$15.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>2:00P</td><td>FUEL</td><td>Sinclair Gas Station, 705 S Main St, Plankinton, SD 57368</td><td>$15.00</td></tr>
+		<tr bgcolor ="#81b1b8"><td>4:30P</td><td>HOTEL</td><td>Holiday Inn Express - 1250 Ryan's Rd, Worthington, MN 56187</td><td>$100.00</td></tr>
+		<tr bgcolor ="#f2d36d"><td>6:00P</td><td>DINNER</td><td>The Mav - 1290 Ryan's Rd, Worthington, MN 56187</td><td>$25.00</td></tr>
+		<tr bgcolor ="#cffc03"><td>  </td><td>FUEL</td><td>Kwik Trip - 1755 N Humiston Ave, Worthington, MN 56187</td><td>$15.00</td></tr>
+		<tr bgcolor="#b2b3ad"><td> TOTAL </td><td>$200.00</td></tr>
+	</table>
+	<p> Staying on I90 all the way back to Worthington MN.</p>
+	<iframe src="https://www.google.com/maps/d/embed?mid=1MZmCXzDu2T0o3uNe3YIx4ZvJg8QBfgE&ehbc=2E312F" width="640" height="480"></iframe>
+	<br><br>
+	<h3>DAY SEVEN</h3>
+	<table>
+		<tr bgcolor="#b2b3ad"><td> Day Seven </td><td>Thursday 8/8/2024</td><td>Worthington to Eau Claire / 257mi</td><td>5hr</td></tr>
+		<tr><td> Time </td><td>Desc.</td><td>Address</td><td>Cost</td></tr>
+		<tr bgcolor ="#DDD"><td>9:00A</td><td>START</td><td>Holiday Inn Express - 1250 Ryan's Rd, Worthington, MN 56187</td><td>  </td></tr>
+		<tr bgcolor ="#cffc03"><td>10:30A</td><td>FUEL</td><td>KwikTrip - 1405 MN-60, Faribault, MN 55021</td><td>$15.00</td></tr>
+		<tr bgcolor ="#f2d36d"><td>12:00P</td><td>LUNCH</td><td>Silver Star Saloon - 170 Pembroke Ave, Wabasha, MN 55981</td><td>$30.00</td></tr>		
+		<tr bgcolor ="#cffc03"><td>1:15P</td><td>FUEL</td><td>KwikTrip - 1130 W MacArthur Ave, Eau Claire, WI 54701</td><td>$15.00</td></tr>
+		<tr bgcolor="#b2b3ad"><td> TOTAL </td><td>$60.00</td></tr>
+	</table>
+	<p> Last leg is a short one on route 60 back to Wabasha for lunch. Then up 25 to Durand and home.</p>
+	<iframe src="https://www.google.com/maps/d/embed?mid=1EoT9wfdb-yWcW6sdKcmbJX5P51InmBk&ehbc=2E312F" width="640" height="480"></iframe>
+	<br><br>
+	<table>
+	<th>TRIP TOTAL</th>
+	<tr><td>DATE</td><td>COST</td><tr>
+	<tr bgcolor ="#DDD"><td>8/3</td><td>$201.00</td><tr>
+	<tr bgcolor ="#DDD"><td>8/4</td><td>$235.00</td><tr>
+	<tr><td>8/5</td><td>$280.00</td><tr>
+	<tr><td>8/6</td><td>$280.00</td><tr>
+	<tr><td>8/7</td><td>$280.00</td><tr>
+	<tr bgcolor ="#DDD"><td>8/8</td><td>$200.00</td><tr>
+	<tr bgcolor ="#DDD"><td>8/9</td><td>$60.00</td><tr>
+	<tr bgcolor ="#eb6060"><td>TOTAL</td><td>$1536.00</td><tr>
+	</table>
+	<p>Obviously the cost could be reduced by staying in lower quality hotels,<br>
+	or by reducing our food/misc budget. I believe this is the best plan for a <br>
+	comfortable, but worthwhile trip. Of course, I've never done this so...<br>
+	..grain of salt.</p>
 </body>
+
+<!--
+START
+<tr bgcolor ="#DDD"><td>TIME</td><td>START</td><td>LOCATION</td><td>  </td></tr>
+FUEL
+<tr bgcolor ="#cffc03"><td>TIME</td><td>FUEL</td><td>LOCATION</td><td>$15.00</td></tr>
+MEAL
+<tr bgcolor ="#f2d36d"><td>TIME</td><td>MEAL</td><td>LOCATION</td><td>COST</td></tr>
+SITE
+<tr bgcolor ="#bd80d1"><td>TIME</td><td>SITE</td><td>LOCATION</td><td>COST</td></tr>
+HOTEL
+<tr bgcolor ="#81b1b8"><td>TIME</td><td>HOTEL</td><td>LOCATION</td><td>COST</td></tr>
+-->
 </html>
