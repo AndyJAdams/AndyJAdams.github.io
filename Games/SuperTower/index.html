@@ -1,0 +1,162 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>SuperTower</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #444;
+        }
+	</style>
+</head>
+<body id='body'>
+<canvas></canvas>
+	<script>
+	var canvas = document.querySelector('canvas');
+	var highscore = 0;
+	var score = 0;
+	var blocks = [];
+	var difficulty = 3;
+	
+	var shs = localStorage.getItem("supertowerhighscore");
+	if(shs != null){
+		highscore = parseInt(shs);
+	} else {
+		highscore = 0;
+	}
+
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		if(canvas.height > canvas.width){
+
+		}
+	}
+	var ctx = canvas.getContext('2d');
+    scaleCanvas();
+
+	function Block(x,y,w,s){
+		this.w = w;
+		this.x = x;
+		this.y = y;
+		this.dx = s;
+		this.draw = function(){
+			ctx.fillRect(this.x, this.y, this.w, canvas.height/8);
+		}
+		
+		this.update = function(){
+			if(this.x < 0){
+				this.x = 0;
+				this.dx = -this.dx;
+			} else if(this.x+this.w > canvas.width){
+				this.x = canvas.width-this.w;
+				this.dx = -this.dx;
+			}
+			this.x += this.dx;
+			this.draw();
+		}
+	}
+	
+	function genBlock(){
+		var y = blocks[blocks.length-1].y-canvas.height/8;
+		if(y < (canvas.height/8)*3){
+			cycleBlocks();
+			y = blocks[blocks.length-1].y-canvas.height/8;
+		}
+		
+		blocks.push(new Block(0,y,blocks[blocks.length-1].w,difficulty+= 0.25));
+	}
+	
+	function cycleBlocks(){
+		blocks.shift();
+		for(var i = 0; i < blocks.length; i++){
+			blocks[i].y += canvas.height/8;
+		}
+	}
+	
+    //*************************************************
+    //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+		
+		if(blocks.length < 1){
+			blocks.push(new Block(canvas.width/2-(canvas.width/4)/2,canvas.height-canvas.height/8,canvas.width/4,0));
+			genBlock();
+		} else {
+			for(var b = 0; b < blocks.length; b++){
+				blocks[b].update();
+			}
+		}
+		
+		ctx.fillStyle = "#FFF";
+		ctx.font = "bold 144px sans-serif";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "top";
+		ctx.fillText(score,canvas.width/2, 110);
+		ctx.font = "bold 60px sans-serif";
+		ctx.textAlign = "left";
+		ctx.textBaseline = "top";
+		ctx.fillText("highscore: " + highscore, 10,10);
+		
+	}
+    //*************************************************
+    //*************************************************
+
+	//*** INPUT SECTION **//
+    window.addEventListener('keyup',endInput, false);
+	window.addEventListener('mouseup',endInput,false);
+    window.addEventListener('touchend',endInput, false);
+	
+	function endInput(evt){
+		evt.preventDefault();
+		//console.log(blocks.length);
+		//First stop the current block
+		blocks[blocks.length-1].dx = 0;
+		if(blocks.length > 1){
+			//Now measure how much over/under we are
+			var last = blocks[blocks.length-2];
+			var current = blocks[blocks.length-1];
+			var over = last.x - current.x;
+			//console.log(over);
+			if(over > 5){
+				//To the left of last block - adjust x pos and reduce width
+				current.x = last.x;
+				current.w -= over;
+			} else if(over < -5){
+				//To the right of last block - reduce width
+				current.w  += over; // We ADD because the over is negative
+			} else {
+				//User score a perfect line up!! Extra points
+				score++;
+			}
+			if(current.w <= 0){ //Block is not stacked - END GAME
+				highscore = score; //Update on screen highscore
+				localStorage.setItem("supertowerhighscore",highscore+""); //Store new highscore
+				score = 0; //Reset score
+				difficulty = 3; //reset difficulty :)
+				blocks = []; //Rebuild game
+			} else {
+				score++; //Update score
+				genBlock(); //Generate new block
+			}
+		}
+	}
+
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+	animate();
+	</script>
+</body>
+</html>
