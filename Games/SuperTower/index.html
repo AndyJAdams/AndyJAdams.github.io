@@ -139,8 +139,10 @@
 				score++;
 			}
 			if(current.w <= 0){ //Block is not stacked - END GAME
-				highscore = score; //Update on screen highscore
-				localStorage.setItem("supertowerhighscore",highscore+""); //Store new highscore
+				if(score > highscore){
+				 highscore = score; //Update on screen highscore
+				 localStorage.setItem("supertowerhighscore",highscore+""); //Store new highscore
+				}
 				score = 0; //Reset score
 				difficulty = 3; //reset difficulty :)
 				blocks = []; //Rebuild game
