@@ -1,0 +1,835 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Greyscale Golf</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            overflow: hidden;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #888;
+			border: solid 1px black;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+        }
+		#debug {
+			font-size: 72px;
+		}
+	</style>
+</head>
+<body id='body'>
+<canvas></canvas>
+	<script>
+	var Ver = "0.047";
+	var canvas = document.querySelector('canvas');
+	const DEBUG = false;
+	var center = {x:-1, y:-1};
+	var scale = 0;
+	var timer = 0;
+	var winner = false;
+	
+	
+    function scaleCanvas(){
+//		PORTRAIT MODE
+		canvas.height = window.innerHeight;
+		canvas.width = window.innerWidth;
+		center = {x: canvas.width/2, y: canvas.height/2};
+		scale = Math.round(canvas.height/30);
+		console.log("Scale:" + scale);
+	}	
+	var ctx = canvas.getContext('2d');
+    scaleCanvas();
+	
+	//First we need a way to store positions
+	function Position(x,y){ this.x = x; this.y = y;}
+	
+	//Next we'll need a grid to track these positions
+	function Grid(w,h){
+		this.w = w; this.h = h;
+		this.pos = [];
+		for(var i = 0; i < this.w; i++){
+			var x = center.x + i*scale-(((this.w)*scale)/2);
+			var arr = [];
+			for(var j = 0; j < this.h; j++){
+				var y = center.y + j*scale-(((this.h)*scale)/2);
+				arr.push(new Position(x,y));
+			}		
+			this.pos.push(arr);
+		}
+		
+		//Use this for debugging??
+		this.draw = function(){
+			for(var i = 0; i < this.pos.length; i++){
+				for(var j = 0; j < this.pos[i].length; j++){
+					ctx.strokeRect(this.pos[i][j].x, this.pos[i][j].y,scale,scale);
+				}
+			}
+		}
+		
+		this.getIndex = function(pos){
+			for(var i = 0; i < this.pos.length; i++){
+				for(var j = 0; j < this.pos[i].length; j++){
+					if(pos == this.pos[i][j]){
+						return {x: i, y: j};
+					}
+				}
+			}
+			return {x:-1,y:-1};
+		}
+	}
+	
+	var typeArr = ["FW","OB","TE","GR","RG","SD","WT","TR"];
+	function Tile(pos,type,a,b){
+		this.pos = pos; this.type = type; this.index = {x: a, y: b};
+		this.draw = function(){
+			var index = grid.getIndex(this.pos);
+			if(index.x < 0 || index.x >= grid.w || index.y < 0 || index.y >= grid.h){
+				console.log("Cannot draw " + this.type + " at " + index.x + ":" + index.y);
+				return;
+			}
+			ctx.lineWidth = 3;
+			switch(this.type){
+				case "OB":
+					//ctx.fillStyle='#282828';
+					//ctx.fillRect(this.pos.x, this.pos.y,scale,scale);
+					/*ctx.strokeStyle='#282828';
+					ctx.beginPath();
+					ctx.moveTo(this.pos.x+4, this.pos.y+4);//TL
+					ctx.lineTo(this.pos.x+scale-4, this.pos.y+scale-4);//BR
+					ctx.moveTo(this.pos.x+scale-4, this.pos.y+4);//TR
+					ctx.lineTo(this.pos.x+4, this.pos.y+scale-4);//BL
+					ctx.stroke();
+					ctx.closePath();
+					*/
+					//ctx.strokeRect(this.pos.x+10,this.pos.y+10,scale-20,scale-20);*/
+					break;
+				case "FW":
+				case "TE":
+				case "GR":
+					ctx.fillStyle='#EBEBEB';
+					ctx.fillRect(this.pos.x,this.pos.y,scale,scale);
+					break;
+				case "RG":
+					ctx.fillStyle='#CFCFCF';
+					ctx.fillRect(this.pos.x,this.pos.y,scale,scale);
+					ctx.strokeStyle='#888';
+					ctx.beginPath();
+					ctx.moveTo(this.pos.x, this.pos.y);
+					ctx.lineTo(this.pos.x+scale, this.pos.y+scale);
+					ctx.moveTo(this.pos.x+(scale/2), this.pos.y);
+					ctx.lineTo(this.pos.x+scale,this.pos.y+(scale/2));
+					ctx.moveTo(this.pos.x, this.pos.y+(scale/2));
+					ctx.lineTo(this.pos.x+(scale/2), this.pos.y+scale);
+					ctx.stroke();
+					ctx.closePath();
+					break;
+				case "SD":
+					ctx.fillStyle='#FAFAFA';
+					ctx.fillRect(this.pos.x, this.pos.y,scale,scale);
+					ctx.strokeStyle='#888';
+					ctx.moveTo(this.pos.x+10,this.pos.y+(scale/4));
+					ctx.lineTo(this.pos.x+scale-10,this.pos.y+(scale/4));
+					ctx.moveTo(this.pos.x+5,this.pos.y+(scale/2));
+					ctx.lineTo(this.pos.x+scale-5,this.pos.y+(scale/2));
+					ctx.moveTo(this.pos.x+10,this.pos.y+(scale/4)*3);
+					ctx.lineTo(this.pos.x+scale-10,this.pos.y+(scale/4)*3);
+					ctx.stroke();
+					break;
+				case "WT":
+					ctx.fillStyle='#484848';
+					ctx.fillRect(this.pos.x, this.pos.y,scale,scale);
+					ctx.strokeStyle='#DDD';
+					ctx.beginPath();
+					ctx.moveTo(this.pos.x+10, this.pos.y+(scale/2));
+					ctx.lineTo(this.pos.x+scale-10,this.pos.y+(scale/2));
+					ctx.moveTo(this.pos.x+10, this.pos.y+(scale/2)+10);
+					ctx.lineTo(this.pos.x+30, this.pos.y+(scale/2)+10);
+					ctx.moveTo(this.pos.x+scale-10, this.pos.y+(scale/2)-10);
+					ctx.lineTo(this.pos.x+scale-30, this.pos.y+(scale/2)-10);
+					ctx.stroke();
+					ctx.closePath();
+					break;
+				case "TR":
+					ctx.fillStyle='#AAA';
+					ctx.fillRect(this.pos.x, this.pos.y,scale,scale);
+					ctx.fillStyle='#444';
+					ctx.beginPath();
+					ctx.moveTo(this.pos.x+(scale/2), this.pos.y+10); //TM
+					ctx.lineTo(this.pos.x+scale-10, this.pos.y+scale-10);
+					ctx.lineTo(this.pos.x+10,this.pos.y+scale-10);
+					ctx.closePath();
+					ctx.fill();
+					break;
+				case "HO":
+					ctx.fillStyle='#EBEBEB';
+					ctx.fillRect(this.pos.x,this.pos.y,scale,scale);
+					ctx.fillStyle='#000';
+					ctx.beginPath();
+					ctx.arc(this.pos.x+(scale/2),this.pos.y+(scale/2),scale*0.25,0,2*Math.PI);
+					ctx.fill();
+					break;
+				default:
+					ctx.fillRect(this.pos.x, this.pos.y, scale, scale);
+					break;
+			}
+		}
+	}
+	
+	var grid;
+	var course;
+	var ball;
+	//var tiles = [];
+	function INIT(){
+		winner = false;
+		start = {x:-1,y:-1};
+		current = {x:-1, y:-1};
+		end = {x: -1, y:-1};
+		grid = new Grid(12,24);
+		/*tiles = [];
+		for(var i = 0; i < grid.pos.length; i++){
+			for(var j = 0; j < grid.pos[i].length; j++){
+				var randType = typeArr[Math.floor(Math.random()*typeArr.length)];
+				tiles.push(new Tile(grid.pos[i][j], randType));
+			}
+		}
+		*/
+		course = new Course();
+		ball = new Ball(course.teePos.x, course.teePos.y);
+	}
+	
+	function Course(){
+		this.tiles = [];
+		this.reserved = [];
+		this.teePos = grid.pos[0][0];
+		this.holePos = grid.pos[0][0];
+		this.par = 0;
+		
+		this.reserve = function(x,y){
+			this.reserved.push(grid.pos[x][y]);
+		}
+		
+		this.checkRes = function(x,y){
+			return this.reserved.includes(grid.pos[x][y]);
+		}
+		
+		this.getIndex = function(posX,posY){
+			for(var i = 0; i < grid.w; i++){
+				for(var j = 0; j < grid.h; j++){
+					if(grid.pos[i][j].x == posX && grid.pos[i][j].y == posY){
+						return {i,j};
+					}
+				}
+			}
+		}
+		
+		this.checkTiles = function(t){
+			for(var i = 0; i < this.tiles.length; i++){
+				if(this.tiles[i].index.x == t.index.x && this.tiles[i].index.y == t.index.y){
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		this.getTileType = function(x,y){
+			for(var i = 0; i < this.tiles.length; i++){
+				if(this.tiles[i].index.x == x && this.tiles[i].index.y == y){
+					return this.tiles[i].type;
+				}
+			}
+		}
+		
+		this.getTileFromPos = function(a,b){
+			for(var i = 0; i < this.tiles.length; i++){
+				//Check if x is inside this tile
+				if(a > this.tiles[i].pos.x && a < this.tiles[i].pos.x+scale){
+					//Check if y is inside this tile
+					if(b > this.tiles[i].pos.y && b < this.tiles[i].pos.y+scale){
+						//We're inside this tile - return tile
+						return this.tiles[i];
+					}
+				}
+			}
+			return 'undefined';
+		}
+		
+		this.build = function(){
+			var holeX = Math.floor(Math.random()*6)+3;
+			var holeY = Math.floor(Math.random()*5)+2;
+			this.holePos = grid.pos[holeX][holeY];
+			this.tiles.push(new Tile(grid.pos[holeX][holeY],"HO",holeX,holeY));
+			this.reserve(holeX,holeY);
+			//Now we need to build a green around the hole in a random shape. 3x3 for now
+			for(var i = holeX-1; i < holeX+2; i++){
+				for(var j = holeY-1; j < holeY+2; j++){
+					if(!this.checkRes(i,j)){
+						this.tiles.push(new Tile(grid.pos[i][j],"GR",i,j));
+						this.reserve(i,j);
+					}
+				}
+			}
+			//Next let's build a teebox in the kinda middle, and bottom quarter
+			var teeX = Math.floor(Math.random()*6)+3;
+			var teeY = Math.floor(Math.random()*4)+19;
+			for(var i = teeX-1; i < teeX+2; i++){
+				for(var j = teeY-1; j < teeY+2; j++){
+					this.tiles.push(new Tile(grid.pos[i][j],"TE",i,j));
+					this.reserve(i,j);
+				}
+			}
+			//We're going to place the ball in the middle of the tee box. Store this location for later.
+			this.teePos = grid.pos[teeX][teeY];
+			//Now let's sort out a fairway in the middle of the course
+			//We'll select a random position in the middle and then grow outward
+			var fwX = Math.floor(Math.random() * 4)+4;
+			var fwY = Math.floor(Math.random() * 6)+10;
+			for(var i = fwX-2; i < fwX+(Math.floor(Math.random()*3));i++){
+				for(var j = fwY-3; j < fwY+(Math.floor(Math.random()*6)); j++){
+					if(!this.checkRes(i,j)){
+						this.tiles.push(new Tile(grid.pos[i][j],"FW",i,j));
+						this.reserve(i,j);
+					}
+				}
+			}
+			//Now we need to select where to put a sand trap - we'll put these in the middle to upper portion
+			var sandCount = Math.floor(Math.random()*3);
+			for(var s = 0; s < sandCount; s++){
+				var sX = Math.floor(Math.random()*4)+3;
+				var sY = Math.floor(Math.random()*15)+3;
+				for(var i = sX-2; i < sX+(Math.floor(Math.random()*2));i++){
+					for(var j = sY-2; j < sY+(Math.floor(Math.random()*3)); j++){
+						if(!this.checkRes(i,j)){
+							this.tiles.push(new Tile(grid.pos[i][j],"SD",i,j));
+							this.reserve(i,j);
+						}
+					}
+				}
+			}
+			//And repeat for water traps
+			var waterCount = Math.floor(Math.random()*3);
+			for(var s = 0; s < waterCount; s++){
+				var wX = Math.floor(Math.random()*4)+2;
+				var wY = Math.floor(Math.random()*15)+3;
+				for(var i = wX-1; i < wX+(Math.floor(Math.random()*2));i++){
+					for(var j = wY-2; j < wY+(Math.floor(Math.random()*3)); j++){
+						if(!this.checkRes(i,j)){
+							this.tiles.push(new Tile(grid.pos[i][j],"WT",i,j));
+							this.reserve(i,j);
+						}
+					}
+				}
+			}
+			
+			//Now let's surround all our reserved spots with some rough
+			for(var r = 0; r < this.reserved.length; r++){
+				//Get the index of the reserved tile
+				var index = this.getIndex(this.reserved[r].x,this.reserved[r].y);
+				//loop to surround each tile
+				for(var u = index.i-2; u < index.i+3; u++){
+					for(var v = index.j-2; v < index.j+3; v++){
+						if(u > -1 && u < grid.w && v > -1 && v < grid.h){
+							if(!this.checkRes(u,v)){
+								//Let's make this kinda random
+								if(Math.random() < 0.65){
+									var t = new Tile(grid.pos[u][v],"RG",u,v);
+									if(!this.checkTiles(t)){
+										this.tiles.push(t);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			//Let's reserve those rough spots
+			for(var w = 0; w < this.tiles.length; w++){
+				if(!this.checkRes(this.tiles[w].index.x, this.tiles[w].index.y)){
+					this.reserve(this.tiles[w].index.x,this.tiles[w].index.y);
+				}
+			}
+			
+			//Next we need to add some trees!!
+			for(var r = 0; r < this.reserved.length; r++){
+				//Get the index of the reserved tile
+				var index = this.getIndex(this.reserved[r].x,this.reserved[r].y);
+				//loop to surround each tile
+				for(var u = index.i-2; u < index.i+3; u++){
+					for(var v = index.j-2; v < index.j+3; v++){
+						if(u > -1 && u < grid.w && v > -1 && v < grid.h){
+							if(!this.checkRes(u,v)){
+								//Let's make this kinda random
+								if(Math.random() < 0.35){
+									var t = new Tile(grid.pos[u][v],"TR",u,v);
+									if(!this.checkTiles(t)){
+										this.tiles.push(t);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			//Let's reserve those rough spots
+			for(var w = 0; w < this.tiles.length; w++){
+				if(!this.checkRes(this.tiles[w].index.x, this.tiles[w].index.y)){
+					this.reserve(this.tiles[w].index.x,this.tiles[w].index.y);
+				}
+			}
+			
+			//Finally paint the rest as out of bounds
+			for(var i = 0; i < grid.w; i++){
+				for(var j = 0; j < grid.h; j++){
+					if(!this.checkRes(i,j)){
+						this.tiles.push(new Tile(grid.pos[i][j],"OB",i,j));
+						this.reserve(i,j);
+					}
+				}
+			}
+			
+			//Every course needs a par
+			var crun = Math.pow(this.holePos.x-this.teePos.x,2);
+			var crise = Math.pow(this.holePos.y-this.teePos.y,2);
+			var dist = Math.abs(Math.sqrt(Math.pow(this.holePos.x-this.teePos.x,2)+Math.pow(this.holePos.y-this.teePos.y,2)));
+			this.par = Math.ceil(dist/100);
+			if(this.par > 6){this.par = 6;}
+		}
+		
+		this.draw = function(){
+			var tempTiles = [];
+			//First let's sort the tiles			
+			for(var a = 0; a < grid.h; a++){
+				for(var b = 0; b < grid.w; b++){
+					for(var i = 0; i < this.tiles.length; i++){
+						if(this.tiles[i].index.x == b && this.tiles[i].index.y == a){
+							tempTiles.push(this.tiles[i]);
+						}
+					}
+				}
+			}
+			//Now let's tell each tile to draw itself
+			for(var i = 0; i < tempTiles.length;i++){
+				tempTiles[i].draw();
+			}
+			//console.log("HERE");
+			//Now let's see if we can draw a border
+			ctx.strokeStyle='#000';
+			ctx.lineWidth = 5;
+			for(var i = 0; i < tempTiles.length;i++){
+				var t = tempTiles[i];
+				//console.log(t.type);
+				//TOP
+				if(t.index.y == 0 && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x,t.pos.y);
+					ctx.lineTo(t.pos.x+scale,t.pos.y);
+					ctx.stroke();
+				}
+				//BOTTOM
+				if(t.index.y == grid.h-1 && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x,t.pos.y+scale);
+					ctx.lineTo(t.pos.x+scale,t.pos.y+scale);
+					ctx.stroke();
+				}
+				//RIGHT
+				if(t.index.x == grid.w-1 && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x+scale,t.pos.y);
+					ctx.lineTo(t.pos.x+scale,t.pos.y+scale);
+					ctx.stroke();
+				}
+				//LEFT
+				if(t.index.x == 0 && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x,t.pos.y);
+					ctx.lineTo(t.pos.x,t.pos.y+scale);
+					ctx.stroke();
+				}
+				//Loop through tiles and if adjacent to OB then draw outline
+				//TOP
+				if(t.index.y-1 > -1 && this.getTileType(t.index.x,t.index.y-1) == "OB" && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x,t.pos.y);
+					ctx.lineTo(t.pos.x+scale,t.pos.y);
+					ctx.stroke();
+				}
+				//BOTTOM
+				if(t.index.y+1 < grid.h && this.getTileType(t.index.x,t.index.y+1) == "OB" && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x,t.pos.y+scale);
+					ctx.lineTo(t.pos.x+scale,t.pos.y+scale);
+					ctx.stroke();
+				}
+				//LEFT
+				if(t.index.x-1 > -1 && this.getTileType(t.index.x-1,t.index.y) == "OB" && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x,t.pos.y);
+					ctx.lineTo(t.pos.x,t.pos.y+scale);
+					ctx.stroke();
+				}
+				//RIGHT
+				if(t.index.x+1 < grid.w && this.getTileType(t.index.x+1,t.index.y) == "OB" && t.type != "OB"){
+					ctx.beginPath();
+					ctx.moveTo(t.pos.x+scale,t.pos.y);
+					ctx.lineTo(t.pos.x+scale,t.pos.y+scale);
+					ctx.stroke();
+				}
+				
+			}
+		}
+		
+		this.build();
+	}
+	
+	function Ball(x,y){
+		this.x = x; this.y = y;
+		this.tx = this.x; this.ty = this.y;
+		this.posArr = [];
+		this.posArr.push(new Position(this.x, this.y));
+		this.speedDamper = 10;
+		this.waterLanding = false;
+		this.draw = function(){
+			//Draw trail
+			//ctx.fillText(this.posArr.length, 5, innerHeight-40);
+			ctx.fillStyle='#000';
+			if(this.posArr.length > 0){
+				ctx.fillRect(this.posArr[0].x-3+scale/2,this.posArr[0].y-3+scale/2,6,6);
+				ctx.beginPath();
+				ctx.moveTo(this.posArr[0].x+(scale/2),this.posArr[0].y+(scale/2));
+				for(var i = 1; i < this.posArr.length; i++){
+					ctx.lineTo(this.posArr[i].x+(scale/2), this.posArr[i].y+(scale/2));
+					ctx.fillRect(this.posArr[i].x-3+scale/2,this.posArr[i].y-3+scale/2,6,6);
+				}
+				ctx.lineWidth=2;
+				ctx.strokeStyle='#222';
+				ctx.stroke();
+				
+			}
+			
+			//Draw ball
+			ctx.strokeStyle='#000';
+			ctx.lineWidth = 3;
+			ctx.beginPath();
+			ctx.arc(this.x + scale/2, this.y+scale/2, scale/4, 0, 2*Math.PI);
+			ctx.fillStyle='#FFF';
+			ctx.fill();
+			ctx.closePath();
+			ctx.stroke();
+		}
+		
+		this.update = function(){
+			//First let's just move the ball.
+			if(Math.abs(this.tx-this.x) > 4 || Math.abs(this.ty-this.y) > 4){
+				if(this.tx > this.x){
+					this.x += (this.tx-this.x)/this.speedDamper;
+				} else if(this.tx < this.x){
+					this.x -= (this.x-this.tx)/this.speedDamper;
+				}
+				if(this.ty > this.y){
+					this.y += (this.ty-this.y)/this.speedDamper;
+				} else if(this.ty < this.y){
+					this.y -= (this.y-this.ty)/this.speedDamper;
+				}
+			} else {
+				//lets check if we've scored
+				var dist = Math.round(Math.abs(Math.sqrt(Math.pow(this.x-course.holePos.x,2)+Math.pow(this.y-course.holePos.y,2))));
+				//ctx.fillText(dist,5,innerHeight-30);
+				if(!this.waterLanding){
+					//console.log(this.posArr.length);
+					/*if(!this.posArr.includes((this.x,this.y))){
+						this.addPos(this.x,this.y);
+					}*/
+					if(!this.checkPos(this.x, this.y)){
+						this.addPos(this.x,this.y);
+					}
+				} else {
+					//Do something to put the ball back
+					//console.log("PUT THE BALL BACK FROM WATERLANDING");
+					end = {x:-1,y:-1};
+					this.x = this.posArr[this.posArr.length-1].x;
+					this.y = this.posArr[this.posArr.length-1].y;
+					this.tx = this.x;
+					this.ty = this.y;
+					this.waterLanding = false;
+				}
+				if(dist < scale && !winner){
+					timer = Date.now()+3000;
+					winner = true;
+				}
+			}
+			this.draw();
+		}
+		
+		this.addPos = function(x,y){
+			this.posArr.push(new Position(x,y));
+		}
+		
+		this.checkPos = function(x,y){
+			for(var i = 0; i < this.posArr.length; i++){
+				if(this.posArr[i].x == x && this.posArr[i].y == y){
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+    //*************************************************
+    //*************************************************
+	
+	//var timer = Date.now() +2000;
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+		ctx.font = 'bold 32px sans-serif';
+		if(!grid){
+			INIT();
+		}
+		//grid.draw();
+		//for(var i = 0; i < course.tiles.length; i++){
+			course.draw();
+		//}
+		if(!winner){
+			if(start.x > -1){
+				//Get the offset of our click and drag
+				var xOffset = current.x-start.x;
+				var yOffset = current.y-start.y;
+				
+				var dist = Math.abs(Math.sqrt(Math.pow(xOffset,2)+Math.pow(yOffset,2)));
+				var limitedX = start.x+((dist*xOffset)/dist);
+				var limitedY = start.y+((dist*yOffset)/dist);
+				var distLimit = innerHeight/10;
+				if(dist > distLimit){
+					limitedX = start.x+((distLimit*xOffset)/dist);
+					limitedY = start.y+((distLimit*yOffset)/dist);
+				} 
+				var difX = limitedX-start.x;
+				var difY = limitedY-start.y;
+				ctx.strokeStyle='#000';
+				ctx.lineWidth = 6;
+				ctx.beginPath();
+				ctx.moveTo(ball.x+(scale/2), ball.y+(scale/2));
+				ctx.lineTo(ball.x+(scale/2)+difX, ball.y+(scale/2)+difY);
+				ctx.stroke();
+			}
+			ball.update();
+			ctx.textAlign = 'left';
+			ctx.fillStyle='#000';
+			ctx.fillText(ball.posArr.length-1 + "/" + course.par, grid.pos[0][0].x,grid.pos[0][0].y-20);
+		} else {
+			ball.update();
+			if(Date.now() > timer){
+				INIT();
+			} else {
+				ctx.textAlign = 'center';
+				ctx.fillStyle='#222';
+				ctx.fillRect(center.x-200,center.y-200,400,400);
+				ctx.fillStyle='#FFF';
+				//Display the scored
+				if(ball.posArr.length-1 == 1){
+					ctx.fillText("HOLE IN ONE!!!!",center.x, center.y);
+					ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+				} else {
+					var score = course.par-(ball.posArr.length-1);
+					switch(score){
+						case 3:
+							ctx.fillText("AWESOME ALBATROSS",center.x, center.y);
+							ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							break;
+						case 2:
+							ctx.fillText("EAGLE! CAW-CAW",center.x, center.y);
+							ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							break;
+						case 1:
+							ctx.fillText("NICE BIRDIE",center.x, center.y);
+							ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							break;
+						case 0:
+							ctx.fillText("YOU'RE ON PAR!",center.x, center.y);
+							ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							break;
+						case -1:
+							ctx.fillText("BOGEY",center.x, center.y);
+							ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							break;
+						case -2:
+							ctx.fillText("DOUBLE BOGEY",center.x, center.y);
+							ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							break;
+						case -3:
+							ctx.fillText("TRIPLE BOGEY",center.x, center.y);
+							ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							break;
+						default:
+							if(score > 0){
+								ctx.fillText("UNBELIEVABLE!!!",center.x, center.y);
+								ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							} else {
+								ctx.fillText("FINISHED",center.x, center.y);
+								ctx.fillText(ball.posArr.length-1+"/"+course.par, center.x, center.y+40);
+							}
+							break;
+					}
+				}
+			}
+		}
+		ctx.font = 'bold 48px sans-serif';
+		ctx.textAlign = 'center';
+		ctx.fillStyle='#222';
+		ctx.fillText("GREYSCALE GOLF",center.x, 60);
+		
+		ctx.font = '22px sans-serif';
+		ctx.fillStyle='#222';
+		ctx.textAlign = 'left';
+		ctx.fillText(Ver,10,innerHeight-20);
+		ctx.textAlign = 'right';
+		ctx.fillText("James Adams - 2025",innerWidth-10,innerHeight-20);
+		
+		/*
+		if(Date.now() > timer){
+			timer = Date.now()+2000;
+			INIT();
+		}
+		*/
+	}
+    //*************************************************
+    //*************************************************
+	
+	//**** HELPER FUNCTIONS ***//
+	
+
+	//*** INPUT SECTION **//
+    window.addEventListener('keyup',function(e){
+        console.log(e.key);
+    });
+	
+	window.addEventListener('keydown', function(e){
+		
+	});
+
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+
+    var start = {x:-1,y:-1};
+	var current = {x:-1,y:-1};
+	var end = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+		current.x = start.x;
+		current.y = start.y;
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+    }
+
+    function inputEnd(){
+		//Do we have a ball?
+		if(ball != 'undefined'){
+			//What kind of tile are we hitting from
+			var occupiedTile = course.getTileFromPos(ball.x+(scale/2), ball.y+(scale/2));
+			if(occupiedTile != 'undefined'){
+				//How far did the user drag?
+				var run = current.x-start.x; var rise = current.y-start.y;
+				var dist = Math.abs(Math.sqrt(Math.pow(run,2)+Math.pow(rise,2)));
+				//if(dist > innerHeight/10){dist = innerHeight/10;}
+				//Now let's get a ratio
+				var shotRatio = dist/(innerHeight/10);
+				if(shotRatio > 1){shotRatio = 1;}
+				
+				//Terrain plays an important part in how far you're allowed to shoot.
+				if(occupiedTile.type == "RG"){
+					shotRatio -= 0.45;
+				} else if(occupiedTile.type == "TR" || occupiedTile.type == "SD"){
+					shotRatio -= 0.65;
+				}
+				if(shotRatio < 0){
+					shotRatio = 0;
+				}
+				
+				//Calculate the slope
+				var m = rise/run;
+				if(m == Infinity){m = 200;run = -1.0;} if(m == -Infinity){m = 200;run = -1.0;}
+				//Apply slope form to find offsets
+				var y = ((m*run)*shotRatio);
+				var x = (run*shotRatio);
+				
+				var limitX = (((innerHeight/5)*x)/dist);
+				var limitY = (((innerHeight/5)*y)/dist);
+				
+				end.x = ball.x+limitX+scale/2;
+				end.y = ball.y+limitY+scale/2;
+				
+				//Let's find out the landing situation
+				var landingTile = course.getTileFromPos(end.x,end.y);
+				if(landingTile == 'undefined' || landingTile.type == "OB"){
+					//We went off course. Cancel the shot
+					console.log("OFF COURSE " + landingTile);
+					end.x = -1; end.y=-1;
+				} else {
+					//Now we handle what to do for other landing spaces
+					//Trees, Rough, Sand ... just stop
+					if(landingTile.type == "RG" || landingTile.type == "SD" || landingTile.type == "TR"){
+						ball.tx = end.x; ball.ty = end.y;
+					}
+					//Water ... this is also just a stop but we need to notify the ball to find a clear nearby space...
+					//Ideally the closest space that is not water.
+					if(landingTile.type == "WT"){
+						console.log("TODO: Handle landing in water");
+						ball.waterLanding = true; ball.tx = end.x; ball.ty = end.y;
+					}
+					
+					//fairway ... we should let the ball "roll" some by adding a little more to the Position
+					if(landingTile.type == "TE" || landingTile.type == "GR" || landingTile.type == "FW"){
+						ball.tx = end.x+(x/innerHeight); ball.ty = end.y+(y/innerHeight);
+					}
+				}
+			}
+		}
+        start.x = -1;
+    }
+	animate();
+	</script>
+</body>
+</html>
