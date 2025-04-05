@@ -1,0 +1,363 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>PING - LD57</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            overflow: hidden;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #222;
+			border: solid 1px black;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+        }
+		#debug {
+			font-size: 72px;
+		}
+	</style>
+</head>
+<body id='body'>
+<canvas></canvas>
+	<script>
+	var Ver = "0.001";
+	var canvas = document.querySelector('canvas');
+	const DEBUG = false;
+	var center = {x:-1, y:-1};
+	var scale = 0;
+	var winner = false;
+	var ship = undefined;
+	var blip = undefined;
+	var map = undefined;
+	var offset = 0; //{x:0,y:0};
+	
+    function scaleCanvas(){
+//		PORTRAIT MODE
+		canvas.height = window.innerHeight;
+		canvas.width = window.innerWidth;
+		center = {x: canvas.width/2, y: canvas.height/2};
+		scale = Math.round(canvas.height/20);
+		//console.log("Scale:" + scale);
+	}	
+	var ctx = canvas.getContext('2d');
+    scaleCanvas();
+	
+	//First we need a way to store positions
+	function Position(x,y){ this.x = x; this.y = y;}
+	
+	
+	function INIT(){
+		winner = false;
+		start = {x:-1,y:-1};
+		current = {x:-1, y:-1};
+		end = {x: -1, y:-1};
+		ship = new Ship();
+		var plot = [new Position(center.x+400,center.y+400),new Position(center.x-400,center.y+400), new Position(center.x-400,center.y-400), new Position(center.x+400,center.y-400)];
+		blip = new Blip(center.x+200, center.y-200,plot);
+		map = new Map(center.x, center.y);
+	}
+	
+	function Ship(){
+		this.x = center.x; this.y = center.y;
+		this.draw = function(){
+			ctx.fillStyle='#CCC';
+			ctx.fillRect(this.x-6,this.y-14,12,28);
+			ctx.fillRect(this.x-4,this.y+16,8,2);
+			ctx.fillRect(this.x-9,this.y-3,18,7);
+		}
+		
+		this.update = function(){
+			this.draw();
+		}
+	}
+	
+	function Blip(x,y,p){
+		this.x = x; this.y = y;
+		this.patrolRoute = p;
+		this.pIndex = 0;
+		this.tx = this.patrolRoute[this.pIndex].x; this.ty = this.patrolRoute[this.pIndex].y;
+
+		this.draw = function(){
+			ctx.fillStyle='#F00';
+			ctx.fillRect(this.x-10,this.y-10,20,20);
+			//console.log(angle);
+			
+			if(DEBUG){
+				ctx.beginPath();
+				ctx.moveTo(this.x, this.y);
+				ctx.lineTo(this.x+Math.cos((inverse)*Math.PI/180)*50,this.y+Math.sin((inverse)*Math.PI/180)*50);
+				ctx.stroke();
+				
+				ctx.strokeStyle='#0F0';
+				ctx.beginPath();
+				ctx.moveTo(this.x, this.y);
+				ctx.lineTo(this.x+Math.sin(angle*Math.PI/180)*50, this.y+Math.cos(angle*Math.PI/180)*50);
+				ctx.stroke();
+			}
+			
+		}
+		
+		this.update = function(){
+			//let's move the dot towards it's next target
+			if(Math.abs(this.tx-this.x) < 3 && Math.abs(this.ty-this.y) < 3){
+				this.pIndex++;
+				if(this.pIndex > this.patrolRoute.length-1){
+					this.pIndex = 0;
+					console.log('looping patrol');
+				}
+				this.tx = this.patrolRoute[this.pIndex].x; this.ty = this.patrolRoute[this.pIndex].y;
+				console.log('target reached');
+			} else {
+				if(this.x > this.tx){
+					this.x -= 0.4;
+				} else if(this.x < this.tx){
+					this.x += 0.4;
+				}
+				if(this.y > this.ty){
+					this.y -= 0.4;
+				} else if(this.y < this.ty){
+					this.y += 0.4;
+				}
+			}
+			this.draw();
+		}
+	}
+	
+	function Map(x,y){
+		this.x = x; this.y = y;
+		this.boxes = [
+			{x: -300, y:-210, w: 50, h:180},
+			{x: -510, y:250, w: 240, h:270},
+			{x: 360, y:-450, w: 342, h:178},
+			{x: 260, y:310, w: 82, h:64},
+			{x: 380, y:620, w: 75, h:210},
+			{x: -710, y:-1050, w: 198, h:321},
+			{x: -10, y:-850, w: 48, h:62},
+			{x: 130, y:-760, w: 18, h:22},
+			{x: -60, y:950, w: 142, h:378}
+		];
+		
+		this.draw = function(){
+			for(var i = 0; i < this.boxes.length; i++){
+				var box = {x: this.boxes[i].x, y: this.boxes[i].y, w: this.boxes[i].w, h: this.boxes[i].h};
+				ctx.fillStyle='#FFF';
+				//ctx.lineWidth = 6;
+				ctx.fillRect(this.x+box.x,this.y+box.y,box.w,box.h);
+				ctx.lineWidth = 4;
+				ctx.strokeStyle='#DDD';
+				ctx.strokeRect(this.x+(box.x-20),this.y+(box.y-20),box.w+40,box.h+40);
+				ctx.strokeStyle='#BBB';
+				ctx.strokeRect(this.x+(box.x-50),this.y+(box.y-50),box.w+100,box.h+100);
+				ctx.lineWidth = 2;
+				ctx.strokeStyle='#888';
+				ctx.strokeRect(this.x+(box.x-90),this.y+(box.y-90),box.w+180,box.h+180);
+				ctx.strokeStyle='#666';
+				ctx.strokeRect(this.x+(box.x-140),this.y+(box.y-140),box.w+280,box.h+280);
+				ctx.lineWidth = 1;
+				ctx.strokeStyle='#444';
+				ctx.strokeRect(this.x+(box.x-240),this.y+(box.y-240),box.w+480,box.h+480);
+			}
+		}
+	}
+	
+	var angle = 0;
+	var inverse = 0;
+	function drawRotated(){	
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+		ctx.save();
+		
+		ctx.translate(center.x,center.y);
+		ctx.rotate(angle*Math.PI/180);
+		ctx.translate(-center.x,-center.y);
+			
+		//DRAW EVERYTHING THAT SPINS HERE
+		blip.update();
+		map.draw();
+		
+		ctx.restore();
+	}
+	
+	var invAngle = {x: 0, y: 0, z:0};
+	function drawMovement(){
+		//Determine the inverse of angle
+		
+		inverse = (180+(angle-90)-angle);
+		invAngle.x = (Math.sin(angle*Math.PI/180)*offset);
+		invAngle.y = (Math.cos(angle*Math.PI/180)*offset);
+		
+		blip.x += invAngle.x;
+		blip.y += invAngle.y;
+		
+		map.x += invAngle.x;
+		map.y += invAngle.y;
+	}
+	
+    //*************************************************
+    //*************************************************
+	
+	//var timer = Date.now() +2000;
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+		ctx.font = 'bold 32px sans-serif';
+		if(!ship){
+			INIT();
+		}
+		
+		if(!winner){
+			//PLAY CONDITIONS
+			drawRotated();
+			drawMovement();
+			
+			ship.update();
+			
+			//DEBUG LINES
+			if(DEBUG){
+				ctx.lineWidth = 4;
+				ctx.strokeStyle='#FFF';
+				ctx.beginPath();
+				ctx.moveTo(center.x, center.y);
+				ctx.lineTo(center.x+Math.cos((angle-90)*Math.PI/180)*50,center.y+Math.sin((angle-90)*Math.PI/180)*50);
+				ctx.stroke();
+				
+				ctx.strokeStyle='#0F0';
+				ctx.beginPath();
+				ctx.moveTo(center.x, center.y);
+				ctx.lineTo(center.x-Math.cos((angle-90)*Math.PI/180)*50,center.y-Math.sin((angle-90)*Math.PI/180)*50);
+				ctx.stroke();
+				
+				//inverse = (180+(angle-90)-angle);
+				ctx.strokeStyle='#F00';
+				ctx.beginPath();
+				ctx.moveTo(center.x, center.y);
+				ctx.lineTo(center.x+Math.cos((inverse)*Math.PI/180)*50,center.y+Math.sin((inverse)*Math.PI/180)*50);
+				ctx.stroke();
+			}
+		} else {
+			//WIN CONDITIONS
+		}
+		
+		ctx.font = '22px sans-serif';
+		ctx.fillStyle='#000';
+		ctx.textAlign = 'left';
+		ctx.fillText(Ver,10,innerHeight-20);
+		ctx.textAlign = 'right';
+		ctx.fillText("James Adams - 2025",innerWidth-10,innerHeight-20);
+		if(DEBUG){
+			ctx.textAlign = 'left';
+			ctx.fillText(angle,20,30);
+			ctx.fillText(inverse, 20, 70);
+			ctx.fillText(invAngle.x+","+invAngle.y+","+invAngle.z, 20, 110);
+		}
+		/*
+		if(Date.now() > timer){
+			timer = Date.now()+2000;
+			INIT();
+		}
+		*/
+	}
+    //*************************************************
+    //*************************************************
+	
+	//**** HELPER FUNCTIONS ***//
+
+	//*** INPUT SECTION **//
+    window.addEventListener('keyup',function(e){
+        //console.log(e.key);
+    });
+	
+	window.addEventListener('keydown', function(e){
+		e.preventDefault();
+		
+		if(e.key == 'ArrowLeft'){
+			angle++;
+		} else if(e.key == 'ArrowRight'){
+			angle--;
+		}
+		if(e.key == 'ArrowUp'){
+			offset+= 0.2;
+			if(offset > 0.8){
+				offset = 0.8;
+			}
+			//ship.x += ship.speed * Math.cos(ship.angle);
+			//ship.y += ship.speed * Math.sin(ship.angle);
+			
+			//offset.x += 4 * Math.cos(angle*Math.PI/180);
+			//offset.y += 4 * Math.sin(angle*Math.PI/180);
+		} else if(e.key == 'ArrowDown'){
+			offset-= 0.2;
+			if(offset < -0.2){
+				offset = -0.2;
+			}
+			//ship.x -= ship.speed * Math.cos(ship.angle);
+			//ship.y -= ship.speed * Math.sin(ship.angle);
+			//offset.x -= 4 * Math.cos(angle*Math.PI/180);
+			//offset.y -= 4 * Math.sin(angle*Math.PI/180);
+		}
+	});
+
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+
+    var start = {x:-1,y:-1};
+	var current = {x:-1,y:-1};
+	var end = {x:-1,y:-1};
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+		current.x = start.x;
+		current.y = start.y;
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+        }
+    }
+
+    function inputEnd(){
+        start.x = -1;
+    }
+	animate();
+	</script>
+</body>
+</html>

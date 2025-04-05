@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>USS Shaft - NSFW - LD57</title>
+    <style>
+	body {
+		background-color: #C5BAAF;
+		font-size: 2rem;
+		color: #424B54;
+		font-family: sans-serif;
+		text-align: center;
+		width: 80%;
+		margin: 0 auto;
+		
+	}
+	button {
+		width: 100%;
+		height: 4rem;
+		margin: 5px auto;
+		font-size: 1.2rem;
+		background-color: #424B54;
+		border: none;
+		color: #F8F8F8;
+	}
+	</style>
+</head>
+<body>
+	<!-- START REGION -->
+	<div id='start'>
+		<h1>USS SHAFT</h1>
+		<h2>You are the captain of a new naval submarine.</h2>
+		<p>The USS SHAFT is a long smooth vessel with a rounded tip, and suprisingly large engines. Each of your twin MK69 BALL-O engines lie craddled under the rear of your ship. Each engine is capable of producing sensational bursts of thrust.<br><br> The frame of the vessel is strong, rigid, and slightly larger than other vessels in the fleet (not too big though). It's internal systems give off a power hummmm. Are we ready to disembark, Captain? </p>
+		<button id='btn1'> Let's get <b>UNDER</b>way</button>
+	</div>
+	<!--ENCOUNTER 1 -->
+	<div id='enc1' style="display: none;">
+		<h1>Day 69</h1>
+		<h2>You discover an unexplored crevasse!</h2>
+		<p> While patrolling the area just off the shores of coitus isle you discover an uncharted crevasse. It's radar signature shows that it's deep, but the opening is narrow. You're not sure if the especially girthy nature of your vessel will be able to safely navigate inside. <br><br> After 69 days at sea the crew are getting frothy for some excitement. What should we do captain?</p>
+		<button id='probe1'> Approach the uncharted hole, and let's probe it.</button> <!--DONE-->
+		<button id='ignore1'> Ignore the crevice... this is not an exploration voyage.</button>
+		<button id='careful1'> Slowly and carefully enter the crevasse</button> <!--DONE-->
+		<button id='ram1'> Full speed dive into the wet crack of the sea!</button> <!--DONE-->
+	</div>
+	<div id='crevProbe1' style="display: none;">
+		<h1>Probing the crevice</h1>
+		<h2>Holding position just over the crevasse.</h2>
+		<p> Your vessel hovers very close to the crevasse. It's narrow passage appears to be just the right size for your immense ship. All the seaman aboard are excited now.<br><br>
+			Seamen First Class Pereneum launches your probe at the crevice. You notice bubbles from the north most edge of the wet anomoly. The probe gives back scrambled readings.<br><br> What should we do now, sir? </p>
+		<button id='ignore2'> Too risky. We need to leave</button> <!--DONE-->
+		<button id='premature2'>Send in a diver. Let's find out whats down there.</button>
+		<button id='careful2'> Slowly and carefully enter the crevasse</button>
+		<button id='ram2'>Looks inviting. Full speed dive!!</button>
+	</div>
+	<div id='ignore1Prompt' style="display: none;">
+		<h1>DAY 290</h1>
+		<h2>Funky smells in the crew cabins</h2>
+		<p> During inspection you notice a funky smell in the crew cabin. Smelling of sweet perfume mixed with salty secrections you order the ships doctor to inspect the air scrubbers.<br><br> A foreign goo is found all over the filters. What's the plan captain?
+		</p>
+		<button id='ignore4'>Wash it off and get back to work.</button>
+		<button id='sus4'>Interrogate the crew about the substance.</button>
+		<button id='careful4'> Quarantine the crew and take it back to command.</button>
+		<button id='risk4'>The smell is exotic... taste the goo.</button>
+	</div>
+	
+	<div id='ignore2Prompt' style="display: none;">
+		<h1>Stuck in a current</h1>
+		<h2>The crevasse won't let you leave!</h2>
+		<p> The probe seems to have broken loose an undersea current from the crevasse. Your engines pulsate vigorously as you attempt to leave. The more you pull away the stronger the current gets.<br><br>
+		The USS Shaft seamen are panicing. What do we do, captain?
+		</p>
+		<button id='fire3'>Fire a torpedo into the crack, NOW!</button>
+		<!-- The crew fails to properly load the tube. Torpedo blows off the tip of your ship and half your seamen dump out into the sea-->
+		<button id='premature3'>Suit up a diver and send them in.</button>
+		<!--The seamen suits up and dives into the crevasse. The crevass closes swallowing the crewmember. -->
+		<button id='careful3'>Let the current pull us in.</button>
+		<!--The edges of the crevasee shudder as you slide in. Radar indicates an air pocket -->
+		<button id='ram3'>Give the crevice the full USS Shaft! Ram the hole!</button>
+		<!--the sides of your ship scrape against the edges. The crevass contracts squeezing the ship tightly in place-->
+	</div>
+	<div id='ram1Prompt' style="display: none;">
+		<h1>TIGHT FIT</h1>
+		<h2>The shaft is damaged. We're taking on water!</h2>
+		<p> You ram full speed into the crevasse. The sides of your immense ship scrape along the walls of the opening tearing away rocks and debri. The ship is jammed tight half way into the hole. Your vessel was too big!!<br><br> Several leaks break open in the ship. We're taking on water!! <br><br>
+		What should we do, Captain!?
+		</p>
+		<button id='seal6'>Seal the leaks first. I can't swim!!</button>
+		<button id='back6'>Back us out of here. NOW!!</button>
+		<button id='cocky6'>Engines ahead full!! Go DEEPER!!!</button>
+	</div>
+	
+	<div id='careful1Prompt' style="display: none;">
+		<h1>Gentle Insertion</h1>
+		<h2>This is nice... oh VERY nice.</h2>
+		<p> As you approach the attractive crevice the edges and walls seem to slowly expand. The USS Shaft gently glides in the hole as if lubricated by more than sea water.<br><br>
+		Once inside you check your radar. The readings show something strange at the bottom, and an air pocket directly above you. What's our play here, Captain?
+		</p>
+		<button id='dive5'>Take us down. I hope it's treasure!</button>
+		<button id='surface5'>Air? How?? Surface the ship.</button>
+	</div>
+	
+	<div id='dive5Prompt' style="display: none;">
+		<h1>YOU FOUND IT!</h1>
+		<h2>Upon the bottom of this warm gentle crevasse you found it.<br> THE LOST CITY OF ATLANTIS </h2>
+		<p> You and the crew can hardly believe your eyes... you've discovered the lost city of atlantis. You'll all be famous and rich. Nicely done, Captain! 
+		</p>
+		<h3> THE END</h3>
+		<button id='restart'>Play Again</button>
+	</div>
+	<div id='surface5Prompt' style="display: none;">
+		<h1>Wow a hidden oasis!</h1>
+		<p>Surfacing the ship you see a natural untouched habitat. Once ashore you discover a tribe of scantly dressed people.<br> They greet you by tearing off your clothes. What a strange custom, but you go with it. Now that your in your birthday suit the most attractive of them all comes out of a makeshift temple in the shape of a giant erect penis.<br>
+		In fact it looks alot like your ship! Do these natives think I am their god?? Excited by the prospect of all the sex you're about to have you step forward from your crew. <br> The attractive native edges closer to you, get's down on their knees. You can hardly hide your excitement. <br>
+		They open their mouth and show you a gruesome smile of shark like razor sharp teeth, before biting hard into your groin.<br> Crazy bastards bit off my genitals!!! As you bleed out on the beach, the natives feast upon your crew. Now they have your ship and will spread accross the globe.<br>
+		<br>Good job, CaPtAiN! You've unleashed the unkillable crotch goblins of celibacy island.</p>
+		<h3> THE END</h3>
+		<button id='restart2'>Play Again</button>
+	</div>
+	<div id='premature2Prompt' style="display: none;">
+		<h1>Sending in the diver</h1>
+		<p>The only licensed diver on board is Seaman Jenny Tahls. As the only female onboard she agrees to take the risk. You watch as she takes off her uniform and slinks into her very tight wet suit.<br> She's facing away from you, but you can't help but notice the curves of her body as she slides the suit over the more plump portions of her figure. <br>
+		She asks in a frail voice for help with the zipper on her suit. You agree to assist, and try to hide the bulge in your pants.As she turns to face you, you notice she has a similar bulge. In a similar location. She winks at you, 'It's a new kind of navy, sir'. <br> Embarassed you tighten the zipper, give a cough and leave the cabin. Jenny does the dive and notices nothing out of the ordinary. Just a hole in the ground. She's towed back in and the rest of the mission goes on without incident.<br>
+		<br>
+		You die 20 years later, alone and sad. You think of Jenny often and what could have been. 
+		</p>
+		<h3> THE END</h3>
+		<button id='restart4'>Play Again</button>
+	</div>
+	<div id='fire3Prompt' style="display: none;">
+		<h1>DISASTER</h1>
+		<h2>In the panic the crew fails to load the tube properly.</h2>
+		<p>During the panic the crew loads your Magnum torpedo improperly. The fuse goes off prematurely then explodes, blowing the entire tip of the USS Shaft clean off.<br><br> It's a completed disaster! All your seamen have been dumped into the sea. You go down with your ship.</p>
+		<br>
+		<h3> THE END</h3>
+		<button id='restart3'>Play Again</button>
+	</div>
+	
+	<div id='cocky6Prompt' style="display: none;">
+		<h1>YOU FOOL!</h1>
+		<p>Forcing the ship in deeper the crevasse tightens its grip as your ship slides in. The force rips your Ball-o engines clean off. <br>
+		As the vessel plummets to the bottom of the sea, the crew looks at you with disgust, and anger. This shaft will be your tomb. </p>
+		<h3> THE END</h3>
+		<button id='restart5'>Play Again</button>
+	</div>
+	
+	<div id='seal6Prompt' style="display: none;">
+		<h1>The seals aren't working!</h1>
+		<p>You try to seal the leaks but the hole just keeps tightening until it severs your ship in half, killing everyone aboard. </p>
+		<h3> THE END</h3>
+		<button id='restart6'>Play Again</button>
+	</div>
+	<div id='back6Prompt' style="display: none;">
+		<h1>Phew, that was close.</h1>
+		<p>You manage to back out of the crevasse just as it snaps closed. Who knows what mysteries lie beyond. The ship is severly damaged.<br>
+		You make it back to port, and report what happened. The crevasse is never found again. You're stripped of your rank and court martialed. <br>
+		The terror of the wet crevasse haunts you, until you die sad, and alone. </p>
+		<h3> THE END</h3>
+		<button id='restart7'>Play Again</button>
+	</div>
+	<div id='ignore4Prompt' style="display: none;">
+		<h1>Death by Orgy</h1>
+		<p>The substance is later found to be a bio-weapon pheremone that was released on your ship by a sabotuer. <br>
+		The side effects drove your grew into an unstoppable lustful orgy. As more people joined in and the euphoric orgasms took hold, the secretions couldn't stop.<br>
+		You and your crew stop eating... just sex. You fornicate yourselves into starvation and die. As a salty sea captain there are worse ways to go.</p>
+		<h3> THE END</h3>
+		<button id='restart8'>Play Again</button>
+	</div>
+	<div id='sus4Prompt' style="display: none;">
+		<h1>Traitors in our midst!</h1>
+		<p>The interogation leads you to a sabotuer onboard. The goo is a bio chemical weapon he released on board. Who knows what it would have done to the crew. <br>
+		You collect a sample and take it back to port for analysis. The traitor is handed over to authorities. He must have been exposed because he won't stop masturbating. 
+		You are awarded a medal and sent back out to sea.</p>
+		<h3> THE END</h3>
+		<button id='restart9'>Play Again</button>
+	</div>
+	<div id='careful4Prompt' style="display: none;">
+		<h1>WORLD WAR 3</h1>
+		<p>The crew remained inside the crew cabin. Upon returning to port you find them all dead and naked. There is the strange goo and bodily secretions everywhere. <br>
+		The substance is tested and found to be a bio-phermone weapon that causes people to go into a crazed lust for intercourse. Your crew had an orgy, and starved to death on sex.<br>
+		The source of the goo traces back to the capital city of our enemy. The Republic of Missionary Position. <br>
+		You have started World War 3. </p>
+		<h3> THE END</h3>
+		<button id='restart10'>Play Again</button>
+	</div>
+	
+	<script>
+		document.getElementById('btn1').addEventListener('click',function(){
+			var enc1 = document.getElementById('enc1');
+			enc1.style.display = 'block';
+		});
+		
+		document.getElementById('probe1').addEventListener('click',function(){
+			var ignore1 = document.getElementById('ignore1');
+			var careful1 = document.getElementById('careful1');
+			var ram1 = document.getElementById('ram1');
+			ignore1.style.display = 'none';
+			careful1.style.display = 'none';
+			ram1.style.display = 'none';
+			var cp1 = document.getElementById('crevProbe1');
+			cp1.style.display = 'block';
+		});
+		document.getElementById('ignore1').addEventListener('click',function(){
+			var probe1 = document.getElementById('probe1');
+			var careful1 = document.getElementById('careful1');
+			var ram1 = document.getElementById('ram1');
+			probe1.style.display = 'none';
+			careful1.style.display = 'none';
+			ram1.style.display = 'none';
+			var cp1 = document.getElementById('ignore1Prompt');
+			cp1.style.display = 'block';
+		});
+		document.getElementById('careful1').addEventListener('click',function(){
+			var probe1 = document.getElementById('probe1');
+			var careful1 = document.getElementById('ignore1');
+			var ram1 = document.getElementById('ram1');
+			probe1.style.display = 'none';
+			careful1.style.display = 'none';
+			ram1.style.display = 'none';
+			var cp1 = document.getElementById('careful1Prompt');
+			cp1.style.display = 'block';
+		});
+		document.getElementById('careful3').addEventListener('click',function(){
+			var probe1 = document.getElementById('fire3');
+			var careful1 = document.getElementById('premature3');
+			var ram1 = document.getElementById('ram3');
+			probe1.style.display = 'none';
+			careful1.style.display = 'none';
+			ram1.style.display = 'none';
+			var cp1 = document.getElementById('careful1Prompt');
+			cp1.style.display = 'block';
+		});
+		document.getElementById('ram3').addEventListener('click',function(){
+			var probe1 = document.getElementById('fire3');
+			var careful1 = document.getElementById('premature3');
+			var ram1 = document.getElementById('careful3');
+			probe1.style.display = 'none';
+			careful1.style.display = 'none';
+			ram1.style.display = 'none';
+			var cp1 = document.getElementById('ram1Prompt');
+			cp1.style.display = 'block';
+		});
+		document.getElementById('ram1').addEventListener('click',function(){
+			var probe1 = document.getElementById('probe1');
+			var careful1 = document.getElementById('ignore1');
+			var ram1 = document.getElementById('careful1');
+			probe1.style.display = 'none';
+			careful1.style.display = 'none';
+			ram1.style.display = 'none';
+			var cp1 = document.getElementById('ram1Prompt');
+			cp1.style.display = 'block';
+		});
+		document.getElementById('ram2').addEventListener('click',function(){
+			var probe1 = document.getElementById('premature2');
+			var careful1 = document.getElementById('ignore2');
+			var ram1 = document.getElementById('careful2');
+			probe1.style.display = 'none';
+			careful1.style.display = 'none';
+			ram1.style.display = 'none';
+			var cp1 = document.getElementById('ram1Prompt');
+			cp1.style.display = 'block';
+		});
+		
+		document.getElementById('ignore2').addEventListener('click',function(){
+			var prem1 = document.getElementById('premature2');
+			prem1.style.display = 'none';
+			var care2 = document.getElementById('careful2');
+			care2.style.display = 'none';
+			var ram2 = document.getElementById('ram2');
+			ram2.style.display = 'none';
+			var i2p = document.getElementById('ignore2Prompt');
+			i2p.style.display='block';
+		});
+		
+		document.getElementById('fire3').addEventListener('click',function(){
+			var prem3 = document.getElementById('premature3');
+			prem3.style.display = 'none'
+			var care3 = document.getElementById('careful3');
+			care3.style.display = 'none';
+			var ram3 = document.getElementById('ram3');
+			ram3.style.display = 'none';
+			var f3p = document.getElementById('fire3Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('dive5').addEventListener('click',function(){
+			var prem3 = document.getElementById('surface5');
+			prem3.style.display = 'none';
+			var f3p = document.getElementById('dive5Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('surface5').addEventListener('click',function(){
+			var prem3 = document.getElementById('dive5');
+			prem3.style.display = 'none';
+			var f3p = document.getElementById('surface5Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('premature2').addEventListener('click',function(){
+			var op1 = document.getElementById('ignore2');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('careful2');
+			op2.style.display = 'none';
+			var op3 = document.getElementById('ram2');
+			op3.style.display = 'none';
+			var f3p = document.getElementById('premature2Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('premature3').addEventListener('click',function(){
+			var op1 = document.getElementById('fire3');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('careful3');
+			op2.style.display = 'none';
+			var op3 = document.getElementById('ram3');
+			op3.style.display = 'none';
+			var f3p = document.getElementById('premature2Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('cocky6').addEventListener('click',function(){
+			var op1 = document.getElementById('seal6');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('back6');
+			op2.style.display = 'none';
+			var f3p = document.getElementById('cocky6Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('seal6').addEventListener('click',function(){
+			var op1 = document.getElementById('cocky6');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('back6');
+			op2.style.display = 'none';
+			var f3p = document.getElementById('seal6Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('back6').addEventListener('click',function(){
+			var op1 = document.getElementById('cocky6');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('seal6');
+			op2.style.display = 'none';
+			var f3p = document.getElementById('back6Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('ignore4').addEventListener('click',function(){
+			var op1 = document.getElementById('sus4');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('careful4');
+			op2.style.display = 'none';
+			var op3 = document.getElementById('risk4');
+			op3.style.display = 'none';
+			var f3p = document.getElementById('ignore4Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('risk4').addEventListener('click',function(){
+			var op1 = document.getElementById('sus4');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('careful4');
+			op2.style.display = 'none';
+			var op3 = document.getElementById('ignore4');
+			op3.style.display = 'none';
+			var f3p = document.getElementById('ignore4Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('sus4').addEventListener('click',function(){
+			var op1 = document.getElementById('careful4');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('risk4');
+			op2.style.display = 'none';
+			var op3 = document.getElementById('ignore4');
+			op3.style.display = 'none';
+			var f3p = document.getElementById('sus4Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('careful4').addEventListener('click',function(){
+			var op1 = document.getElementById('sus4');
+			op1.style.display = 'none';
+			var op2 = document.getElementById('risk4');
+			op2.style.display = 'none';
+			var op3 = document.getElementById('ignore4');
+			op3.style.display = 'none';
+			var f3p = document.getElementById('careful4Prompt');
+			f3p.style.display = 'block';
+		});
+		document.getElementById('restart').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart2').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart3').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart4').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart5').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart6').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart7').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart8').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart9').addEventListener('click',function(){
+			location.reload();
+		});
+		document.getElementById('restart10').addEventListener('click',function(){
+			location.reload();
+		});
+	</script>
+</body>
+</html>
