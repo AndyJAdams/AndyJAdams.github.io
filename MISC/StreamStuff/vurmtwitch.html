@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .slidecontainer {
+            width: 100%;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 25px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #222222;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        #channel {
+            width: 50%;
+        }
+
+        #play {
+            width: 25%;
+            height: 50px;
+            font-size: 18pt;
+            color: #FFF;
+            background: #6441A4;
+        }
+
+        #warning {
+            color: #F00;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Vurm Twitch Settings</h1>
+    <input type='text' id='channel' placeholder='Channel Name'>
+    <p>Drag the slider to adjust the command timeout (in ms). <br>
+        <i>Note: background color changes do not time out</i>
+    </p>
+
+    <div class="slidecontainer">
+        <input type="range" min="6000" max="18000" value="12000" class="slider" id="myRange">
+        <p>Value: <span id="demo"></span></p>
+    </div>
+    <h3>Chat</h3>
+    <input type="checkbox" name="chat" value="chat" id='chat' checked>
+    <label for="chat"> Display chat in background of game?</label><br>
+    <h3>Available Commands</h3>
+    <input type="checkbox" name="blue" value="!blue" id='blue' checked>
+    <label for="!blue"> !blue - Change background blue</label><br>
+
+    <input type="checkbox" name="red" value="!red" id='red' checked>
+    <label for="!red"> !red - Change background red</label><br>
+
+    <input type="checkbox" name="green" value="!green" id='green' checked>
+    <label for="!green"> !green - Change background green</label><br>
+
+    <input type="checkbox" name="fast" value="!fast" id='fast' checked>
+    <label for="!fast"> !fast - boxes move faster</label><br>
+
+    <input type="checkbox" name="slow" value="!slow" id='slow' checked>
+    <label for="!slow"> !slow - boxes move slower</label><br>
+
+    <input type="checkbox" name="derp" value="!derp" id='derp' checked>
+    <label for="!derp"> !derp - invert controls</label><br>
+    <h3>Control VURM</h3>
+    <input type="checkbox" name="ctrl" value="!ctrl" id='ctrl' checked>
+    <label for="!derp"> Control VURM w/ !up !down !left !right</label><br>
+    <br>
+    <button id='play' onclick='PlayGame()'>Play Vurm</button>
+    <br>
+    <p id='link'></p>
+    <p id='warning'></p>
+
+    <script>
+        var slider = document.getElementById("myRange");
+        var output = document.getElementById("demo");
+        var warning = document.getElementById('warning');
+        var link = document.getElementById('link');
+        output.innerHTML = slider.value;
+
+        slider.oninput = function () {
+            output.innerHTML = this.value;
+        }
+
+        function PlayGame() {
+            //window.requestAnimationFrame(updateLink);
+            var tc = document.getElementById('channel').value;
+            if (tc == '') {
+                warning.innerHTML = '*You must enter a channel name';
+                return;
+            } else {
+                var to = slider.value;
+                var url = 'https://andyjadams.github.io/Games/vurm.html?tc=' + tc + '&to=' + to;
+                if (!document.getElementById('chat').checked) {
+                    url += '&chat=false';
+                }
+                if (!document.getElementById('blue').checked) {
+                    url += '&blue=false';
+                }
+                if (!document.getElementById('red').checked) {
+                    url += '&red=false';
+                }
+                if (!document.getElementById('green').checked) {
+                    url += '&green=false';
+                }
+                if (!document.getElementById('fast').checked) {
+                    url += '&fast=false';
+                }
+                if (!document.getElementById('slow').checked) {
+                    url += '&slow=false';
+                }
+                if (!document.getElementById('derp').checked) {
+                    url += '&derp=false';
+                }
+                if (!document.getElementById('ctrl').checked) {
+                    url += '&ctrl=false';
+                }
+            }
+            link.innerHTML = '' + url;
+            window.open('' + url);
+        }
+    </script>
+
+</body>
+
+</html>

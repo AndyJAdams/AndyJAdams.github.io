@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CHAT w/ TIMER</title>
+    <style>
+        body {
+            background: black;
+            color: white;
+            position: absolute;
+            width: 360px;
+            height: 100%;
+            font-family: Ubuntu, 'sans-serif';
+            padding-top: 15px;
+        }
+
+        #timer {
+            background-color: white;
+            color: black;
+            width: 100%;
+            height: 60px;
+            border: none;
+            text-align: center;
+            font-size: 40pt;
+        }
+
+        .btn {
+            width: 30px;
+            height: 30px;
+            margin-top: 5px;
+            border: 1px solid white;
+            background: black;
+            color: white;
+        }
+
+        .btn:hover {
+            background: gray;
+        }
+
+        #webcam-feed {
+            filter: contrast(250%) grayscale(200%);
+            margin-top: 15px;
+
+        }
+
+        #chat_frame {
+            filter: grayscale(100%);
+            width: 360px;
+            height: 550px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='timer'>
+        <span id='spn_timer'>00:00:000</span>
+    </div>
+    <button class='btn' id='btn15' onclick="start(15)">15</button>
+    <button class='btn' id='btn30' onclick="start(30)">30</button>
+    <button class="btn" id="btn45" onclick="start(45)">45</button>
+    <button class="btn" id="btn60" onclick="start(60)">60</button>
+    <button class="btn" id="btn90" onclick="start(90)">90</button>
+    <button class="btn" id="btn_pause" style="width:60px;" onclick="hold()">PAUSE</button>
+    <button class="btn" id="btn_play" style="width: 60px;" onclick="resume()">PLAY</button>
+    <button class="btn" id="btn_stop" style="width: 60px; background: red;" onclick="stop()">STOP</button>
+    <button class="btn" id="btnCam" style="width:360px;" onclick="startCamera()">Start Camera</button>
+    <video id="webcam-feed" style="width:360px;" autoplay playsinline></video>
+
+    <script>
+        var timer;
+        var pause = false;
+        var minutes, seconds, millis;
+        function start(add = 0) {
+            timer = Date.now() + (add * 60 * 1000);
+            animate();
+        }
+
+        function animate() {
+            if (!pause) {
+                minutes = Math.floor(((timer - Date.now())) / 60 / 1000);
+                let minutesOut = minutes * 60 * 1000;
+                seconds = Math.floor(((timer - Date.now() - minutesOut) / 1000));
+                let secondsOut = seconds * 1000;
+                millis = Math.floor((timer - Date.now() - minutesOut - secondsOut));
+
+                var minTxt = "" + minutes;
+                if (minutes < 1) {
+                    minTxt = "00";
+                } else if (minutes < 10) {
+                    minTxt = "0" + minutes;
+                }
+                var secTxt = "" + seconds;
+                if (seconds < 1) {
+                    secTxt = "00";
+                } else if (seconds < 10) {
+                    secTxt = "0" + seconds;
+                }
+                var milTxt = "" + millis;
+                if (millis < 1) {
+                    milTxt = "000";
+                } else if (millis < 10) {
+                    milTxt = "00" + millis;
+                } else if (millis < 100) {
+                    milTxt = "0" + millis;
+                }
+                var disp = document.getElementById("spn_timer");
+                if (Date.now() < timer) {
+                    disp.innerHTML = "" + minTxt + ":" + secTxt + ":" + milTxt;
+                    setTimeout(animate, 1);
+                } else {
+                    disp.innerHTML = "00:00:000";
+                }
+            }
+        }
+
+        function hold() {
+            pause = true;
+        }
+
+        function resume() { //Resume after updating the remaining timer;
+            timer = Date.now() + millis + (seconds * 1000) + (minutes * 60 * 1000);
+            pause = false;
+            animate();
+        }
+        function stop() {
+            timer = Date.now();
+        }
+
+        function startCamera() {
+            // Define the constraints: we want video, but not audio for this example
+            const constraints = {
+                audio: false, // Requesting audio is optional
+                video: {
+                    width: { ideal: 360 }, // Request ideal width of 1280px
+                    height: { ideal: 240 }  // Request ideal height of 720px
+                }
+            };
+
+            // Use navigator.mediaDevices.getUserMedia() to request access
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function (stream) {
+                    // Success callback: attach the stream to the video element
+                    const videoElement = document.getElementById('webcam-feed');
+                    videoElement.srcObject = stream;
+                    videoElement.play(); // Start playing the video stream
+                    document.getElementById("btnCam").style.display = 'none';
+                })
+                .catch(function (err) {
+                    // Error callback: handle cases where the user denies permission or no camera is found
+                    console.error("An error occurred: " + err.message);
+                    alert("Could not access the webcam. Please check your browser permissions.");
+                });
+        }
+    </script>
+</body>
+
+</html>
