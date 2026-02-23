@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CHAT TOURETTES</title>
+    <style>
+        body {
+            background: black;
+            color: white;
+            position: absolute;
+            width: 360px;
+            height: 100%;
+            font-family: Ubuntu, 'sans-serif';
+            padding-top: 15px;
+        }
+
+        #timer {
+            background-color: white;
+            color: black;
+            width: 100%;
+            height: 60px;
+            border: none;
+            text-align: center;
+            font-size: 40pt;
+        }
+
+        .btn {
+            width: 30px;
+            height: 30px;
+            margin-top: 5px;
+            border: 1px solid white;
+            background: black;
+            color: white;
+        }
+
+        .btn:hover {
+            background: gray;
+        }
+
+        #webcam-feed {
+            filter: contrast(250%) grayscale(200%);
+            margin-top: 15px;
+            transform: scaleX(-1);
+        }
+
+        #chatBox {
+            width: 360px;
+            height: 500px;
+            /*border: 1px solid white;*/
+            color: white;
+            overflow-wrap: break-word;
+        }
+
+        input {
+            font-size: 16pt;
+        }
+
+        audio {
+            display: none;
+        }
+
+        #title_txt {
+            padding: 0;
+            margin-top: -20px;
+            margin-bottom: -5px;
+        }
+
+        #visual_box {
+            position: relative;
+        }
+
+        #alerts {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 360px;
+            height: 270px;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .nsfw {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- AUDIO SOURCE SECTION FOR CALLING VIA CHAT COMMANDS-->
+    <!--<audio id="ID_HERE" src="SOURCE_HERE"></audio>-->
+    <!--NUM-->
+
+    <!---A-->
+    <audio id="ads" src="https://www.myinstants.com/media/sounds/thank-you-for-your-patronage.mp3"></audio>
+    <audio id="america" class="nsfw" src="https://www.myinstants.com/media/sounds/murica.mp3"></audio>
+    <audio id="ai" src="https://www.myinstants.com/media/sounds/input.mp3"></audio>
+
+    <!--B-->
+    <audio id="boom" src="https://www.myinstants.com/media/sounds/vine-boom.mp3"></audio>
+    <audio id="bong" src="https://www.myinstants.com/media/sounds/taco-bell-bong-sfx.mp3"></audio>
+    <audio id="bruh" src="https://www.myinstants.com/media/sounds/movie_1.mp3"></audio>
+    <audio id="bonita" src="https://www.myinstants.com/media/sounds/do-you-feel-bonita.mp3"></audio>
+    <audio id="bad" src="https://www.myinstants.com/media/sounds/well-this-sucks.mp3"></audio>
+    <audio id="bye" src="https://www.myinstants.com/media/sounds/ok-bye_1.mp3"></audio>
+    <audio id="bugs" src="https://www.myinstants.com/media/sounds/the-only-good-bug-is-a-dead-bug.mp3"></audio>
+    <audio id="badum" src="https://www.myinstants.com/media/sounds/bad-joke-drums.mp3"></audio>
+    <audio id="balls" class="nsfw"
+        src="https://www.myinstants.com/media/sounds/chef_s_chocolate_salty_balls_song.mp3"></audio>
+    <audio id="biden" src="https://www.myinstants.com/media/sounds/sfx-biden-i-dont-remember.mp3"></audio>
+
+    <!--C-->
+    <audio id="crime" class="nsfw"
+        src="https://www.myinstants.com/media/sounds/i-am-going-to-commit-great-crime.mp3"></audio>
+    <audio id="come" src="https://www.myinstants.com/media/sounds/im-gonna-come_6HehWm4.mp3"></audio>
+    <audio id="clankers" src="https://www.myinstants.com/media/sounds/wall-e.mp3"></audio>
+    <audio id="cock" class="nsfw" src="https://www.myinstants.com/media/sounds/192-unhinged-michi.mp3"></audio>
+    <audio id="caught" src="https://www.myinstants.com/media/sounds/iphone-screenshot.mp3"></audio>
+    <audio id="crouch" src="https://www.myinstants.com/media/sounds/i-put-my-hand-up-on-my-hip.mp3"></audio>
+
+    <!--D-->
+    <audio id="dew" src="https://www.myinstants.com/media/sounds/dew-it.mp3"></audio>
+    <audio id="drugs" src="https://www.myinstants.com/media/sounds/drugs-are-bad.mp3"></audio>
+    <audio id="drink" src="https://www.myinstants.com/media/sounds/old-gregg-drunk-baileys-from-a-shoe.mp3"></audio>
+    <audio id="deep" src="https://www.myinstants.com/media/sounds/going-deep-and-going-hard.mp3"></audio>
+
+    <!--E-->
+    <audio id="extra" src="https://www.myinstants.com/media/sounds/sudden-suspense.mp3"></audio>
+    <audio id="escalated" src="https://www.myinstants.com/media/sounds/escalated-quickly.mp3"></audio>
+    <audio id="elon"
+        src="https://www.myinstants.com/media/sounds/kantai-collection-kancolle-opening-theme-mp3cut.mp3"></audio>
+    <audio id="ea" src="https://www.myinstants.com/media/sounds/ea_games.mp3"></audio>
+
+    <!--F-->
+    <audio id="fart" src="https://www.myinstants.com/media/sounds/perfect-fart.mp3"></audio>
+    <audio id="fbi" src="https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3"></audio>
+    <audio id="fail" src="https://www.myinstants.com/media/sounds/ninja-cut.mp3"></audio>
+    <audio id="fine"
+        src="https://www.myinstants.com/media/sounds/you-just-have-to-say-that-youre-fine-original-aetrim1501491559244.mp3"></audio>
+    <audio id="free" src="https://www.myinstants.com/media/sounds/free-for-all.mp3"></audio>
+    <audio id="f" src="https://www.myinstants.com/media/sounds/whomp_sound_effect_-_super_mario_64_mp3cut.mp3"></audio>
+
+    <!--G-->
+    <audio id="good" src="https://www.myinstants.com/media/sounds/excellent_8lPkRWm.mp3"></audio>
+    <audio id="gg" src="https://www.myinstants.com/media/sounds/ding-sound-effect_2.mp3"></audio>
+    <audio id="game" src="https://www.myinstants.com/media/sounds/do-you-wanna-play-a-game-saw.mp3"></audio>
+
+    <!--H-->
+    <audio id="hee" src="https://www.myinstants.com/media/sounds/michael-jackson-hee-hee.mp3"></audio>
+    <audio id="helldivers" src="https://www.myinstants.com/media/sounds/join-helldivers_mGUUBHM.mp3"></audio>
+    <audio id="hr" src="https://www.myinstants.com/media/sounds/im-pretty-sure-thats-an-hr-violation.mp3"></audio>
+    <audio id="halo" src="https://www.myinstants.com/media/sounds/grunt-birthday-party.mp3"></audio>
+    <audio id="hammond" class="nsfw"
+        src="https://www.myinstants.com/media/sounds/richard-hammond-bike-swearing_1.mp3"></audio>-->
+    <audio id="hello" class="nsfw" src="https://www.myinstants.com/media/sounds/well-hello-mf.mp3"></audio>
+
+    <!--I-->
+    <audio id="illuminate" src="https://www.myinstants.com/media/sounds/freakyalien.mp3"></audio>
+    <audio id="ill" src="https://www.myinstants.com/media/sounds/venereal-disease.mp3"></audio>
+
+    <!--J-->
+    <audio id="jesus" src="https://www.myinstants.com/media/sounds/ohh-jeezass.mp3"></audio>
+    <audio id="jackass" src="https://www.myinstants.com/media/sounds/jackass_VAonqEd.mp3"></audio>
+
+    <!--K-->
+    <audio id="kappa" src="https://www.myinstants.com/media/sounds/pop_7e9Is8L.mp3"></audio>
+
+    <!--L-->
+    <audio id="lizard" src="https://www.myinstants.com/media/sounds/lizard-button.mp3"></audio>
+    <audio id="lose" src="https://www.myinstants.com/media/sounds/the-price-is-right-losing-horn.mp3"></audio>
+    <audio id="listen" src="https://www.myinstants.com/media/sounds/hey_listen.mp3"></audio>
+    <audio id="lever" src="https://www.myinstants.com/media/sounds/lever_8PrZw6J.mp3"></audio>
+    <audio id="later" src="https://www.myinstants.com/media/sounds/yt1s_MAvSqPp.mp3"></audio>
+    <audio id="lul" src="https://www.myinstants.com/media/sounds/pee-wee-laugh-short.mp3"></audio>
+    <audio id="lol" src="https://www.myinstants.com/media/sounds/female-giggle.mp3"></audio>
+    <audio id="law" src="https://www.myinstants.com/media/sounds/dun_dun_1.mp3"></audio>
+    <audio id="l" src="https://www.myinstants.com/media/sounds/roblox-death-sound_ytkbl7x_b2ZPZKJ.mp3"></audio>
+
+    <!--M-->
+    <audio id="mlg" src="https://www.myinstants.com/media/sounds/mlg-airhorn.mp3"></audio>
+    <audio id="magic" src="https://www.myinstants.com/media/sounds/magic-fairy.mp3"></audio>
+    <audio id="money" src="https://www.myinstants.com/media/sounds/pink-floyd-money-edit.mp3"></audio>
+
+    <!--N-->
+    <audio id="nut" src="https://www.myinstants.com/media/sounds/nut_ZKo5FA9.mp3"></audio>
+    <audio id="no" src="https://www.myinstants.com/media/sounds/engineer_no01_1.mp3"></audio>
+    <audio id="noot" src="https://www.myinstants.com/media/sounds/noot_p0CPOIz.mp3"></audio>
+    <audio id="noob" src="https://www.myinstants.com/media/sounds/what-a-noob-uninstall.mp3"></audio>
+    <audio id="nah" src="https://www.myinstants.com/media/sounds/mike-tomlin-we-do-not-care-trim.mp3"></audio>
+    <audio id="nice" src="https://www.myinstants.com/media/sounds/very-nice-borat.mp3"></audio>
+
+    <!--O-->
+    <audio id="oops" class="nsfw" src="https://www.myinstants.com/media/sounds/oops-whoopsie-sorry.mp3"></audio>
+    <audio id="outro" src="https://www.myinstants.com/media/sounds/outro-song_oqu8zAg.mp3"></audio>
+
+    <!--P-->
+    <audio id="ph" class="nsfw" src="https://www.myinstants.com/media/sounds/hub-intro-sound.mp3"></audio>
+    <audio id="pew" src="https://www.myinstants.com/media/sounds/gunshotjbudden.mp3"></audio>
+    <audio id="purge" src="https://www.myinstants.com/media/sounds/purge-siren-10-secs.mp3"></audio>
+    <audio id="pulls" class="nsfw" src="https://www.myinstants.com/media/sounds/pull-out-alert_BEgAg6I.mp3"></audio>
+
+    <!--Q-->
+    <audio id="quack" src="https://www.myinstants.com/media/sounds/quack-sound-effect_aiAERZ9.mp3"></audio>
+
+    <!--R-->
+    <audio id="rave" src="https://www.myinstants.com/media/sounds/original_zeowGW1.mp3"></audio>
+    <audio id="rip" src="https://www.myinstants.com/media/sounds/lol-youdied.mp3"></audio>
+
+    <!--S-->
+    <audio id="skill" src="https://www.myinstants.com/media/sounds/halo-skill-issue.mp3"></audio>
+    <audio id="serious" src="https://www.myinstants.com/media/sounds/my-reaction-to-meet-the-spartans.mp3"></audio>
+    <audio id="success" src="https://www.myinstants.com/media/sounds/borat-great-success-clipped.mp3"></audio>
+    <audio id="sniper" src="https://www.myinstants.com/media/sounds/boomheadshot_sniper.mp3"></audio>
+    <audio id="sound" src="https://www.myinstants.com/media/sounds/metal-gear-alert-sound-effect_XKoHReZ.mp3"></audio>
+    <audio id="squad" src="https://www.myinstants.com/media/sounds/i-dont-have-friends-i-have-family.mp3"></audio>
+    <audio id="sure" src="https://www.myinstants.com/media/sounds/okay-guy.mp3"></audio>
+    <audio id="sick" src="https://www.myinstants.com/media/sounds/i-have-crabs-2.mp3"></audio>
+    <audio id="sega" src="https://www.myinstants.com/media/sounds/sega-hd.mp3"></audio>
+
+    <!--T-->
+    <audio id="trek" src="https://www.myinstants.com/media/sounds/capt-picard-make-it-so.mp3"></audio>
+    <audio id="team" src="https://www.myinstants.com/media/sounds/ggodgwk7isvygqib_1595311120.mp3"></audio>
+    <audio id="trump" src="https://www.myinstants.com/media/sounds/donald-trump-approves-this.mp3"></audio>
+
+    <!--U-->
+    <audio id="uwu" src="https://www.myinstants.com/media/sounds/uwu-discord-gorl.mp3"></audio>
+    <audio id="usa" src="https://www.myinstants.com/media/sounds/sounds_eng-00381.mp3"></audio>
+
+    <!--V-->
+    <audio id="victory" src="https://www.myinstants.com/media/sounds/another-day-another-victory-for-da-og.mp3"></audio>
+
+    <!--W-->
+    <audio id="wait" src="https://www.myinstants.com/media/sounds/well-be-right-back-green-screen_8oEb98L.mp3"></audio>
+    <audio id="wort" src="https://www.myinstants.com/media/sounds/a_HSMXsiW.mp3"></audio>
+    <audio id="wrong" src="https://www.myinstants.com/media/sounds/wrongg.mp3"></audio>
+    <audio id="whipped" class="nsfw"
+        src="https://www.myinstants.com/media/sounds/patrick-whipped-out-his-what.mp3"></audio>
+    <audio id="w" src="https://www.myinstants.com/media/sounds/winning.mp3"></audio>
+
+    <!--X-->
+
+
+    <!--Y-->
+    <audio id="yes" src="https://www.myinstants.com/media/sounds/lil-jon-yeah.mp3"></audio>
+
+    <!--Z-->
+
+    <!------------------------ACTUAL PAGE HERE-------------------------------------->
+
+    <h3 id="title_txt">Chat Sound Board</h3>
+    <table>
+        <tr>
+            <td>
+                <div>
+                    <table style="padding:0; border-collapse: collapse;">
+                        <tr>
+                            <td><input type="text" id="channelInput" style="width: 290px; height:22px" /></td>
+                            <td><button class="btn" onclick="connectChat()" style="width:60px;">GO</button></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" id="nsfw_chk" />BLOCK NSFW SOUNDS
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="chatBox"></div>
+            </td>
+            <td>
+                <div id="catalog" style="width: 200px;">
+                    <p>RED = NSFW</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <script src="JS/tmi.min.js"></script>
+    <script src="JS/chat.js"></script>
+    <script>
+        function checkMessages() {
+            //console.log(messages.length);
+            //Get container for messages
+            let box = document.getElementById('chatBox');
+            let nchk = document.getElementById('nsfw_chk');
+            var chats = '<h3 ';
+            if (connStatus) {
+                chats += 'style="color: green;" >CHAT: CONNECTED </h3>';
+            } else {
+                chats += 'style="color: red;" >CHAT: !! OFFLINE !! </h3>';
+            }
+            for (var i = 0; i < messages.length; i++) {
+                //CHECK FOR COMMANDS
+                let m = messages[i].msg;
+
+                if (!messages[i].shown) {
+                    //parse out audio name
+                    var snd = m.split(' ');
+                    for (var j = 0; j < snd.length; j++) {
+                        //console.log("FINDING ELEMENT NAMED: " + snd[j]);
+                        if (snd[j] != '') {
+                            var elem = document.getElementById(snd[j].toLowerCase());
+                            if (elem != undefined) {
+                                if (nchk.checked) {
+                                    if (elem.classList.contains("nsfw")) {
+                                        console.log("NSFW " + snd[j]);
+                                    } else {
+                                        var chk = document.getElementById(snd[j].toLowerCase() + "_chk");
+                                        if (chk.checked) {
+                                            elem.play();
+                                        }
+                                    }
+                                } else {
+                                    var chk = document.getElementById(snd[j].toLowerCase() + "_chk");
+                                    if (chk.checked) {
+                                        elem.play();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    messages[i].shown = true;
+                }
+                chats += '<p><b>' + messages[i].user + "</b> : " + messages[i].msg + "</p>"
+            }
+            box.innerHTML = chats;
+        }
+
+        function connectChat() {
+            var tbx = document.getElementById("channelInput").value;
+            SetChannel(tbx);
+        }
+
+        function animate() {
+            window.requestAnimationFrame(animate);
+            checkMessages();
+
+        }
+        animate();
+
+        var cat = document.getElementById('catalog');
+        var sfx = document.getElementsByTagName('audio');
+        console.log("COUNT: " + sfx.length);
+        var str = '<p>RED = NSFW (play with caution)</p><button onclick=\'check_all()\'>CHECK ALL</button><button onclick=\'uncheck_all()\'>UNCHECK ALL</button><table>';
+        for (var s = 0; s < sfx.length; s++) {
+            str += "<tr><td><input type=\'checkbox\' id=\'" + sfx[s].id + "_chk\' class=\'achk\' checked/></td>";
+            str += "<td><button id=\'btn_" + sfx[s].id + "\' onclick=\'playSFX(" + sfx[s].id + ")\' class=\'" + sfx[s].classList[0] + "\'>" + sfx[s].id + "</button></td></tr>";
+        }
+        str += "</table>"
+        cat.innerHTML = str;
+
+        function playSFX(target) {
+            //console.log(target.id);
+            var elem = document.getElementById(target.id.toLowerCase());
+            if (elem != undefined) {
+                //console.log("PLAYING: " + target.id);
+                elem.play();
+            } else {
+                console.log("BAD TAG: " + target.id);
+            }
+        }
+
+        function check_all() {
+            var cb = document.querySelectorAll(".achk");
+            cb.forEach(function (element) {
+                element.checked = true;
+            });
+        }
+
+        function uncheck_all() {
+            var cb = document.querySelectorAll(".achk");
+            cb.forEach(function (element) {
+                element.checked = false;
+            });
+        }
+    </script>
+
+
+</body>
+
+</html>
