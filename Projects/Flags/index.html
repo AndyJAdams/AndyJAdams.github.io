@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FLAGS TEST</title>
+    <style>
+        body {
+            background-color: #444;
+            text-align: center;
+        }
+
+        #container {
+            width: 75%;
+            margin: 0 auto;
+            background-color: #FFF;
+        }
+
+        #flag {
+            font-size: 186px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+
+        <h1 id="flag">LOADING...</h1>
+        <h3 id="c_name">???</h3>
+        <button id="guess" onclick="revealname()">REVEAL</button>
+        <br /><br /><br />
+    </div>
+    <script>
+        function Country(name, flag) {
+            this.name = name;
+            this.flag = flag;
+        }
+
+        var resp = [];
+        var ansName = '';
+        var toggle = false;
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM fully loaded and parsed');
+            loadCountries(); // Call your specific function here
+            //console.log(resp);
+            chooseRandomCountry();
+        });
+
+        function loadCountries() {
+            //Call the api and get country name, capital, and flag
+            return fetch('https://restcountries.com/v3.1/all?fields=name,flag')
+                .then(response => {
+                    // Check if the request was successful
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    // Parse the response body as JSON
+                    return response.json();
+                })
+                .then(data => {
+                    // Work with the JSON data
+                    //console.log(data);
+                    for (var i = 0; i < data.length; i++) {
+                        resp.push(new Country(data[i].name.common, data[i].flag));
+                    }
+                })
+                .catch(error => {
+                    // Handle any errors during the fetch operation
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        function displayFlag(f) {
+            document.getElementById("flag").innerHTML = f + "";
+        }
+
+        function revealname() {
+            if (!toggle) {
+                document.getElementById("c_name").innerHTML = ansName + "";
+                toggle = true;
+                document.getElementById("guess").innerHTML = "NEXT";
+            } else {
+                document.getElementById("c_name").innerHTML = "???";
+                chooseRandomCountry();
+                document.getElementById("guess").innerHTML = "REVEAL";
+                toggle = false;
+            }
+        }
+
+        function chooseRandomCountry() {
+            if (resp.length > 0) {
+                var randNum = Math.floor(Math.random() * resp.length);
+                //console.log(randNum);
+                ansName = resp[randNum].name;
+                displayFlag(resp[randNum].flag);
+            } else {
+                setTimeout(chooseRandomCountry, 100);
+            }
+        }
+    </script>
+</body>
+
+</html>
