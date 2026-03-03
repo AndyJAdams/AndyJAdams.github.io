@@ -323,6 +323,7 @@
     </table>
     <script src="JS/tmi.min.js"></script>
     <script src="JS/chat.js"></script>
+    <script src="JS/ytchat.js"></script>
     <script>
         var chatConnected = false;
 
@@ -388,6 +389,9 @@
                 client.disconnect();
                 chatConnected = false;
             }
+
+            //NOW LET'S TRY TO ADD YoutTube
+            YTconnect(tbx);
         }
 
         function animate() {
