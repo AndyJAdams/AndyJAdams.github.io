@@ -23,7 +23,7 @@
 		var canvas = document.querySelector('canvas');
 		var ctx = canvas.getContext('2d');
 		var speed = 5;
-		var ver = 24;
+		var ver = 25;
 		var stop = false;
 		var currentLevelIndex = 0;
 		var blockGap = 80;
@@ -33,7 +33,7 @@
 		var nextLevelReady = false;
 		var nextLevelTimer = 0;
 		var timerSet = false;
-		var instructions = "Press [SPACE] to jump";
+		var instructions = "Press [SPACE] or UP-ARROW to jump";
 		var title = "SIGNAL";
 		var boolLettersUsed = false;
 		var startGame = false;
@@ -271,7 +271,7 @@
 						highlightToggle = false;
 						toggleTimer = Date.now()+500;
 					} else {
-						instructions = "Press [SPACE] to jump"
+						instructions = "Press [SPACE] or UP-ARROW to jump"
 						highlightToggle = true;
 						toggleTimer = Date.now()+2000;
 					}
@@ -307,7 +307,7 @@
 		}
 
 		window.addEventListener('keydown', function(e){
-			// console.log(e.key);
+			console.log(e.key);
 			if(!stop){
 				if(nextLevelReady){
 					currentLevelIndex++;
@@ -322,7 +322,7 @@
 				if(!startGame){
 					startGame = true;
 				}
-				if(e.key == " " && player1.commands.length < 1){
+				if(e.key == " " || e.key == "ArrowUp" && player1.commands.length < 1){
 					player1.jump(jumpDur);
 				} else {
 					var com = getMorseLetter(e.key);
