@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>... .. -- -. .- .-..</title>
+	<style>
+	body {
+		background-color: #DFDFDF;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		margin: 0;
+	}
+	canvas {
+		background-color: #DFDFDF;
+		
+	}
+	</style>
+</head>
+<body>
+	<canvas></canvas>
+	<script>
+		var canvas = document.querySelector('canvas');
+		var ctx = canvas.getContext('2d');
+		var speed = 3;
+		var stop = false;
+		var currentLevelIndex = 0;
+		var blockGap = 80;
+		var jumpDur = 1100/speed;
+		var dubJumpDur = 2000/speed;
+		var failCount = 0;
+		var nextLevelReady = false;
+		var nextLevelTimer = 0;
+		var timerSet = false;
+		var instructions = "Press [SPACE] to jump";
+		var title = "SIGNAL";
+		var boolLettersUsed = false;
+		var startGame = false;
+		var highlightToggle = false;
+		var toggleTimer = 0;
+		var solution = "";
+		var gameOver = false;
+
+		canvas.width = window.innerWidth*0.8;
+		canvas.height = window.innerHeight*0.8;
+		if(canvas.width > 600){
+			canvas.width = 600;
+		}
+		ctx.lineWidth=2;
+		var playerZone = 50;
+		var shorty = document.getElementById('shortbeep');
+		var longy  = document.getElementById('longbeep');
+
+		function Player(){
+			this.baseline = canvas.height/2-20;
+			this.y = this.baseline;
+			this.ty = this.y
+			this.dur = 0;
+			this.commands = [];
+			
+			this.draw = function(){
+				ctx.fillStyle="#000";
+				//BOX
+				ctx.fillRect(playerZone,this.y,20,20);
+
+				// ctx.fillText(this.y, 20,20);
+				// ctx.fillText(this.ty, 20,40);
+				// ctx.fillText(this.dur,20,60);
+				//console.log(this.commands);
+				//ctx.fillText(this.commands[0],20,20);
+			}
+
+			this.update = function(){
+				if(this.y != this.ty){
+					this.y = this.ty;
+				} else {
+					//Now we are in position - if there is a durations stay here until it is surpassed - then return to baseline
+					if(this.dur > 0){ //IF WE ARE JUMPING
+						var rem = this.dur-Date.now(); //GET TIME REMAINING
+						if(rem < 0){ //JUMP IS OVER
+							this.ty = this.baseline; //RETURN TO GROUND
+							if(this.y == this.baseline){ //IF GROUNDED
+								this.dur = 0; //ALLOW INPUT AGAIN
+							}
+						}
+					} else {
+						if(this.commands.length > 0){
+							//this.jump(jumpDur);
+							if(this.commands[0] == 0){
+								this.jump(jumpDur);
+							} else if(this.commands[0] == 1){
+								this.jump(dubJumpDur);
+							}
+							this.commands.shift();
+						}
+					}
+				}
+			
+				this.draw();
+			}
+
+			this.jump = function(dur){
+				if(this.dur == 0){
+					this.ty = this.baseline-40;
+					this.dur = Date.now()+dur;
+					if(dur > jumpDur){
+						// longy.play();
+						playTone(440,0.3);
+					} else {
+						// shorty.play();
+						playTone(440,0.1);
+					}
+				}
+			}
+		}
+
+		function Block(dot, x, l){
+			this.dot = dot;
+			this.x = x;
+			this.l = l;
+			this.draw = function(){
+				ctx.fillStyle="#DFDFDF";
+				if(stop){
+					ctx.fillStyle="#F00";
+				} 
+				if(this.dot){
+					ctx.strokeRect(this.x, canvas.height/2-20,20,20);
+					ctx.fillRect(this.x+1,canvas.height/2-19,18,22);
+				} else {
+					ctx.strokeRect(this.x, canvas.height/2-20,40,20);
+					ctx.fillRect(this.x+1,canvas.height/2-19,38,22);
+				}
+			}
+
+			this.update = function(){
+				this.x-= speed;
+				//Check collision here
+				if(this.x < playerZone){ //We are around player area
+					if(this.dot ){
+						if(this.x+14 > playerZone){ //IN PLAYER ZONE
+							if(player1.y == player1.baseline){ //PLAYER IS GROUNDED
+								//COLLISION?
+								//console.log(this.x + " . " + player1.y);
+								instructions = "Press any key to restart level"
+								stop = true;
+							}
+						}
+					} else {
+						if(this.x+34 > playerZone){
+							if(player1.y == player1.baseline){
+								//console.log(this.x + " - " + player1.y);
+								instructions = "Press any key to restart level"
+								stop = true;
+							}
+						}
+					}
+				}
+				// if(this.x < -100){
+				// 	this.x = canvas.width;
+				// }
+				this.draw();
+			}
+		}
+
+		function Level(p){
+			this.phrase = p;
+			this.lArr = getMorseLetterArray(p);
+			this.spaceCount = getSpaceCount(p);
+			this.init = function(){
+				this.x = canvas.width;
+				this.offset = 0;
+				this.blockArr = [];
+				var letterCount = 0;
+				var spaceIndex = 0;
+				for(var l = 0; l < this.lArr.length; l++){ //Iterate through letters
+					for(var i = 0; i < this.lArr[l].length; i++){
+						var ltr = "";
+						if(i == this.lArr[l].length-1){
+							//console.log(this.phrase[l]);
+							ltr = this.phrase[l];
+							letterCount++;
+							if(letterCount == this.spaceCount[spaceIndex]){
+								ltr += " ";
+								spaceIndex++;
+								letterCount = 0;
+							}
+						}
+						if(this.lArr[l][i] == 0){ //DOT
+							this.blockArr.push(new Block(true, this.x+this.offset, ltr));
+							this.offset += blockGap;
+						} else if(this.lArr[l][i] == 1){//DASH
+							this.blockArr.push(new Block(false, this.x+this.offset, ltr));
+							this.offset += blockGap*1.5;
+						} else {
+							this.offset += blockGap*4; //This should only be spaces
+						}
+					}
+					this.offset += blockGap*2; //Expand the area between letters
+				}
+			}
+			this.init();
+
+			this.draw = function(){
+				for(var i = 0;i < this.blockArr.length; i++){
+					if(!stop){
+						this.blockArr[i].update();
+					} else {
+						this.blockArr[i].draw();
+					}
+				}
+				//Check if letter has passed player zone and get the letter then add to solution
+				solution = "";
+				for(var i = 0; i < this.blockArr.length; i++){
+					let b = this.blockArr[i];
+					if(b.x < playerZone-50){
+						if(b.l != ""){
+							solution += b.l;
+						}
+					}
+				}
+				//HOW DO I ADD SPACES?
+
+				//Now we'll check if the last block has passed beyond and the level is complete
+				if(this.blockArr[this.blockArr.length-1].x < 0){
+					//LEVEL COMPLETE
+					if(!timerSet && !nextLevelReady){
+						nextLevelTimer = Date.now() + 2000;
+						timerSet = true;
+					} else {
+						if(Date.now() > nextLevelTimer){
+							nextLevelReady = true;
+							timerSet = false;
+						}
+					}
+				}
+			}
+		}
+
+		var player1 = new Player();
+		var levels = [];
+		levels.push(new Level("EASY"));
+		levels.push(new Level("LEVEL ONE"));
+		levels.push(new Level("YOU BEAT LEVEL TWO"));
+		levels.push(new Level("ARE YOU HAVING FUN"));
+		levels.push(new Level("I MADE THIS GAME IN 48 HOURS"));
+		levels.push(new Level("THANK YOU FOR PLAYING MY GAME!!"));
+		levels.push(new Level("GG"));
+		var currentLevel = levels[currentLevelIndex];
+
+		function animate(){
+			window.requestAnimationFrame(animate);
+			ctx.clearRect(0,0,canvas.width, canvas.height);
+			ctx.fillStyle="#000";
+			ctx.beginPath();
+			ctx.moveTo(0,canvas.height/2);
+			ctx.lineTo(canvas.width,canvas.height/2);
+			ctx.stroke();
+
+			ctx.font = "bold 30px Arial";
+			ctx.textAlign = "left";
+			ctx.fillText(title,5,canvas.height/2+30);
+
+			ctx.fillText(solution,5,120);
+
+			ctx.font = "16px Arial";
+			if(!startGame){
+				if(Date.now()>toggleTimer){
+					if(highlightToggle){
+						instructions = " ";
+						highlightToggle = false;
+						toggleTimer = Date.now()+500;
+					} else {
+						instructions = "Press [SPACE] to jump"
+						highlightToggle = true;
+						toggleTimer = Date.now()+2000;
+					}
+					
+				}
+			}
+			ctx.fillText(instructions, 5, canvas.height/2+50);
+			
+
+			ctx.textAlign = "right";
+			ctx.fillText("Andrew James Adams", canvas.width-5,canvas.height/2+20);
+			ctx.fillText("LD59 v0.23",canvas.width-5,canvas.height/2+40);
+			
+			if(startGame){ //Don't blast the player until they press a key
+				if(!gameOver){
+					currentLevel.draw();
+				} else {
+					title = "GAME OVER";
+					instructions = "YOU FAILED " + failCount + " TIMES";
+					solution = "";
+				}
+			}
+			if(!stop){
+				player1.update();
+				if(startGame && !gameOver){
+					title = "LVL " + currentLevelIndex;
+				}
+			} else {
+				player1.draw();
+				title = "FAIL#: " + (failCount+1);
+			}
+			
+		}
+		var downTime = 0;
+		window.addEventListener('keydown', function(e){
+			if(e.key == " "){
+				downTime = Date.now();
+			}
+		});
+
+		window.addEventListener('keyup', function(e){
+			// console.log(e.key);
+			if(!stop){
+				if(nextLevelReady){
+					currentLevelIndex++;
+					if(currentLevelIndex >= levels.length){
+						//Game is done;
+						gameOver = true;
+					}
+					currentLevel = levels[currentLevelIndex];
+					nextLevelReady = false;
+					return;
+				}
+				if(!startGame){
+					startGame = true;
+				}
+				if(e.key == " " && player1.commands.length < 1){
+					// var relTime = Date.now()-downTime;
+					// if(relTime > 120){
+					// 	player1.jump(dubJumpDur);
+					// } else {
+					// 	player1.jump(jumpDur);
+					// }
+					player1.jump(jumpDur);
+				} else {
+					var com = getMorseLetter(e.key);
+					if(com.length > 0){
+						boolLettersUsed = true;
+						player1.commands = com;
+					}
+				}
+			} else {
+				//RESET GAME AFTER ANY KEY PRESS
+				ResetLevel();
+			}
+		});
+
+		function ResetLevel(){
+			failCount++;
+			//console.log(failCount);
+			player1.commands = [];
+			player1.y = player1.baseline;
+			currentLevel.init();
+			instructions = "";
+			if(failCount > 4 && !boolLettersUsed){ //Giving a helpful hint to strugglers
+				instructions = "Try pressing a letter";
+			}
+			stop = false;
+		}
+
+		async function playTone(freq,duration){
+			const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			const oscillator = audioCtx.createOscillator();
+			const gainNode = audioCtx.createGain();
+
+			oscillator.type = 'sine';
+			oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+			oscillator.connect(gainNode);
+			gainNode.connect(audioCtx.destination);
+
+			oscillator.start();
+			oscillator.stop(audioCtx.currentTime + duration);
+		}
+
+		function getSpaceCount(p){
+			var msg = p.split(" ");
+			var count = [];
+			for(var i = 0; i < msg.length; i++){
+				count.push(msg[i].length);
+			}
+			return count;
+		}
+
+		function getMorseLetterArray(p){
+			var phrase = p.split(" ");//Split whole phrase into words
+			var lArr = [];//An array to hold the letter arrays
+			for(var i = 0; i < phrase.length; i++){//Iterare through each word
+				for(var w = 0; w < phrase[i].length; w++){ //Iterate through each letter in the word
+					lArr.push(getMorseLetter(phrase[i][w]));
+				}
+				lArr.push(getMorseLetter(" ")); //Add space back in as the split removes them
+			}
+			return lArr;
+		}
+
+		function getMorseLetter(a){
+			var res = [];
+			switch(a.toLowerCase()){
+			case "a":
+				res = [0,1];
+				break;
+			case "b":
+				res = [1,0,0,0];
+				break;
+			case "c":
+				res = [1,0,1,0];
+				break;
+			case "d":
+				res = [1,0,0];
+				break;
+			case "e":
+				res = [0];
+				break;
+			case "f":
+				res = [0,0,1,0];
+				break;
+			case "g":
+				res = [1,1,0];
+				break;
+			case "h":
+				res = [0,0,0,0];
+				break;
+			case "i":
+				res = [0,0];
+				break;
+			case "j":
+				res = [0,1,1,1];
+				break;
+			case "k":
+				res = [1,0,1];
+				break;
+			case "l":
+				res = [0,1,0,0];
+				break;
+			case "m":
+				res = [1,1];
+				break;
+			case "n":
+				res = [1,0];
+				break;
+			case "o":
+				res = [1,1,1];
+				break;
+			case "p":
+				res = [0,1,1,0];
+				break;
+			case "q":
+				res = [1,1,0,1];
+				break;
+			case "r":
+				res = [0,1,0];
+				break;
+			case "s":
+				res = [0,0,0];
+				break;
+			case "t":
+				res = [1];
+				break;
+			case "u":
+				res = [0,0,1];
+				break;
+			case "v":
+				res = [0,0,0,1];
+				break;
+			case "w":
+				res = [0,1,1];
+				break;
+			case "x":
+				res = [1,0,0,1];
+				break;
+			case "y":
+				res = [1,0,1,1];
+				break;
+			case "z":
+				res = [1,1,0,0];
+				break;
+			case "1":
+				res = [0,1,1,1,1];
+				break;
+			case "2":
+				res = [0,0,1,1,1];
+				break;
+			case "3":
+				res = [0,0,0,1,1];
+				break;
+			case "4":
+				res = [0,0,0,0,1];
+				break;
+			case "5":
+				res = [0,0,0,0,0];
+				break;
+			case "6":
+				res = [1,0,0,0,0];
+				break;
+			case "7":
+				res = [1,1,0,0,0];
+				break;
+			case "8":
+				res = [1,1,1,0,0];
+				break;
+			case "9":
+				res = [1,1,1,1,0];
+				break;
+			case "0":
+				res = [1,1,1,1,1];
+				break;
+			case "?":
+				res = [0,0,1,1,0,1];
+				break;
+			case "!":
+				res = [1,0,1,0,1,1];
+				break;
+			case ".":
+				res = [0,1,0,1,0,1];
+				break;
+			case ",":
+				res = [1,1,0,0,1,1];
+				break;
+			case ";":
+				res = [1,0,1,0,1,0];
+				break;
+			case ":":
+				res = [1,1,1,0,0,0];
+				break;
+			case "+":
+				res = [0,1,0,1,0];
+				break;
+			case "-":
+				res = [1,0,0,0,0,1];
+				break;
+			case "/":
+				res = [1,0,0,1,0];
+				break;
+			case "=":
+				res = [1,0,0,0,1];
+				break;
+			case " ": //SPACE IS SPECIAL
+				res [2];
+				break;
+			default:
+				res = [];
+				break;
+			}
+			return res;
+		}
+		animate();
+
+		//SHORT BEEP: https://www.myinstants.com/media/sounds/censor-beep-1.mp3
+		//LONG BEEP: https://www.myinstants.com/media/sounds/censor-beep-2.mp3
+	</script>
+</body>
+</html>
