@@ -22,7 +22,8 @@
 	<script>
 		var canvas = document.querySelector('canvas');
 		var ctx = canvas.getContext('2d');
-		var speed = 3;
+		var speed = 5;
+		var ver = 23;
 		var stop = false;
 		var currentLevelIndex = 0;
 		var blockGap = 80;
@@ -282,7 +283,7 @@
 
 			ctx.textAlign = "right";
 			ctx.fillText("Andrew James Adams", canvas.width-5,canvas.height/2+20);
-			ctx.fillText("LD59 v0.23",canvas.width-5,canvas.height/2+40);
+			ctx.fillText("LD59 v0."+ver,canvas.width-5,canvas.height/2+40);
 			
 			if(startGame){ //Don't blast the player until they press a key
 				if(!gameOver){
@@ -304,14 +305,8 @@
 			}
 			
 		}
-		var downTime = 0;
-		window.addEventListener('keydown', function(e){
-			if(e.key == " "){
-				downTime = Date.now();
-			}
-		});
 
-		window.addEventListener('keyup', function(e){
+		window.addEventListener('keydown', function(e){
 			// console.log(e.key);
 			if(!stop){
 				if(nextLevelReady){
@@ -328,12 +323,6 @@
 					startGame = true;
 				}
 				if(e.key == " " && player1.commands.length < 1){
-					// var relTime = Date.now()-downTime;
-					// if(relTime > 120){
-					// 	player1.jump(dubJumpDur);
-					// } else {
-					// 	player1.jump(jumpDur);
-					// }
 					player1.jump(jumpDur);
 				} else {
 					var com = getMorseLetter(e.key);
