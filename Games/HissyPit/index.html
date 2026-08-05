@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>HISSY PIT</title>
+	<style type="text/css">
+		body{
+            margin: 0;
+            touch-action: none;
+            position: fixed;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+        }
+        canvas{
+            touch-action: none;
+            background-color: #444;
+        }
+	</style>
+</head>
+<body id='body'>
+<canvas></canvas>
+	<script>
+    var palettes = [
+        ['#493967','#745F90','#6B457B','#7A945A','#9DC163'], //PURPLE&GREEN
+        ['#110B10','#3A94A2','#D61616','#FBDA67','#CBB48C'], //STRANGER THINGS
+        ['#4ABA94','#D0542D','#FFEDB7','#685B53','#2B3A39'],
+        ['#07329B','#1BB5FD','#AB8BEE','#E18FE5','#ED0F87'], //NEON BLUE & PINK
+        ['#461D3A','#ECD0EC','#7E2A53','#502A50','#BA71A2'], //SUNSET BLUSH
+        ['#201D1C','#6C584C','#CFC3B6','#015D67','#F36509'], //@FLEISCHCREATIVE
+        ['#1E6F67','#F7DC9F','#BB443B','#E3925F','#59A96F'], //FLORAL SHOP
+        ['#0A0A12','#FF2ED1','#00F5FF','#8A2BFF','#B4FF00'], //AFTER-PARTY 
+        ['#283F76','#FFF6B7','#F70A36','#C1ECFD','#5591D1'] //NEUTRAL NIGHT
+    ];
+    var colorArray = palettes[1];//palettes[Math.floor(Math.random()*palettes.length)];
+	var canvas = document.querySelector('canvas');
+    canvas.style.backgroundColor = colorArray[0];
+    var center = {x: 0, y: 0};
+    var limits = {x: 0, y: 0};
+    var tileScale = 56;
+    var snekFat = 30;
+    var moveSpeed = 1;
+    if(screen.height > 1024){
+        tileScale = 112;
+    }
+    function scaleCanvas(){
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+        center = {x: canvas.width/2, y: canvas.height/2};
+        limits = {x: canvas.width/tileScale, y: canvas.height/tileScale};
+	}
+	var ctx = canvas.getContext('2d');
+    scaleCanvas();
+
+    function Pos(x,y){this.x = x; this.y = y;}
+    function iPos(u,v){this.u = u; this.v = v;}
+
+    function Grid(rows, cols, scale){
+        this.pos = [];
+        this.rows = rows;
+        this.cols = cols;
+        this.scale = 56;
+        this.half = {x: ((this.cols-1)*this.scale)/2, y: ((this.rows-1)*this.scale)/2};
+        
+
+        this.init = function(){
+            if(this.rows > limits.y){ this.rows = parseInt(limits.y);}
+            if(this.cols > limits.x){ this.cols = parseInt(limits.x);}
+            this.scale = 56;//(canvas.height*0.8)/(this.rows-1);
+            this.half = {x: ((this.cols-1)*this.scale)/2, y: ((this.rows-1)*this.scale)/2};
+            this.pos = [];
+            for(var i = 0; i < this.rows; i++){
+                var row = [];
+                for(var j = 0; j < this.cols; j++){
+                    row.push(new Pos((j*this.scale)+center.x-this.half.x,(this.scale*i)-this.half.y+center.y));
+                }
+                this.pos.push(row);
+            }
+        }
+
+        this.draw = function(){
+            //ctx.fillStyle="#000";
+            for(var i = 0; i < this.pos.length; i++){
+                for(var j = 0; j < this.pos[i].length; j++){
+                ctx.fillStyle='#FFFFFF44'
+                ctx.beginPath();
+                ctx.arc(this.pos[i][j].x,this.pos[i][j].y,snekFat/5,0,2*Math.PI);
+                ctx.fill();
+                ctx.closePath();
+                }
+            }
+        }
+        this.init();
+    }
+
+    function Snek(path,index){
+        this.path = path;
+        this.index = index;
+        this.targetPath = undefined;
+        this.screenPath = buildScreenPath(this.path);
+        this.exiting = false;
+
+        this.draw = function(){
+            ctx.lineWidth = snekFat;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = colorArray[this.index];
+            ctx.beginPath();
+            ctx.moveTo(this.screenPath[0].x, this.screenPath[0].y);
+            for(var i = 1; i < this.path.length; i++){
+                ctx.lineTo(this.screenPath[i].x, this.screenPath[i].y);
+            }
+            ctx.stroke();
+            ctx.closePath();
+
+            //Clean up lines
+            ctx.lineWidth = 1;
+            ctx.lineCap = 'butt'; //LOL BUTT
+            ctx.lineJoin = 'bevel';
+        }
+
+        this.update = function(){
+            if(this.exiting){
+                if(this.path.length > 0){
+                    this.path.pop();
+                } else {
+                    //Remove Snek
+                    removeSnek(this.index);
+                    //REMOVE THE EXIT
+                    for(var e = 0; e < exits.length; e++){
+                        if(exits[e].snekIndex == this.index){
+                            exits[e].complete = true;
+                            break;
+                        }
+                    }
+                }
+                this.draw();
+                return;
+            }
+            if(this.targetPath != undefined && this.targetPath.path.length > 1){
+                this.targetPath.path.shift();
+                var nextPos = this.targetPath.path[0];
+                
+                if(this.targetPath.startingIndex == 0){ // Start from head
+                    this.path.unshift(nextPos); //Insert Start
+                    if(checkExitCollision(nextPos) == this.index){
+                        //We've collided with our exit
+                        this.exiting = true;
+                        this.path.pop();
+                    } else {
+                        if(checkFruitCollision(nextPos) != this.index){
+                            this.path.pop(); //Remove Last    
+                        } else {
+                            removeFruit(this.index, this.path[0]);
+                        }
+                    }
+                } else {
+                    this.path.push(nextPos); //Insert Last
+                    if(checkExitCollision(nextPos) == this.index){
+                        this.exiting = true;
+                        this.path.shift(); //Remove First
+                    } else {
+                        if(checkFruitCollision(nextPos) != this.index){
+                            this.path.shift(); //Remove First
+                        } else {
+                            removeFruit(this.index, this.path[this.path.length-1]);
+                        }
+                    }
+                }
+                this.screenPath = buildScreenPath(this.path);
+                
+            }
+            this.draw();
+        }
+
+        this.move = function(tPath){
+            this.targetPath = tPath;
+        }
+
+    }
+
+    function Fruit(p,snekIndex){
+        this.snekIndex = snekIndex;
+        this.pos = p;
+        this.cleared = false;
+
+        this.draw = function(){
+            ctx.fillStyle=colorArray[this.snekIndex];
+            ctx.beginPath();
+            ctx.arc(getScreenPos(this.pos).x,getScreenPos(this.pos).y,snekFat/2,0,2*Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+
+    function Exit(p,snekIndex){
+        this.snekIndex = snekIndex;
+        this.pos = p;
+        this.complete = false;
+        this.rad = snekFat/2;
+
+        this.draw = function(){
+            ctx.strokeStyle = colorArray[this.snekIndex];
+            if(!this.complete){
+                ctx.fillStyle = colorArray[0];
+            } else {
+                ctx.fillStyle = colorArray[this.snekIndex];
+                if(this.rad > 1){
+                    this.rad-= 0.5;
+                } else {
+                    removeExit(this.snekIndex);
+                }
+            }
+            ctx.lineWidth = snekFat/10;
+            ctx.beginPath();
+            ctx.arc(getScreenPos(this.pos).x,getScreenPos(this.pos).y,this.rad,0,2*Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+            ctx.lineWidth = 1;
+        }
+    }
+
+
+
+    var grid = new Grid(6,5, canvas.height * 0.8);
+    var sneks = [];
+    var fruits = [];
+    var exits = [];
+    var pops = [];
+
+    sneks.push(new Snek(
+        [new iPos(0,0),new iPos(0,1),new iPos(0,2),new iPos(1,2)]
+        ,4));
+    fruits.push(new Fruit(new iPos(2,0),4));
+    
+    exits.push(new Exit(new iPos(3,3),4));
+    
+    sneks.push(new Snek(
+        [new iPos(0,3),new iPos(1,3),new iPos(2,3),new iPos(2,2)]
+        ,2));
+    sneks.push(new Snek(
+        [new iPos(3,1),new iPos(4,1),new iPos(4,2), new iPos(4,3),new iPos(5,3)],1
+        ));
+    sneks.push(new Snek([new iPos(1,4),new iPos(2,4), new iPos(3,4), new iPos(4,4)],3));
+    
+    fruits.push(new Fruit(new iPos(5,2),2));
+    fruits.push(new Fruit(new iPos(1,1),1));
+    fruits.push(new Fruit(new iPos(4,0),3));
+    
+    exits.push(new Exit(new iPos(1,0),2));
+    exits.push(new Exit(new iPos(0,4),1));
+    exits.push(new Exit(new iPos(5,1),3));
+    
+    //*************************************************
+    //*************************************************
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,innerWidth,innerHeight);
+
+        grid.draw();
+
+        if(movePath != undefined){
+            movePath.draw();
+        }
+
+        for(var f = 0; f < fruits.length; f++){
+            fruits[f].draw();
+        }
+
+        for(var x = 0; x < exits.length; x++){
+            exits[x].draw();
+        }
+
+        for(var p = 0; p < pops.length; p++){
+            pops[p].draw();
+        }
+
+        for(var s = 0; s < sneks.length; s++){
+            sneks[s].update();
+        }
+
+        ctx.fillStyle="#FFF";
+        ctx.fillText("S:"+sneks.length,10,20);
+        ctx.fillText("F:"+fruits.length,10,40);
+        ctx.fillText("X:"+exits.length,10,60);
+
+        //Check if puzzle is completed
+
+
+	}
+    //*************************************************
+    //*************************************************
+    function validatePuzzle(){
+        if(sneks.length == 0 && fruits.length == 0 && exits.length == 0){
+            console.log("WIN");
+        }
+    }
+
+    function removeFruit(i,p){
+        var ind = -1;
+        for(var f = 0; f < fruits.length; f++){
+            if(fruits[f].snekIndex == i){
+                if(fruits[f].pos.u == p.u && fruits[f].pos.v == p.v){
+                    ind = f;
+                    break;
+                }
+            }
+        }
+        if(ind > -1){
+            fruits.splice(ind,1);
+        }
+    }
+
+    function removeSnek(i){
+        var snake = -1;
+        for(var s = 0; s < sneks.length; s++){
+            if(sneks[s].index == i){
+                snake = s;
+            }
+        }
+        if(snake > -1){
+            sneks.splice(snake,1);
+        }
+    }
+
+    function removeExit(i){
+        var end = -1;
+        for(var e = 0; e < exits.length; e++){
+            if(exits[e].snekIndex == i){
+                end = e;
+            }
+        }
+        if(end > -1){
+            //Get the position of the end
+            pops.push(new Pop(getScreenPos(exits[end].pos).x, getScreenPos(exits[end].pos).y, exits[end].snekIndex));
+            exits.splice(end,1);
+            validatePuzzle();
+        }
+    }
+
+    function buildScreenPath(points){
+        var screenPath = [];
+        for(var i = 0; i < points.length; i++){
+            screenPath.push(getScreenPos(points[i]));
+        }
+        return screenPath;
+    }
+
+    function buildGridPath(posArr){
+        var gridPath = [];
+        for(var i = 0; i < posArr.length; i++){
+            gridPath.push(getGridPos(posArr[i].x, posArr[i].y));
+        }
+        return gridPath;
+    }
+
+    function getScreenPos(p){
+        if(p.u < 0 || p.u > grid.cols || p.v < 0 || p.v > grid.rows){
+            console.log("INVALID POINT: " + p.u + "," + p.v);
+            return new Pos(-1,-1);
+        }
+        return new Pos(grid.pos[p.u][p.v].x, grid.pos[p.u][p.v].y);
+    }
+
+    function getGridPos(x,y){
+        for(var i = 0; i < grid.pos.length; i++){
+            for(var j = 0; j < grid.pos[i].length; j++){
+                var p = grid.pos[i][j];
+                //Determine if position is within range of this grid square
+                if(x < p.x + tileScale/4 && x > p.x - tileScale/4 && y < p.y + tileScale/4 && y > p.y - tileScale/4){
+                    return new iPos(i,j);
+                }
+            }
+        }
+        return undefined;
+    }
+
+    function checkSnekCollision(p){
+        for(var s = 0; s < sneks.length; s++){
+            for(var i = 0; i < sneks[s].path.length; i++){
+                var pt = sneks[s].path[i];
+                if(p.u == pt.u && p.v == pt.v){
+                    return s;
+                }
+            }
+        }
+        return -1;
+    }
+
+    function checkFruitCollision(p){
+        for(var f = 0; f < fruits.length;f++){
+            if(fruits[f].pos.u == p.u && fruits[f].pos.v == p.v){
+                return fruits[f].snekIndex;
+            }
+        }
+        return -1;
+    }
+
+    function checkExitCollision(p){
+        for(var x = 0; x < exits.length; x++){
+            if(exits[x].pos.u == p.u && exits[x].pos.v == p.v){
+                return exits[x].snekIndex;
+            }
+        }
+        return -1;
+    }
+
+    function checkFruitExists(index){
+        for(var i = 0; i < fruits.length; i++){
+            if(fruits[i].snekIndex == index){
+                if(!fruits[i].cleared){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function snekSelected(p){
+        var index = -1;
+        var end = -1;
+        for(var s = 0; s < sneks.length; s++){
+            if(sneks[s].path[0].u == p.u && sneks[s].path[0].v == p.v){
+                //START OF SNEK SELECTED
+                index = s;
+                end = 0;
+            } else {
+                var e = sneks[s].path.length-1;
+                if(sneks[s].path[e].u == p.u && sneks[s].path[e].v == p.v){
+                    //END OF SNEK SELECTED
+                    index = s;
+                    end = e;
+                }
+            }
+        }
+        return {index, end};
+    }
+
+    function checkMoveDirection(next, prev){
+        var dir = {x: 0, y: 0};
+        var nextPos = getScreenPos(next);
+        var prevPos = getScreenPos(prev);
+        
+        if(Math.abs(nextPos.x-prevPos.x) > tileScale/4+10){ //Horizontal Check
+            //console.log("DX " + Math.abs(nextPos.x-prevPos.x));
+            if(Math.abs(nextPos.x-prevPos.x) >= tileScale){
+                dir = 2;
+            } else {
+                if(nextPos.x-prevPos.x < 0){
+                    //console.log("L");
+                    dir.x = -1;
+                } else if(nextPos.x-prevPos.x > 0){
+                    //console.log("R");
+                    dir.x = 1;
+                }
+            }
+        } 
+        if(Math.abs(nextPos.y-prevPos.y) > tileScale/4+10){ //Vertical Check
+            //console.log("DY " + Math.abs(nextPos.y-prevPos.y));
+            if(Math.abs(nextPos.y-prevPos.y) >= tileScale){
+                dir.y = 2;
+            } else {
+                if(nextPos.y-prevPos.y < 0){
+                    //console.log("U");
+                    dir.y = -1;
+                } else if(nextPos.y-prevPos.y > 0){
+                    //console.log("D");
+                    dir.y = 1;
+                }
+            }            
+        }
+        //console.log(dir);
+        return dir;
+    }
+
+    function MovementPath(snek, index){
+        this.assignedSnek = snek;
+        this.startingIndex = index;
+        this.path = [];
+
+        this.add = function(point){
+            //before we add let's check
+            if(point == undefined){
+                return;
+            }
+            if(this.path.length > 0){
+                var last = this.path[this.path.length-1];
+                if(point.u == last.u && point.v == last.v){ //Don't stack points
+                    return;
+                }
+                if(this.path.length > 1){
+                    var prev = this.path[this.path.length-2];
+                    if(point.u == prev.u && point.v == prev.v){
+                        //We need to know if this removal means that the fruit is no longer cleared. So the player can't just highlight the fruit, rewind and skip it. Hmmmm....
+                        var pt = this.path[this.path.length-1];
+                        for(var f = 0; f < fruits.length; f++){
+                            if(fruits[f].pos.u == pt.u && fruits[f].pos.v == pt.v){
+                                //console.log("UNCLEAR FRUIT " + fruits[f].snekIndex);
+                                fruits[f].cleared = false;
+                            }
+                        }
+                        //We have rewound the line.. remove last path entry
+                        this.path.pop();
+                        return;
+                    }
+                }
+                //Let's check if the point is already on the path
+                for(var i = 0; i < this.path.length; i++){
+                    if(this.path[i].u == point.u && this.path[i].v == point.v){
+                        //Now we need to know how far back it is
+                        var diff = this.path.length-i;
+                        //console.log(diff + " v " + this.assignedSnek.path.length);
+                        if(diff <= this.assignedSnek.path.length){
+                            return;
+                        }
+                    }
+                }
+
+
+                //console.log(point.u + "," + point.v);
+                var dir = checkMoveDirection(point,last);
+                if(dir.x == 0 && dir.y == 0){
+                    return;
+                }
+                if(dir.x == 2 || dir.y == 2){
+                    return;
+                }
+                if(dir.x == 0 || dir.y == 0){ //If diagonal both are non-zero
+                    //Check if point is occupied by another snek
+                    if(checkSnekCollision(point) < 0){ 
+                        if(checkFruitCollision(point) < 0){
+                            if(checkExitCollision(point) < 0){
+                                //BASIC MOVE
+                                this.path.push(point);
+                            } else {
+                                if(checkExitCollision(point) == this.assignedSnek.index){
+                                    if(!checkFruitExists(this.assignedSnek.index)){
+                                        //END SNEK RUN HERE
+                                        this.path.push(point);
+                                    }
+                                }
+                            }
+                        } else {
+                            if(checkFruitCollision(point) == this.assignedSnek.index){
+                                //We need to mark that this fruit is on path so we can also add the exit if it's in path. So we'll mark this on the fruit and update the fruit exists call
+                                for(var f = 0; f < fruits.length; f++){
+                                    if(fruits[f].snekIndex == this.assignedSnek.index){
+                                        //console.log("CLEAR FRUIT " + this.assignedSnek.index);
+                                        fruits[f].cleared = true;
+                                    }
+                                }
+                                this.path.push(point);
+                            } 
+                        }
+                    }
+                }
+            } else { //Adding the first point to the path
+                this.path.push(point);                
+            }
+        }
+
+        this.draw = function(){
+            if(this.path.length > 1){
+                ctx.lineWidth = snekFat/10;
+                ctx.strokeStyle='#FFF';
+                ctx.beginPath();
+                var pt = getScreenPos(this.path[0]);
+                ctx.moveTo(pt.x, pt.y);
+                for(var i = 1; i < this.path.length; i++){
+                    pt = getScreenPos(this.path[i]);
+                    ctx.lineTo(pt.x, pt.y);
+                }
+                ctx.stroke();
+            }
+        }
+    }
+
+
+
+	//*** INPUT SECTION **//
+    window.addEventListener('keyup',function(e){
+        
+        switch(e.keyCode){
+        case 37: //LEFT
+            if(grid != undefined){
+                grid.cols--;
+                grid.init();
+            }
+            break;
+        case 38: //UP
+            if(grid != undefined){
+                grid.rows++;
+                grid.init();
+            }
+            break;
+        case 39: //RIGHT
+            if(grid != undefined){
+                grid.cols++;
+                grid.init();
+            }
+            break;
+        case 40: //DOWN
+            if(grid != undefined){
+                grid.rows--;
+                grid.init();
+            }
+            break;
+        default:
+            console.log(e.keyCode);
+            break;
+        }
+    });
+
+    window.addEventListener('resize',function(evt){
+        evt.preventDefault();
+        scaleCanvas();
+    });
+
+
+    window.addEventListener('mousedown',inputStart,false);
+    window.addEventListener('mousemove',inputMove,false);
+    window.addEventListener('mouseup',inputEnd,false);
+
+    window.addEventListener('touchstart',inputStart, false);
+    window.addEventListener('touchmove', inputMove,false);
+    window.addEventListener('touchcancel',inputEnd,false);
+    window.addEventListener('touchend',inputEnd,false);
+
+    var start = {x:-1,y:-1};
+	var current = {x:-1,y:-1};
+    var gp = undefined;
+    var movePath = undefined;
+    function inputStart(evt){
+        evt.preventDefault();
+        if(evt.changedTouches != undefined){
+            var touches = evt.changedTouches;
+            if(touches.length > 0){
+                start.x = touches[0].pageX;
+                start.y = touches[0].pageY;
+            }
+        } else {
+            start.x = evt.pageX;
+            start.y = evt.pageY;
+        }
+		current.x = start.x;
+		current.y = start.y;
+        if(start.x > -1){
+            //Use the start position to get the appropriate grid position
+            gp = getGridPos(start.x, start.y);
+            //Determine if a snek has been selected and which end
+            if(gp != undefined){ 
+                var selSnek = snekSelected(gp);
+                if(selSnek.index < 0){
+                    return;
+                }
+                movePath = new MovementPath(sneks[selSnek.index],selSnek.end);
+                movePath.add(gp);
+            }
+        }
+    }
+
+    function inputMove(evt){
+        evt.preventDefault();
+        if(start.x > -1){
+            if(evt.changedTouches != undefined){
+                var touches = evt.changedTouches;
+                if(touches.length > 0){
+                    current.x = touches[0].pageX;
+                    current.y = touches[0].pageY;
+                }
+            } else {
+                current.x = evt.pageX;
+                current.y = evt.pageY;
+            }
+            //If we've moved far enough away from start let's add this position to our path array.
+            if(movePath != undefined){
+                movePath.add(getGridPos(current.x, current.y));
+            }
+        }
+    }
+
+    function inputEnd(){
+        if(movePath != undefined){
+            movePath.assignedSnek.move(movePath);
+            movePath = undefined;
+        }
+        gp = undefined;
+        start.x = -1;
+    }
+
+    //**************************************************************
+    //SFX STUFF
+    //**************************************************************
+    function Pop(x,y, index){
+        this.x = x; this.y = y;
+        this.color = colorArray[index];
+        this.startTime = Date.now();
+        this.remove = false;
+        this.rad = snekFat/10;
+
+        this.draw = function(){
+            if(Date.now()-this.startTime < 220){
+                if(this.rad > 20){
+                    this.rad -= 20;
+                }
+                ctx.fillStyle=this.color;
+                ctx.beginPath();
+                ctx.arc(this.x,this.y-(Date.now()-this.startTime)/10,this.rad,0,2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x+(Date.now()-this.startTime)/10,this.y-(Date.now()-this.startTime)/10,this.rad,0,2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x+(Date.now()-this.startTime)/10,this.y,this.rad,0,2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x+(Date.now()-this.startTime)/10,this.y+(Date.now()-this.startTime)/10,this.rad,0,2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x,this.y+(Date.now()-this.startTime)/10,this.rad,0,2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x-(Date.now()-this.startTime)/10,this.y+(Date.now()-this.startTime)/10,this.rad,0,2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x-(Date.now()-this.startTime)/10,this.y,this.rad,0,2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x-(Date.now()-this.startTime)/10,this.y-(Date.now()-this.startTime)/10,this.rad,0,2*Math.PI);
+                ctx.fill();
+            } else {
+                this.remove = true;
+            }   
+        }
+    }
+
+    //**************************************************************
+    //ACTION STORAGE FOR UNDO CLASSES
+    //**************************************************************
+    function Action(){
+        /* ACTION TYPES:
+            removing snek point from start
+            removing snek point from end
+            adding snek point to start
+            removing snek point from end
+            removing snek from array
+            removing fruit from array
+            removing exit from array.... 
+            SHOULD WE EVEN HAVE AN UNDO BUTTON... they can always pull in reverse...
+        */
+    }
+
+	animate();
+	</script>
+</body>
+</html>
