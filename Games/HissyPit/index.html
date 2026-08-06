@@ -20,6 +20,7 @@
 <body id='body'>
 <canvas></canvas>
 	<script>
+    var version = "0.003";
     var palettes = [
         ['#493967','#745F90','#6B457B','#7A945A','#9DC163'], //PURPLE&GREEN
         ['#110B10','#3A94A2','#D61616','#FBDA67','#CBB48C'], //STRANGER THINGS
@@ -36,17 +37,25 @@
     canvas.style.backgroundColor = colorArray[0];
     var center = {x: 0, y: 0};
     var limits = {x: 0, y: 0};
-    var tileScale = 56;
     var snekFat = 30;
     var moveSpeed = 1;
-    if(screen.height > 1024){
-        tileScale = 112;
-    }
+    var tileScale = 50;
+    var nextLevel = 0;
+
+    var grid = undefined;
+    var sneks = [];
+    var fruits = [];
+    var exits = [];
+    var pops = [];
+
     function scaleCanvas(){
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
         center = {x: canvas.width/2, y: canvas.height/2};
+        tileScale = (canvas.width*0.9)/8;
         limits = {x: canvas.width/tileScale, y: canvas.height/tileScale};
+        snekFat = tileScale/2;
+        //console.log(tileScale);
 	}
 	var ctx = canvas.getContext('2d');
     scaleCanvas();
@@ -54,18 +63,18 @@
     function Pos(x,y){this.x = x; this.y = y;}
     function iPos(u,v){this.u = u; this.v = v;}
 
-    function Grid(rows, cols, scale){
+    function Grid(rows, cols){
         this.pos = [];
         this.rows = rows;
         this.cols = cols;
-        this.scale = 56;
+        this.scale = tileScale;
         this.half = {x: ((this.cols-1)*this.scale)/2, y: ((this.rows-1)*this.scale)/2};
         
 
         this.init = function(){
-            if(this.rows > limits.y){ this.rows = parseInt(limits.y);}
-            if(this.cols > limits.x){ this.cols = parseInt(limits.x);}
-            this.scale = 56;//(canvas.height*0.8)/(this.rows-1);
+            //if(this.rows > limits.y){ this.rows = parseInt(limits.y);}
+            //if(this.cols > limits.x){ this.cols = parseInt(limits.x);}
+            //this.scale = 56;//(canvas.height*0.8)/(this.rows-1);
             this.half = {x: ((this.cols-1)*this.scale)/2, y: ((this.rows-1)*this.scale)/2};
             this.pos = [];
             for(var i = 0; i < this.rows; i++){
@@ -104,6 +113,7 @@
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.strokeStyle = colorArray[this.index];
+            
             ctx.beginPath();
             ctx.moveTo(this.screenPath[0].x, this.screenPath[0].y);
             for(var i = 1; i < this.path.length; i++){
@@ -111,7 +121,7 @@
             }
             ctx.stroke();
             ctx.closePath();
-
+            
             //Clean up lines
             ctx.lineWidth = 1;
             ctx.lineCap = 'butt'; //LOL BUTT
@@ -222,12 +232,8 @@
 
 
 
-    var grid = new Grid(6,5, canvas.height * 0.8);
-    var sneks = [];
-    var fruits = [];
-    var exits = [];
-    var pops = [];
-
+    var puzzles = [];        
+    /*
     sneks.push(new Snek(
         [new iPos(0,0),new iPos(0,1),new iPos(0,2),new iPos(1,2)]
         ,4));
@@ -250,15 +256,21 @@
     exits.push(new Exit(new iPos(1,0),2));
     exits.push(new Exit(new iPos(0,4),1));
     exits.push(new Exit(new iPos(5,1),3));
-    
+    */
     //*************************************************
     //*************************************************
 	function animate(){
 		window.requestAnimationFrame(animate);
 		ctx.clearRect(0,0,innerWidth,innerHeight);
 
+        if(grid == undefined){
+            if(nextLevel >= puzzles.length){
+                nextLevel = 0;
+            }
+            puzzles[nextLevel].build();
+        } 
         grid.draw();
-
+        
         if(movePath != undefined){
             movePath.draw();
         }
@@ -272,27 +284,35 @@
         }
 
         for(var p = 0; p < pops.length; p++){
-            pops[p].draw();
+            if(!pops[p].remove){
+                pops[p].draw();
+            } 
         }
-
+        
         for(var s = 0; s < sneks.length; s++){
             sneks[s].update();
         }
-
+        
         ctx.fillStyle="#FFF";
-        ctx.fillText("S:"+sneks.length,10,20);
-        ctx.fillText("F:"+fruits.length,10,40);
-        ctx.fillText("X:"+exits.length,10,60);
+        ctx.font = "18px Arial";
+        ctx.fillText("V:"+version, 10, 20);
+        ctx.fillText("S:"+sneks.length,10,40);
+        ctx.fillText("F:"+fruits.length,10,60);
+        ctx.fillText("X:"+exits.length,10,80);
+        ctx.fillText("P:"+pops.length,10,100);
+        
 
-        //Check if puzzle is completed
-
+        //Clean up pops
+        removePops();
 
 	}
     //*************************************************
     //*************************************************
     function validatePuzzle(){
-        if(sneks.length == 0 && fruits.length == 0 && exits.length == 0){
+        if(sneks.length == 0 && fruits.length == 0 && exits.length == 0 && pops.length == 0){
             console.log("WIN");
+            nextLevel++;
+            grid = undefined;
         }
     }
 
@@ -334,8 +354,16 @@
             //Get the position of the end
             pops.push(new Pop(getScreenPos(exits[end].pos).x, getScreenPos(exits[end].pos).y, exits[end].snekIndex));
             exits.splice(end,1);
-            validatePuzzle();
+            //validatePuzzle();
         }
+    }
+
+    function removePops(){
+        for(var i = 0; i < pops.length; i++){
+            if(!pops[i].remove){return;}
+        }
+        pops = [];
+        validatePuzzle();
     }
 
     function buildScreenPath(points){
@@ -355,6 +383,9 @@
     }
 
     function getScreenPos(p){
+        if(grid == undefined){
+            return;
+        }
         if(p.u < 0 || p.u > grid.cols || p.v < 0 || p.v > grid.rows){
             console.log("INVALID POINT: " + p.u + "," + p.v);
             return new Pos(-1,-1);
@@ -367,7 +398,7 @@
             for(var j = 0; j < grid.pos[i].length; j++){
                 var p = grid.pos[i][j];
                 //Determine if position is within range of this grid square
-                if(x < p.x + tileScale/4 && x > p.x - tileScale/4 && y < p.y + tileScale/4 && y > p.y - tileScale/4){
+                if(x < p.x + tileScale/2 && x > p.x - tileScale/2 && y < p.y + tileScale/2 && y > p.y - tileScale/2){
                     return new iPos(i,j);
                 }
             }
@@ -441,10 +472,10 @@
         var nextPos = getScreenPos(next);
         var prevPos = getScreenPos(prev);
         
-        if(Math.abs(nextPos.x-prevPos.x) > tileScale/4+10){ //Horizontal Check
+        if(Math.abs(nextPos.x-prevPos.x) > tileScale/2+10){ //Horizontal Check
             //console.log("DX " + Math.abs(nextPos.x-prevPos.x));
-            if(Math.abs(nextPos.x-prevPos.x) >= tileScale){
-                dir = 2;
+            if(Math.abs(nextPos.x-prevPos.x) > tileScale){
+                dir.x = 2;
             } else {
                 if(nextPos.x-prevPos.x < 0){
                     //console.log("L");
@@ -455,9 +486,9 @@
                 }
             }
         } 
-        if(Math.abs(nextPos.y-prevPos.y) > tileScale/4+10){ //Vertical Check
+        if(Math.abs(nextPos.y-prevPos.y) > tileScale/2+10){ //Vertical Check
             //console.log("DY " + Math.abs(nextPos.y-prevPos.y));
-            if(Math.abs(nextPos.y-prevPos.y) >= tileScale){
+            if(Math.abs(nextPos.y-prevPos.y) > tileScale){
                 dir.y = 2;
             } else {
                 if(nextPos.y-prevPos.y < 0){
@@ -532,11 +563,13 @@
                             if(checkExitCollision(point) < 0){
                                 //BASIC MOVE
                                 this.path.push(point);
+                                //console.log("ADD A");
                             } else {
                                 if(checkExitCollision(point) == this.assignedSnek.index){
                                     if(!checkFruitExists(this.assignedSnek.index)){
                                         //END SNEK RUN HERE
                                         this.path.push(point);
+                                        //console.log("ADD B");
                                     }
                                 }
                             }
@@ -550,19 +583,23 @@
                                     }
                                 }
                                 this.path.push(point);
+                                //console.log("ADD C");
                             } 
                         }
                     }
                 }
             } else { //Adding the first point to the path
+                //console.log("ADDED FIRST");
                 this.path.push(point);                
             }
         }
 
         this.draw = function(){
             if(this.path.length > 1){
-                ctx.lineWidth = snekFat/10;
+                ctx.lineWidth = snekFat/5;
                 ctx.strokeStyle='#FFF';
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
                 ctx.beginPath();
                 var pt = getScreenPos(this.path[0]);
                 ctx.moveTo(pt.x, pt.y);
@@ -579,32 +616,7 @@
 
 	//*** INPUT SECTION **//
     window.addEventListener('keyup',function(e){
-        
         switch(e.keyCode){
-        case 37: //LEFT
-            if(grid != undefined){
-                grid.cols--;
-                grid.init();
-            }
-            break;
-        case 38: //UP
-            if(grid != undefined){
-                grid.rows++;
-                grid.init();
-            }
-            break;
-        case 39: //RIGHT
-            if(grid != undefined){
-                grid.cols++;
-                grid.init();
-            }
-            break;
-        case 40: //DOWN
-            if(grid != undefined){
-                grid.rows--;
-                grid.init();
-            }
-            break;
         default:
             console.log(e.keyCode);
             break;
@@ -638,6 +650,7 @@
                 start.x = touches[0].pageX;
                 start.y = touches[0].pageY;
             }
+            
         } else {
             start.x = evt.pageX;
             start.y = evt.pageY;
@@ -742,20 +755,93 @@
     }
 
     //**************************************************************
-    //ACTION STORAGE FOR UNDO CLASSES
+    //GAME MAP STORAGE
     //**************************************************************
-    function Action(){
-        /* ACTION TYPES:
-            removing snek point from start
-            removing snek point from end
-            adding snek point to start
-            removing snek point from end
-            removing snek from array
-            removing fruit from array
-            removing exit from array.... 
-            SHOULD WE EVEN HAVE AN UNDO BUTTON... they can always pull in reverse...
-        */
+    //PUZZLE - ROWS,COLS,SNEKS,FRUIT,EXITS
+    function Puzzle(data){
+        //Store data for later building
+        this.data = data;
+
+
+        this.build = function(){
+            //Parse the data into sections separated by ,
+            var comData = this.data.split(",");
+            //[0] == rows, [1] == cols, [2] == snek data, [3] == fruit data, [4] == exit data
+
+            var rows = parseInt(comData[0]);
+            var cols = parseInt(comData[1]);
+
+            grid = new Grid(rows,cols);
+
+            var snekData = comData[2];
+            var fruitData = comData[3];
+            var exitData = comData[4];    
+
+            //Let's parse the snek data first
+            sneks = [];
+            var manySneks = snekData.split("*"); //Sneks are stored as r/c-r/c... data sep by *
+            //console.log(manySneks);
+            for(var i = 0; i < manySneks.length; i++){
+                var pointData = [];
+                //Now we need to split out each of the points
+                var curSnekData = manySneks[i].split("-"); //Each pair is sep by -
+                for(var j = 0; j < curSnekData.length; j++){
+                    //Now we can finally split the pair data by /
+                    var pData = curSnekData[j].split("/");
+                    pointData.push(new iPos(pData[0],pData[1]));
+                }
+                //console.log(pointData);
+                sneks.push(new Snek(pointData,i+1));
+            }
+
+            //Basically we repeat the process for fruits
+            fruits = [];
+            var manyFruit = fruitData.split("*");
+            for(var i = 0; i < manyFruit.length; i++){
+                var fData = manyFruit[i].split("/");
+                fruits.push(new Fruit(new iPos(fData[0],fData[1]),i+1));
+            }
+
+            //And now the exits
+            exits = [];
+            var manyExits = exitData.split("*");
+            for(var i = 0; i < manyExits.length; i++){
+                var xData = manyExits[i].split("/");
+                exits.push(new Exit(new iPos(xData[0],xData[1]),i+1));
+            }
+
+            pops = []; //Clear the pops array
+        }
     }
+
+    puzzles.push(new Puzzle("6,5,0/0-0/1-0/2-1/2*0/3-1/3-2/3-2/2*3/1-4/1-4/2-4/3-5/3*1/4-2/4-3/4-4/4,2/0*5/2*1/1*4/0,3/3*1/0*0/4*5/1"));
+    puzzles.push(new Puzzle("6,6,0/2-1/2-2/2,4/0,5/5"));
+    
+    /*
+    puzzle.push( new Puzzle(6,5,[
+        new Snek([new iPos(0,0),new iPos(0,1),new iPos(0,2),new iPos(1,2)]
+        ,4),
+        new Snek(
+        [new iPos(0,3),new iPos(1,3),new iPos(2,3),new iPos(2,2)]
+        ,2),
+        new Snek(
+        [new iPos(3,1),new iPos(4,1),new iPos(4,2), new iPos(4,3),new iPos(5,3)],1
+        ),
+        new Snek([new iPos(1,4),new iPos(2,4), new iPos(3,4), new iPos(4,4)],3)
+        ],
+        [
+           new Fruit(new iPos(2,0),4),
+            new Fruit(new iPos(5,2),2),
+            new Fruit(new iPos(1,1),1),
+            new Fruit(new iPos(4,0),3)
+        ],
+        [
+            new Exit(new iPos(3,3),4),
+            new Exit(new iPos(1,0),2),
+            new Exit(new iPos(0,4),1),
+            new Exit(new iPos(5,1),3)
+        ]));
+    */
 
 	animate();
 	</script>
