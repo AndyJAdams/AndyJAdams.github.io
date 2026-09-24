@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Scale Canvas Test</title>
+<style>
+	html, body{
+		margin: 0;
+		width: 100%;
+		height: 100%;
+		background: #222;
+	}
+	
+	body{
+		display:flex;
+		justify-content: center;
+		align-items: center;
+	}
+	
+	canvas{
+		display: block;
+		background: black;
+		border-radius: 20px;
+		touch-action: none;
+	}
+</style>
+<body>
+<canvas id="c" width="540" height="960"></canvas>
+<script>
+	const Ver = "269241005";
+	const DEBUG = true;
+	const canvas = document.getElementById("c");
+	const ctx = canvas.getContext("2d");
+	
+	const GRID_WIDTH = 9;
+	const GRID_HEIGHT = 16;
+	const CELL_SIZE = 60;
+	
+	function resizeCanvas(){
+		let displayHeight = window.innerHeight * 0.9;
+		let displayWidth = displayHeight * (9/16);
+		
+		if(displayWidth > window.innerWidth * 0.95){
+			displayWidth = window.innerWidth * 0.95;
+			displayHeight = displayWidth * (16/9);
+		}
+		
+		displayWidth = Math.floor(displayWidth);
+		displayHeight = Math.floor(displayHeight);
+		
+		canvas.style.width = displayWidth + "px";
+		canvas.style.height = displayHeight + "px";
+	}
+	
+	window.addEventListener("resize", resizeCanvas);
+	resizeCanvas();
+	
+	function Pair(x,y){
+		this.x = x; this.y = y;
+	}
+	
+	function Cell(r,c){
+		this.r = r;
+		this.c = c;
+		this.active = false;
+		
+		this.draw = function(){
+			if(DEBUG){
+				ctx.strokeStyle="white";
+				ctx.strokeRect(this.r*CELL_SIZE,this.c*CELL_SIZE,CELL_SIZE,CELL_SIZE);
+			}
+			
+			if(this.active){
+				ctx.fillStyle="#444";
+				ctx.beginPath();
+				ctx.arc(this.r+CELL_SIZE/2,this.c+CELL_SIZE/2,CELL_SIZE/4,0,2*Math.PI);
+				ctx.fill();
+				ctx.closePath();
+			}
+		}
+		
+		this.getPos = function(){
+			return new Pair(this.r*CELL_SIZE,this.c*CELL_SIZE);
+		}
+	}
+	
+	function Grid(){
+		this.cells = [];
+		for(var r = 0; r < GRID_WIDTH; r++){
+			var row = [];
+			for(var c = 0; c < GRID_HEIGHT; c++){
+				row.push(new Cell(r,c));
+			}
+			this.cells.push(row);
+		}
+		
+		this.getCellFromPixels = function(p){ //P is pixel coordinate pair
+			return this.cells[Math.floor(p.x/CELL_SIZE)][Math.floor(p.y/CELL_SIZE)];
+		}
+		
+		this.update = function(){
+			for(var r = 0; r < this.cells.length; r++){
+				for(var c = 0; c < this.cells[r].length; c++){
+					this.cells[r][c].draw();
+				}
+			}		
+		}
+	}
+	
+	function Snek(path,index){
+		this.index = index;
+		this.path = []; // Path is an array of grid pairs
+		
+		this.draw = function(){
+			ctx.beginPath();
+			for(var i= 0; i < this.path.length; i++){
+				let x = this.path[i].x*CELL_SIZE-CELL_SIZE/2;
+				let y = this.path[i].y*CELL_SIZE-CELL_SIZE/2;
+				if(i == 0){
+					ctx.moveTo(x,y);
+				} else {
+					ctx.lineTo(x,y);
+				}
+			}
+			ctx.stroke();
+		}
+	}
+	
+	function Fruit(g,index){
+		this.g = g;
+		this.index = index;
+		
+		this.draw = function(){
+			ctx.beginPath();
+			ctx.arc(this.g.x*CELL_SIZE-CELL_SIZE/2,this.g.y*CELL_SIZE-CELL_SIZE/2,CELL_SIZE/2,0,2*Math.PI);
+			ctx.fill();
+		}
+	}
+	
+	function Exit(g,index,dir){
+		this.g = g;
+		this.index = index;
+		this.dir = dir;
+		
+		this.draw = function(){
+			var angles = new Pair(0,0);
+			switch(this.dir){
+				case "UP": 
+					angles.x = 315; angles.y = 225;
+					break;
+				case "RIGHT":
+					angles.x = 45; angles.y = 315;
+					break;
+				case "LEFT":
+					angles.x = 225; angles.y = 135;
+					break;
+				case "DOWN":
+					angles.x = 135; angles.y = 45;
+					break;
+				default:
+					console.log("Exit direction not provided");
+					break;
+			}
+			ctx.beginPath();
+			ctx.arc(this.g.x*CELL_SIZE-CELL_SIZE/2,this.g.y*CELL_SIZE-CELL_SIZE/2,CELL_SIZE/2,(angles.x*0.017453),(angles.y*0.017453));
+			ctx.stroke();
+		}
+	}
+	
+	
+	
+	var grid = new Grid();
+	var input = new Pair(-1,-1);
+	function animate(){
+		window.requestAnimationFrame(animate);
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+		
+		if(grid == undefined){
+			grid = new Grid();
+		}
+		grid.update();
+		
+		if(DEBUG){
+			ctx.fillStyle="white";
+			ctx.font ="bold 24px Arial";
+			ctx.fillText(canvas.width +"," + canvas.height, 20,40);
+			ctx.fillText(input.x + "," + input.y,20,80);
+		}
+		
+		//Display version number for QA
+		ctx.fillStyle="#222";
+		ctx.font = "bold 12px Arial";
+		ctx.fillText("V"+Ver + " ©2026 Andeee_Adams",10,canvas.height-20);
+	}
+	animate();
+
+	//*************INPUT REGION ***************
+	function getPointerPos(event){
+		const rect = canvas.getBoundingClientRect();
+		//Convert screen coords to canvas coords
+		const scaleX = canvas.width/rect.width;
+		const scaleY = canvas.height/rect.height;
+		
+		const canvasX = (event.clientX-rect.left) * scaleX;
+		const canvasY = (event.clientY-rect.top)*scaleY;
+		
+		//Convert canvas coords into grid coords
+		const gridX = Math.floor(canvasX/CELL_SIZE);
+		const gridY = Math.floor(canvasY/CELL_SIZE);
+		
+		return new Pair(gridX,gridY);
+	}
+	
+	let isDragging = false;
+	canvas.addEventListener("pointerdown", (event) => {
+		isDragging = true;
+		input = getPointerPos(event);
+	});
+	
+	canvas.addEventListener("pointermove", (event) => {
+		if(!isDragging) return;
+		input = getPointerPos(event);
+	});
+	
+	canvas.addEventListener("pointerup", (event) => {
+		isDragging = false;
+	});
+	
+	canvas.addEventListener("pointercancel", () => {
+		isDragging = false;
+	});
+	
+	
+	//*************END INPUT REGION ***********
+	
+</script>
+</body>
+</html>
